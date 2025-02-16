@@ -6,7 +6,7 @@ import Image from "next/image";
 import SplitText from "../SplitText";
 const HeroSection = () => {
   return (
-    <section className="relative h-screen">
+    <section className="relative overflow-hidden h-screen">
       {/* <div className="absolute inset-0 z-0 opacity-10">
         <Image
           src={bg}

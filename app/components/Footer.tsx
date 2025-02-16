@@ -23,7 +23,14 @@ const FooterColumn = ({ title, children }: FooterColumnProps) => {
 export function Footer() {
   return (
     <footer className="relative  bg-[#1D114F] text-white overflow-hidden h-96">
-      <div className="absolute inset-0 opacity-50 h-full w-full">
+
+
+      <span className="absolute inset-0 flex items-center justify-center text-[200px] font-bold text-white opacity-5 z-0 mt-20">
+        DEFROST
+      </span>
+
+      <div className="relative z-10 flex w-full flex-col gap-14 px-10 pt-10">
+      <div className="absolute inset-0 opacity-50 h-full w-full z-20">
         <Particles
           particleColors={["#ffffff", "#ffffff"]}
           particleCount={200}
@@ -35,13 +42,7 @@ export function Footer() {
           disableRotation={false}
         />
       </div>
-
-      <span className="absolute inset-0 flex items-center justify-center text-[200px] font-bold text-white opacity-5 z-0 mt-20">
-        DEFROST
-      </span>
-
-      <div className="relative z-10 flex w-full flex-col gap-14 px-10 pt-10">
-        <div className="flex flex-col items-start justify-center gap-[10%] md:flex-row">
+        <div className="flex flex-col items-start justify-center gap-[10%] md:flex-row z-30">
           <div className="flex items-center flex-shrink-0 transition-transform transform hover:-translate-y-1 duration-300 p-3">
             <Image src={DefrostLogo} alt="Logo" className="h-10 w-10 mr-2" />
             <Link href={"/"}>
