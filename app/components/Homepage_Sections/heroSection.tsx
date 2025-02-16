@@ -7,7 +7,7 @@ import SplitText from "../SplitText";
 const HeroSection = () => {
   return (
     <section className="relative h-screen">
-      <div className="absolute inset-0 z-0 opacity-10">
+      {/* <div className="absolute inset-0 z-0 opacity-10">
         <Image
           src={bg}
           alt="Background"
@@ -15,7 +15,7 @@ const HeroSection = () => {
           objectFit="cover"
           priority
         />
-      </div>
+      </div> */}
       <BackgroundBeamsWithCollision>
         <div className="absolute top-0 left-0 w-full flex items-center justify-center text-white opacity-20">
           <TextHoverEffect text="Launchpool" />
