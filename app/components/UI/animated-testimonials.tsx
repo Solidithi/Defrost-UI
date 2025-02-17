@@ -4,6 +4,8 @@ import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import CircularText from "./circular-text";
+import { TEAM_NAME } from "@/app/constants";
 
 type Testimonial = {
   quote: string;
@@ -79,14 +81,25 @@ export const AnimatedTestimonials = ({
                   }}
                   className="absolute inset-0 origin-bottom"
                 >
-                  <Image
-                    src={testimonial.src}
-                    alt={testimonial.name}
-                    width={500}
-                    height={500}
-                    draggable={false}
-                    className="h-full w-full rounded-3xl object-cover object-center"
-                  />
+                  <div className="">
+
+                    <Image
+                      src={testimonial.src}
+                      alt={testimonial.name}
+                      width={500}
+                      height={500}
+                      draggable={false}
+                      className="h-full w-full rounded-3xl object-cover object-center"
+                    />
+                    {isActive(index) && (
+                      <CircularText
+                        text= {TEAM_NAME}
+                        onHover="speedUp"
+                        spinDuration={20}
+                        className="custom-class absolute -bottom-28 -right-14 w-[200px] h-[200px] object-cover rounded-full shadow-md"
+                      />
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -147,15 +160,15 @@ export const AnimatedTestimonials = ({
           <div className="flex gap-4 pt-12 md:pt-4">
             <button
               onClick={handlePrev}
-              className="h-7 w-7 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center group/button"
+              className="h-7 w-7 rounded-full bg-gradient-to-r from-[#e80eb5] to-[#5552b9] dark:bg-neutral-800 flex items-center justify-center group/button"
             >
-              <IconArrowLeft className="h-5 w-5 text-black dark:text-neutral-400 group-hover/button:rotate-12 transition-transform duration-300" />
+              <IconArrowLeft className="h-5 w-5 text-white dark:text-neutral-400 group-hover/button:rotate-12 transition-transform duration-300" />
             </button>
             <button
               onClick={handleNext}
-              className="h-7 w-7 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center group/button"
+              className="h-7 w-7 rounded-full bg-gradient-to-l from-[#e80eb5] to-[#5552b9] dark:bg-neutral-800 flex items-center justify-center group/button"
             >
-              <IconArrowRight className="h-5 w-5 text-black dark:text-neutral-400 group-hover/button:-rotate-12 transition-transform duration-300" />
+              <IconArrowRight className="h-5 w-5 text-white dark:text-neutral-400 group-hover/button:-rotate-12 transition-transform duration-300" />
             </button>
           </div>
         </div>
