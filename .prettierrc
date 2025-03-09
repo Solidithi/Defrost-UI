@@ -15,19 +15,15 @@
 			}
 		},
 		{
-			"files": [
-				"*.tsx"
-			],
+			"files": ["*.tsx"],
 			"options": {
 				"semi": false
 			}
 		},
 		{
-			"files": [
-				"*.json", "*.jsonc"
-			],
+			"files": ["*.json", "*.jsonc"],
 			"options": {
-				"tabWdith": 4,
+				"tabWidth": 4,
 				"singleQuote": false
 			}
 		},
