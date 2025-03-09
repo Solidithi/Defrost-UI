@@ -20,10 +20,7 @@ export const FOOTER_LINKS = [
 
 export const OUR_TEAM = [
 	{
-		quote:
-			"Believe in yourself and all that you are. Know that there is something inside you that is greater than any obstacle." +
-			"Challenges may come, and failures may test you, but as long as you keep moving forward with determination, resilience," +
-			" and an unwavering belief in your abilities, you will achieve more than you ever imagined.",
+		quote: "Crypto is life.",
 		name: "Tra Minh Trong",
 		designation: "Founder & Smart Contract Developer",
 		src: "https://i.seadn.io/gae/1lYwCjhbr1WYnUp8gwDDFXZaTZaMLyL1xjtKGC3V03jmb8wwFAtOChtwc2mzFKFGiqOU2TLMr597BhDw7SkG_cntEhL5ktjxIZg1?auto=format&dpr=1&w=384",
@@ -50,3 +47,5 @@ export const OUR_TEAM = [
 		src: "https://i.pinimg.com/736x/4d/cb/6b/4dcb6b06d4941fe8d2a980766a1a46fc.jpg",
 	},
 ];
+
+export const TEAM_NAME = "DEFROST🔥SQUAD❄"; //DEFROST🔥LAUNCHER❄
