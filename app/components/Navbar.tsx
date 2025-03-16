@@ -11,7 +11,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import DefrostLogo from '../../public/Logo.png'
 import { Menu, X } from 'lucide-react'
-import { orbitron, comfortaa } from '../lib/font'
+import { orbitron, comfortaa, permanentMarker } from '../lib/font'
 const Navbar = ({
 	navItems,
 	className,
@@ -66,7 +66,10 @@ const Navbar = ({
 					<div className="flex items-center flex-shrink-0 transition-transform transform hover:-translate-y-1 duration-300 p-3">
 						<Image src={DefrostLogo} alt="Logo" className="h-10 w-10 mr-2" />
 						<Link href={'/'}>
-							<span className="text-xl tracking-tight text-white font-bold">
+							<span
+								style={{ fontFamily: permanentMarker.style.fontFamily }}
+								className="text-3xl tracking-tight text-white font-bold "
+							>
 								Defrost
 							</span>
 						</Link>
