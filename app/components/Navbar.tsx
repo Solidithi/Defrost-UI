@@ -3,15 +3,15 @@ import React, { useState, useEffect } from 'react'
 import {
 	motion,
 	AnimatePresence,
-	useScroll,
-	useMotionValueEvent,
+	// useScroll,
+	// useMotionValueEvent,
 } from 'framer-motion'
 import { cn } from '../lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
-import DefrostLogo from '../../public/Logo Defrost Launcher.png'
+import DefrostLogo from '../../public/Logo.png'
 import { Menu, X } from 'lucide-react'
-
+import { orbitron, comfortaa } from '../lib/font'
 const Navbar = ({
 	navItems,
 	className,
@@ -26,7 +26,7 @@ const Navbar = ({
 	const [toggle, setToggle] = useState(false)
 	const toggleNavbar = () => setToggle(!toggle)
 
-	const { scrollY } = useScroll()
+	// const { scrollY } = useScroll()
 	const [visible, setVisible] = useState(true)
 
 	useEffect(() => {
@@ -56,8 +56,9 @@ const Navbar = ({
 				initial={{ opacity: 1, y: 0 }}
 				animate={{ y: visible ? 0 : -100, opacity: visible ? 1 : 0 }}
 				transition={{ duration: 0.2 }}
+				style={{ fontFamily: orbitron.style.fontFamily }}
 				className={cn(
-					'fixed top-0 inset-x-0 mx-auto z-[5000] max-w-fit rounded-full bg-[#2F3072] shadow-lg px-5 py-2 space-x-4 mt-10',
+					'fixed top-0 inset-x-0 mx-auto z-[5000] max-w-fit rounded-full  shadow-lg px-5 py-2 space-x-4 mt-10 glass-component-1 ',
 					className
 				)}
 			>
@@ -78,14 +79,17 @@ const Navbar = ({
 								className="relative dark:text-neutral-50 flex items-center space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
 							>
 								<span className="block sm:hidden">{navItem.icon}</span>
-								<span className="hidden sm:block text-md hover:text-[#A71E82] duration-150 text-white">
+								<span
+									style={{ fontFamily: comfortaa.style.fontFamily }}
+									className="hidden sm:block text-md hover:text-[#B2423F] duration-150 text-white active:text-[#F05550] "
+								>
 									{navItem.name}
 								</span>
 							</Link>
 						))}
 					</div>
 
-					<button className="hidden lg:flex items-center bg-gradient-to-r from-[#F509B5] to-[#5253B9] text-white px-5 rounded-full h-10">
+					<button className="hidden lg:flex items-center bg-gradient-to-r from-[#F05550] to-[#54A4F2] text-white px-5 rounded-full h-10">
 						<span className="text-md font-bold relative">Connect Wallet</span>
 					</button>
 					<div className="lg:hidden md:flex flex-col justify-end">
@@ -109,14 +113,14 @@ const Navbar = ({
 									className="relative dark:text-neutral-50 flex items-center space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
 								>
 									<span className="block sm:hidden">{navItem.icon}</span>
-									<span className="hidden sm:block text-md hover:text-[#A71E82] duration-150">
+									<span className="hidden sm:block text-md hover:text-[#B2423F] duration-150 active:text-[#F05550]">
 										{navItem.name}
 									</span>
 								</Link>
 							))}
 						</div>
 
-						<button className="bg-gradient-to-r from-[#F509B5] to-[#5253B9] text-white px-5 rounded-full h-10">
+						<button className="bg-gradient-to-r from-[#F05550] to-[#54A4F2] text-white px-5 rounded-full h-10">
 							<span className="text-md font-bold relative">Connect Wallet</span>
 						</button>
 					</div>
