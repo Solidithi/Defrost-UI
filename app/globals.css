@@ -32,3 +32,18 @@ body {
 		@apply bg-white/15 backdrop-blur-sm border border-white/15;
 	}
 }
+
+/* .my-carousel-progress {
+	background: #ccc;
+	height: 2px;
+	width: 100%;
+	position: relative;
+	margin-top: 10px;
+  }
+  
+  .my-carousel-progress-bar {
+	background: greenyellow;
+	height: 2px;
+	transition: width 400ms ease;
+	width: 0;
+  } */

@@ -23,18 +23,20 @@
 	"dependencies": {
 		"@react-spring/parallax": "^9.7.5",
 		"@react-spring/web": "^9.7.5",
+		"@splidejs/react-splide": "^0.7.12",
+		"@splidejs/splide": "^4.1.4",
 		"@tabler/icons-react": "^3.30.0",
 		"clsx": "^2.1.1",
 		"framer-motion": "^12.5.0",
 		"gsap": "^3.12.7",
 		"lucide-react": "^0.475.0",
-		"motion": "^12.4.3",
+		"motion": "^12.5.0",
 		"next": "13.5.8",
 		"ogl": "^1.0.11",
 		"react": "^18",
 		"react-dom": "^18",
 		"react-scroll-parallax": "^3.4.5",
-		"tailwind-merge": "^3.0.1"
+		"tailwind-merge": "^3.0.2"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^19.7.1",
