@@ -1,55 +1,131 @@
-import { BackgroundBeamsWithCollision } from '../UI/BackgroundBeamsWithCollision'
-import { TextHoverEffect } from '../UI/TextHoverEffect'
-import circle from '../../../public/Subtract.png'
-import bg from '../../../public/universe.jpg'
+'use client'
+// import { BackgroundBeamsWithCollision } from '../UI/BackgroundBeamsWithCollision'
+// import { TextHoverEffect } from '../UI/TextHoverEffect'
+// import circle from '../../../public/Subtract.png'
+// import bg from '../../../public/universe.jpg'
 import Image from 'next/image'
-import SplitText from '../SplitText'
+// import SplitText from '../SplitText'
+import Logo from '../../../public/Logo.png'
+import { orbitron, comfortaa } from '../../lib/font'
+import { Boxes } from '@/app/components/UI/BackgroundBoxes'
+// import SplitText from '../SplitText'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+
+const textAnimation = {
+	hidden: { opacity: 0, y: 50 },
+	visible: (i: number) => ({
+		opacity: 1,
+		y: 0,
+		transition: { delay: i * 0.1, ease: 'easeOut' },
+	}),
+}
+
 const HeroSection = () => {
+	const [isTitleDone, setIsTitleDone] = useState(false)
+	const title = 'Fast & Secure Platform made for'
+	const highlight = 'Egalitarian Investing'
 	return (
 		<section className="relative overflow-hidden h-screen">
-			{/* <div className="absolute inset-0 z-0 opacity-10">
-        <Image
-          src={bg}
-          alt="Background"
-          layout="fill"
-          objectFit="cover"
-          priority
-        />
-      </div> */}
-			<BackgroundBeamsWithCollision>
-				<div className="absolute top-0 left-0 w-full flex items-center justify-center text-white opacity-20">
-					<TextHoverEffect text="Launchpool" />
-				</div>
+			{/* <div className="absolute top-[700px] left-[850px]  h-64 w-[800px] rounded-full opacity-25 blur-[100px] bg-[#F05550]"></div> */}
+			<Boxes />
+			<div className="flex w-full z-50">
+				<div className="bg-white h-screen w-1/2 glass-component-2">
+					<div className="flex flex-col items-start h-full gap-10 justify-center px-16">
+						<motion.span
+							initial="hidden"
+							animate="visible"
+							className="text-[55px] font-bold text-white"
+							style={{ fontFamily: orbitron.style.fontFamily }}
+							onAnimationComplete={() => setIsTitleDone(true)}
+						>
+							{title.split('').map((char, index) => (
+								<motion.span
+									key={index}
+									variants={textAnimation}
+									custom={index}
+								>
+									{char}
+								</motion.span>
+							))}
+							<br />
+							{isTitleDone && (
+								<motion.span
+									initial="hidden"
+									animate="visible"
+									style={{ fontFamily: orbitron.style.fontFamily }}
+									className="text-[55px] font-bold bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] bg-clip-text text-transparent"
+								>
+									{highlight.split('').map((char, index) => (
+										<motion.span
+											key={index}
+											variants={textAnimation}
+											custom={index}
+										>
+											{char}
+										</motion.span>
+									))}
+								</motion.span>
+							)}
+						</motion.span>
 
-				<div className="h-screen flex flex-col justify-center items-center bg-[#0A0641] text-white gap-10 pt-20">
-					{/* <h1 className="text-5xl font-bold">Egalitarian Investing</h1> */}
-					<SplitText
-						text="Egalitarian Investing"
-						className="text-5xl font-bold"
-						delay={75}
-						animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-						animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-						// easing="easeOutCubic"
-						threshold={0.2}
-						rootMargin="-50px"
-						// onLetterAnimationComplete={handleAnimationComplete}
+						<motion.span
+							initial={{ opacity: 0, y: 30 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.3 }}
+							className="text-white text-xl"
+							style={{ fontFamily: comfortaa.style.fontFamily }}
+						>
+							Launchpool believe all project stakeholders are as important as
+							each other.
+						</motion.span>
+
+						<motion.button
+							initial={{ opacity: 0, scale: 0.8 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ duration: 0.3, delay: 0.6 }}
+							className="bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] text-white rounded-full w-48 h-12 text-xl"
+							style={{ fontFamily: comfortaa.style.fontFamily }}
+						>
+							Start Now
+						</motion.button>
+					</div>
+				</div>
+				<div className="flex justify-center items-center w-1/2 h-screen">
+					{/* <div className="absolute top-[700px] left-[850px]  h-64 w-[800px] rounded-full opacity-25 blur-[100px] bg-[#F05550]"></div> */}
+
+					{/* <Image
+						className="absolute animate-spin duration-[1ms] ease-linear"
+						src={Logo}
+						alt="Logo"
+					/> */}
+					<motion.img
+						src={Logo.src}
+						alt="Logo"
+						className="absolute hover:animate-spin hover:duration-[1ms] hover:ease-linear"
+						// initial={{ opacity: 0, scale: 0.5, y: 50 }}
+						animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
+						transition={{
+							duration: 2,
+							ease: 'easeOut',
+							repeat: Infinity,
+						}}
 					/>
-					<span className="text-center text-lg w-2/3">
-						Launchpool{' '}
-						<span className="font-extralight">
-							believe all project stakeholders are as important as each other.
-							Investment funds and communities should work side by side on
-							projects, on the same terms, towards the same goals. Launchpool
-							 harnesses their strengths, and aligns their incentives, so that
-							the sum is greater than its constituent parts.
-						</span>
-					</span>
+					{/* <Image
+						className="absolute hover:animate-pulse"
+						src={Logo}
+						alt="Logo"
+					/> */}
 
-					<button className=" bg-gradient-to-r from-[#F509B5] to-[#5253B9] text-white px-5 rounded-full h-10 w-48">
-						<span className="text-md font-bold relative">Start now !!!</span>
-					</button>
+					{/* <Image
+						className="absolute animate-bounce duration-[3000ms] ease-in-out"
+						src={Logo}
+						alt="Logo"
+					/> */}
+
+					{/* <Image className="absolute" src={Logo} alt="Logo" /> */}
 				</div>
-			</BackgroundBeamsWithCollision>
+			</div>
 		</section>
 	)
 }
