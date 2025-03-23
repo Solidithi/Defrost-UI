@@ -39,6 +39,15 @@ const config: Config = {
 				orbitron: ["var(--font-orbitron)", ...fontFamily.sans],
 				permanentMarker: ["var(--font-permanent-marker)", "cursive"],
 			},
+			keyframes: {
+				shine: {
+					"0%": { "background-position": "100%" },
+					"100%": { "background-position": "-100%" },
+				},
+			},
+			animation: {
+				shine: "shine 5s linear infinite",
+			},
 		},
 	},
 	plugins: [addVariablesForColors],

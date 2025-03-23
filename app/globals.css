@@ -36,3 +36,18 @@ body {
 		@apply bg-gradient-to-r from-[#E05D5F] to-[#609FE3] text-transparent bg-clip-text;
 	}
 }
+
+/* .my-carousel-progress {
+	background: #ccc;
+	height: 2px;
+	width: 100%;
+	position: relative;
+	margin-top: 10px;
+  }
+  
+  .my-carousel-progress-bar {
+	background: greenyellow;
+	height: 2px;
+	transition: width 400ms ease;
+	width: 0;
+  } */
