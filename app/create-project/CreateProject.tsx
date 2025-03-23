@@ -305,6 +305,7 @@ const CreateProject = () => {
 												size={0.8}
 												color="#00d8ff"
 												className="custom-folder"
+												maxItems={1}
 												items={
 													projectLogoPreview
 														? [
