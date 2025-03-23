@@ -1,10 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import SplitText from '../components/SplitText'
 import Stepper, { Step } from '../components/UI/Stepper'
 import NetworkSelector from '../components/UI/NetworkSelector'
 import Folder from '../components/UI/Folder'
+import ImageManager from '../components/UI/ImageManager'
+
+interface ImageItem {
+	id: string
+	url: string
+	file: File
+}
 
 const CreateProject = () => {
 	const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null)
@@ -14,10 +22,9 @@ const CreateProject = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [targetAudience, setTargetAudience] = useState('')
 
-	// Updated to array for multiple images
-	const [projectImages, setProjectImages] = useState<File[]>([])
+	// Use ImageItem[] instead of separate state variables for images and previews
+	const [projectImages, setProjectImages] = useState<ImageItem[]>([])
 	const [projectLogo, setProjectLogo] = useState<File | null>(null)
-	const [projectImagePreviews, setProjectImagePreviews] = useState<string[]>([])
 	const [projectLogoPreview, setProjectLogoPreview] = useState<string | null>(
 		null
 	)
@@ -43,14 +50,16 @@ const CreateProject = () => {
 		},
 	]
 
-	const renderImagePreviews = (previews: string[]) => {
-		return previews.map((preview, index) => (
+	// Render image previews for the folder component
+	const renderImagePreviews = () => {
+		// Take only the first 3 images (or fewer if there aren't 3)
+		return projectImages.slice(0, 3).map((image, index) => (
 			<div
-				key={index}
+				key={image.id}
 				className="w-full h-full flex items-center justify-center"
 			>
 				<img
-					src={preview}
+					src={image.url}
 					alt={`Preview ${index}`}
 					className="max-w-full max-h-full object-contain rounded"
 				/>
@@ -71,25 +80,26 @@ const CreateProject = () => {
 		if (e.target.files && e.target.files.length > 0) {
 			const files = Array.from(e.target.files)
 
-			// Update the images array with the new files
-			setProjectImages((prevImages) => [...prevImages, ...files])
-
-			// Open the folder when files are selected
-			setImageUploadFolderOpen(true)
-
-			// Create image previews for the folder items
+			// Process each file
 			files.forEach((file) => {
 				const reader = new FileReader()
 				reader.onload = (event) => {
 					if (event.target?.result) {
-						setProjectImagePreviews((prev) => [
-							...prev,
-							event.target?.result as string,
-						])
+						const newImage: ImageItem = {
+							id: uuidv4(), // Generate a unique ID
+							url: event.target.result as string,
+							file: file,
+						}
+
+						// Add the new image to state
+						setProjectImages((prev) => [...prev, newImage])
 					}
 				}
 				reader.readAsDataURL(file)
 			})
+
+			// Open the folder when files are selected
+			setImageUploadFolderOpen(true)
 		}
 	}
 
@@ -115,6 +125,12 @@ const CreateProject = () => {
 			}
 			reader.readAsDataURL(file)
 		}
+	}
+
+	const handleImageDelete = (imageId: string) => {
+		setProjectImages((prevImages) =>
+			prevImages.filter((image) => image.id !== imageId)
+		)
 	}
 
 	return (
@@ -275,7 +291,12 @@ const CreateProject = () => {
 												size={0.8}
 												color="#00d8ff"
 												className="custom-folder"
-												items={renderImagePreviews(projectImagePreviews)}
+												isOpen={imageUploadFolderOpen}
+												onOpenChange={setImageUploadFolderOpen}
+												autoClose={true}
+												autoCloseDelay={1500}
+												maxItems={3}
+												items={renderImagePreviews()}
 											/>
 										</div>
 									</div>
@@ -306,6 +327,10 @@ const CreateProject = () => {
 												color="#00d8ff"
 												className="custom-folder"
 												maxItems={1}
+												isOpen={logoUploadFolderOpen}
+												onOpenChange={setLogoUploadFolderOpen}
+												autoClose={true}
+												autoCloseDelay={1500}
 												items={
 													projectLogoPreview
 														? [
@@ -335,6 +360,18 @@ const CreateProject = () => {
 									</p>
 								</div>
 							</div>
+
+							{projectImages.length > 0 && (
+								<div className="w-full mb-6">
+									<ImageManager
+										images={projectImages}
+										onDelete={handleImageDelete}
+										title="Manage Project Images"
+										buttonText="Manage Uploaded Images"
+										emptyText="No images uploaded yet"
+									/>
+								</div>
+							)}
 
 							{/* Target Audience Input */}
 							<div className="flex flex-col space-y-3 w-full">
