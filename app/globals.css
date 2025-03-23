@@ -31,4 +31,8 @@ body {
 	.glass-component-3 {
 		@apply bg-white/15 backdrop-blur-sm border border-white/15;
 	}
+
+	.warm-cool-text {
+		@apply bg-gradient-to-r from-[#E05D5F] to-[#609FE3] text-transparent bg-clip-text;
+	}
 }
