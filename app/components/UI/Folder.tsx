@@ -5,6 +5,11 @@ interface FolderProps {
 	size?: number
 	items?: React.ReactNode[]
 	className?: string
+	isOpen?: boolean
+	onOpenChange?: (isOpen: boolean) => void
+	autoClose?: boolean
+	autoCloseDelay?: number
+	maxItems?: 1 | 2 | 3
 }
 
 const darkenColor = (hex: string, percent: number): string => {
@@ -33,16 +38,26 @@ const Folder: React.FC<FolderProps> = ({
 	size = 1,
 	items = [],
 	className = '',
+	isOpen: controlledOpen,
+	onOpenChange,
+	autoClose = false,
+	autoCloseDelay = 3000,
+	maxItems = 3,
 }) => {
-	const maxItems = 3
-	const papers = items.slice(0, maxItems)
-	while (papers.length < maxItems) {
+	// Clamp maxItems between 1 and 3
+	const actualMaxItems = Math.min(Math.max(maxItems, 1), 3)
+
+	// Slice and pad items array
+	const papers = items.slice(0, actualMaxItems)
+	while (papers.length < actualMaxItems) {
 		papers.push(null)
 	}
 
-	const [open, setOpen] = useState(false)
+	const [internalOpen, setInternalOpen] = useState(false)
+	const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+
 	const [paperOffsets, setPaperOffsets] = useState<{ x: number; y: number }[]>(
-		Array.from({ length: maxItems }, () => ({ x: 0, y: 0 }))
+		Array.from({ length: actualMaxItems }, () => ({ x: 0, y: 0 }))
 	)
 
 	const folderBackColor = darkenColor(color, 0.08)
@@ -51,9 +66,31 @@ const Folder: React.FC<FolderProps> = ({
 	const paper3 = '#ffffff'
 
 	const handleClick = () => {
-		setOpen((prev) => !prev)
-		if (open) {
-			setPaperOffsets(Array.from({ length: maxItems }, () => ({ x: 0, y: 0 })))
+		const newOpenState = !open
+
+		if (controlledOpen === undefined) {
+			setInternalOpen(newOpenState)
+		}
+
+		if (onOpenChange) {
+			onOpenChange(newOpenState)
+		}
+
+		if (newOpenState && autoClose) {
+			setTimeout(() => {
+				if (controlledOpen === undefined) {
+					setInternalOpen(false)
+				}
+				if (onOpenChange) {
+					onOpenChange(false)
+				}
+			}, autoCloseDelay)
+		}
+
+		if (!newOpenState) {
+			setPaperOffsets(
+				Array.from({ length: actualMaxItems }, () => ({ x: 0, y: 0 }))
+			)
 		}
 	}
 
@@ -97,9 +134,33 @@ const Folder: React.FC<FolderProps> = ({
 	const scaleStyle = { transform: `scale(${size})` }
 
 	const getOpenTransform = (index: number) => {
-		if (index === 0) return 'translate(-120%, -70%) rotate(-15deg)'
-		if (index === 1) return 'translate(10%, -70%) rotate(15deg)'
-		if (index === 2) return 'translate(-50%, -100%) rotate(5deg)'
+		// Custom transforms based on maxItems
+		if (actualMaxItems === 1) {
+			return 'translate(-50%, -100%) rotate(10deg)' // Center single item
+		} else if (actualMaxItems === 2) {
+			if (index === 0) return 'translate(-105%, -70%) rotate(-15deg)' // Left item
+			if (index === 1) return 'translate(5%, -70%) rotate(15deg)' // Right item
+		} else {
+			// Default 3-item arrangement
+			if (index === 0) return 'translate(-120%, -70%) rotate(-15deg)' // Left item
+			if (index === 1) return 'translate(10%, -70%) rotate(15deg)' // Right item
+			if (index === 2) return 'translate(-50%, -100%) rotate(5deg)' // Center item
+		}
+		return ''
+	}
+
+	// Get size classes based on maxItems
+	const getSizeClasses = (index: number) => {
+		if (actualMaxItems === 1) {
+			return open ? 'w-[80%] h-[80%]' : 'w-[90%] h-[80%]'
+		} else if (actualMaxItems === 2) {
+			return open ? 'w-[80%] h-[80%]' : 'w-[80%] h-[90%]'
+		} else {
+			// Original three item sizing
+			if (index === 0) return open ? 'w-[70%] h-[80%]' : 'w-[70%] h-[80%]'
+			if (index === 1) return open ? 'w-[80%] h-[80%]' : 'w-[80%] h-[70%]'
+			if (index === 2) return open ? 'w-[90%] h-[80%]' : 'w-[90%] h-[60%]'
+		}
 		return ''
 	}
 
@@ -125,17 +186,26 @@ const Folder: React.FC<FolderProps> = ({
 					></span>
 					{/* Render papers */}
 					{papers.map((item, i) => {
-						let sizeClasses = ''
-						if (i === 0)
-							sizeClasses = open ? 'w-[70%] h-[80%]' : 'w-[70%] h-[80%]'
-						if (i === 1)
-							sizeClasses = open ? 'w-[80%] h-[80%]' : 'w-[80%] h-[70%]'
-						if (i === 2)
-							sizeClasses = open ? 'w-[90%] h-[80%]' : 'w-[90%] h-[60%]'
-
+						const sizeClasses = getSizeClasses(i)
 						const transformStyle = open
 							? `${getOpenTransform(i)} translate(${paperOffsets[i].x}px, ${paperOffsets[i].y}px)`
 							: undefined
+
+						// For single item, use paper3 (white)
+						// For two items, use paper2 and paper3
+						// For three items, use all three paper colors
+						const paperColor =
+							actualMaxItems === 1
+								? paper3
+								: actualMaxItems === 2
+									? i === 0
+										? paper2
+										: paper3
+									: i === 0
+										? paper1
+										: i === 1
+											? paper2
+											: paper3
 
 						return (
 							<div
@@ -149,7 +219,7 @@ const Folder: React.FC<FolderProps> = ({
 								} ${sizeClasses}`}
 								style={{
 									...(!open ? {} : { transform: transformStyle }),
-									backgroundColor: i === 0 ? paper1 : i === 1 ? paper2 : paper3,
+									backgroundColor: paperColor,
 									borderRadius: '10px',
 								}}
 							>
