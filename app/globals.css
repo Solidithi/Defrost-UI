@@ -35,6 +35,10 @@ body {
 	.warm-cool-text {
 		@apply bg-gradient-to-r from-[#E05D5F] to-[#609FE3] text-transparent bg-clip-text;
 	}
+
+	.section-container {
+		@apply relative overflow-hidden;
+	}
 }
 
 /* .my-carousel-progress {

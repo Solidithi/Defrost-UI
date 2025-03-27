@@ -27,7 +27,7 @@ export const OUR_TEAM = [
 	},
 
 	{
-		quote: "I'm gay and I'm proud of it.",
+		quote: "Hi, I'm handsome",
 		name: "Nguyen Tran Quoc Khanh",
 		designation: "Founder & Fullstack Developer",
 		src: "https://i.seadn.io/gae/-tzppUAT4Bzm5vvc5p9p-uNxxa6ElaRb1A7Y3n15x6GC_3CWrROJ5nI1itZFimY_FrhnPCuK66IH9gishlUI9MEmBkmVlqFngGKAsA?auto=format&dpr=1&w=384",

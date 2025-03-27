@@ -1,9 +1,9 @@
 'use client'
-import { motion } from 'framer-motion'
-import Image from 'next/image'
-import Partner1 from '@/public/VBI.svg'
 import Partner2 from '@/public/Bifrost.svg'
 import Partner3 from '@/public/OG.svg'
+import Partner1 from '@/public/VBI.svg'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 const PartnerSection = () => {
 	return (

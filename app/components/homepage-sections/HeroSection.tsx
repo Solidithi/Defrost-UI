@@ -1,10 +1,6 @@
 'use client'
-// import { BackgroundBeamsWithCollision } from '../UI/BackgroundBeamsWithCollision'
-// import { TextHoverEffect } from '../UI/TextHoverEffect'
-// import circle from '../../../public/Subtract.png'
-// import bg from '../../../public/universe.jpg'
+
 import Image from 'next/image'
-// import SplitText from '../SplitText'
 import Logo from '../../../public/Logo.png'
 import { orbitron, comfortaa } from '../../lib/font'
 import { Boxes } from '@/app/components/UI/BackgroundBoxes'
@@ -26,7 +22,7 @@ const HeroSection = () => {
 	const title = 'Fast & Secure Platform made for'
 	const highlight = 'Egalitarian Investing'
 	return (
-		<section className="relative overflow-hidden h-screen">
+		<section className="relative overflow-hidden min-h-screen">
 			{/* <div className="absolute top-[700px] left-[850px]  h-64 w-[800px] rounded-full opacity-25 blur-[100px] bg-[#F05550]"></div> */}
 			<Boxes />
 			<div className="flex w-full z-50">
@@ -54,7 +50,7 @@ const HeroSection = () => {
 									initial="hidden"
 									animate="visible"
 									style={{ fontFamily: orbitron.style.fontFamily }}
-									className="text-[55px] font-bold bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] bg-clip-text text-transparent"
+									className="text-[55px] font-bold warm-cool-text"
 								>
 									{highlight.split('').map((char, index) => (
 										<motion.span
@@ -102,7 +98,6 @@ const HeroSection = () => {
 					<motion.img
 						src={Logo.src}
 						alt="Logo"
-						className="absolute hover:animate-spin hover:duration-[1ms] hover:ease-linear"
 						// initial={{ opacity: 0, scale: 0.5, y: 50 }}
 						animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
 						transition={{
@@ -110,6 +105,7 @@ const HeroSection = () => {
 							ease: 'easeOut',
 							repeat: Infinity,
 						}}
+						className=" md:h-1/5 md:w-1/5 lg:h-2/5 lg:w-2/5 xl:h-3/5 xl:w-3/5"
 					/>
 					{/* <Image
 						className="absolute hover:animate-pulse"
