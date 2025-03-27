@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 
 interface ImageItem {
@@ -72,7 +73,7 @@ const ImageManager = ({
 		<div className={`relative ${className}`}>
 			{/* Trigger Button */}
 			<button
-				className="w-full px-4 py-2 text-center font-comfortaa border rounded-2xl focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white hover:bg-gray-700/30 transition-colors"
+				className="w-full px-4 py-2 text-center font-comfortaa border rounded-md focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white hover:bg-gray-700/30 transition-colors"
 				onClick={openModalWithAnimation}
 				type="button"
 				aria-haspopup="dialog"
@@ -89,8 +90,9 @@ const ImageManager = ({
 					{/* Modal Content with zoom animation */}
 					<div
 						ref={modalRef}
-						className={`bg-gray-800 border border-gray-700 text-white rounded-3xl max-w-4xl w-full p-6 max-h-[80vh] overflow-y-auto transform ${modalAnimation}`}
+						className={`bg-black border border-gray-700 text-white rounded-3xl max-w-4xl w-full p-6 max-h-[80vh] overflow-y-auto transform z-10 ${modalAnimation}`}
 					>
+						<div className="absolute top-[-50px] left-[200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] z-0"></div>
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-xl font-comfortaa">{title}</h2>
 							<button
@@ -106,12 +108,14 @@ const ImageManager = ({
 								{images.map((image) => (
 									<div
 										key={image.id}
-										className="group bg-gray-700 rounded-xl p-2 flex flex-col items-center relative"
+										className="group glass-component-3 rounded-xl p-2 flex flex-col items-center relative"
 									>
 										<div className="w-full aspect-square overflow-hidden rounded-lg mb-2 relative">
-											<img
+											<Image
 												src={image.url}
 												alt={`Image ${image.id}`}
+												width={800}
+												height={800}
 												className="w-full h-full object-cover"
 											/>
 											<div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">

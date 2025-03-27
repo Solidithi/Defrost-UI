@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 
 interface NetworkOption {
@@ -99,7 +100,7 @@ const NetworkSelector = ({
 				{selectedNetwork ? (
 					<>
 						{selectedNetwork.icon && (
-							<img
+							<Image
 								src={selectedNetwork.icon}
 								alt={selectedNetwork.name}
 								className="w-6 h-6 rounded-full"
@@ -118,8 +119,9 @@ const NetworkSelector = ({
 					{/* Modal Content with zoom animation */}
 					<div
 						ref={modalRef}
-						className={`bg-gray-800 border border-gray-700 text-white rounded-3xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto transform ${modalAnimation}`}
+						className={`bg-black border border-gray-700 text-white rounded-3xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto transform z-10 ${modalAnimation}`}
 					>
+						<div className="absolute top-[-50px] left-[200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] z-0"></div>
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-xl font-comfortaa">Available Networks</h2>
 							<button
@@ -134,7 +136,7 @@ const NetworkSelector = ({
 							{options.map((network) => (
 								<div
 									key={network.id}
-									className={`bg-gray-700 hover:bg-gray-600 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 ${
+									className={`glass-component-3 hover:bg-gray-600 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 ${
 										selectedNetwork && selectedNetwork.id === network.id
 											? 'ring-2 ring-blue-500'
 											: ''
@@ -142,13 +144,13 @@ const NetworkSelector = ({
 									onClick={() => handleNetworkSelect(network)}
 								>
 									{network.icon ? (
-										<img
+										<Image
 											src={network.icon}
 											alt={network.name}
 											className="w-10 h-10 rounded-full mb-2"
 										/>
 									) : (
-										<div className="w-10 h-10 rounded-full bg-blue-500 mb-2 flex items-center justify-center">
+										<div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#E05D5F] to-[#609FE3] mb-2 flex items-center justify-center">
 											{network.name.charAt(0)}
 										</div>
 									)}
