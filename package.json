@@ -25,6 +25,7 @@
 		"@react-spring/web": "^9.7.5",
 		"@splidejs/react-splide": "^0.7.12",
 		"@splidejs/splide": "^4.1.4",
+		"@splinetool/react-spline": "^4.0.0",
 		"@tabler/icons-react": "^3.30.0",
 		"clsx": "^2.1.1",
 		"framer-motion": "^12.5.0",
