@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import SplitText from '../components/SplitText'
+import SplitText from '../components/UI/SplitText'
 import Stepper, { Step } from '../components/UI/Stepper'
 import NetworkSelector from '../components/UI/NetworkSelector'
 import Folder from '../components/UI/Folder'
 import ImageManager from '../components/UI/ImageManager'
+import Image from 'next/image'
 
 interface ImageItem {
 	id: string
@@ -58,9 +59,11 @@ const CreateProject = () => {
 				key={image.id}
 				className="w-full h-full flex items-center justify-center"
 			>
-				<img
+				<Image
 					src={image.url}
 					alt={`Preview ${index}`}
+					width={512}
+					height={512}
 					className="max-w-full max-h-full object-contain rounded"
 				/>
 			</div>
@@ -69,7 +72,7 @@ const CreateProject = () => {
 
 	const handleNetworkChange = (option: any) => {
 		setSelectedNetwork(option.name)
-		console.log(`Selected network: ${option.name}`)
+		// console.log(`Selected network: ${option.name}`)
 	}
 
 	const handleModalStateChange = (isOpen: boolean) => {
@@ -268,7 +271,7 @@ const CreateProject = () => {
 						</div>
 					</Step>
 					<Step>
-						<div className="flex flex-col items-center w-full">
+						<div className="flex flex-col gap-5 items-center w-full">
 							<span className="text-3xl font-orbitron text-white mb-8 flex justify-center w-full">
 								Project Media & Audience
 							</span>
@@ -338,9 +341,11 @@ const CreateProject = () => {
 																	key="logo"
 																	className="w-full h-full flex items-center justify-center"
 																>
-																	<img
+																	<Image
 																		src={projectLogoPreview}
 																		alt="Logo Preview"
+																		width={512}
+																		height={512}
 																		className="max-w-full max-h-full object-contain rounded"
 																	/>
 																</div>,
