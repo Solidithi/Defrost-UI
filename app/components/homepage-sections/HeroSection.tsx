@@ -7,17 +7,26 @@ import { Boxes } from '@/app/components/UI/BackgroundBoxes'
 // import SplitText from '../SplitText'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-
-const textAnimation = {
-	hidden: { opacity: 0, y: 50 },
-	visible: (i: number) => ({
-		opacity: 1,
-		y: 0,
-		transition: { delay: i * 0.1, ease: 'easeOut' },
-	}),
-}
+// Removed incorrect Router import
+import { useRouter } from 'next/navigation'
+import Button from '../UI/Button'
 
 const HeroSection = () => {
+	const router = useRouter()
+
+	const textAnimation = {
+		hidden: { opacity: 0, y: 50 },
+		visible: (i: number) => ({
+			opacity: 1,
+			y: 0,
+			transition: { delay: i * 0.1, ease: 'easeOut' },
+		}),
+	}
+
+	const handleSubmit = () => {
+		router.push('/all-project')
+	}
+
 	const [isTitleDone, setIsTitleDone] = useState(false)
 	const title = 'Fast & Secure Platform made for'
 	const highlight = 'Egalitarian Investing'
@@ -76,15 +85,25 @@ const HeroSection = () => {
 							each other.
 						</motion.span>
 
-						<motion.button
+						{/* <motion.button
 							initial={{ opacity: 0, scale: 0.8 }}
 							animate={{ opacity: 1, scale: 1 }}
 							transition={{ duration: 0.3, delay: 0.6 }}
 							className="bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] text-white rounded-full w-48 h-12 text-xl"
 							style={{ fontFamily: comfortaa.style.fontFamily }}
+							onClick={handleSubmit}
 						>
 							Start Now
-						</motion.button>
+						</motion.button> */}
+						<motion.div
+							initial={{ opacity: 0, scale: 0.8 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ duration: 0.3, delay: 0.6 }}
+						>
+							<Button className="w-48 h-12 text-xl" onClick={handleSubmit}>
+								Start Now
+							</Button>
+						</motion.div>
 					</div>
 				</div>
 				<div className="flex justify-center items-center w-1/2 h-screen">
