@@ -1,8 +1,9 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Splide, SplideSlide } from '@splidejs/react-splide'
 import '@splidejs/splide/css'
 import Logo from '@/public/Logo.png'
+import ProgressBar from './ProjectProgress/ProgressBar'
 
 interface Image {
 	src: string
@@ -31,38 +32,67 @@ const images: Image[] = [
 const progress = 100 / images.length
 
 const ImageCarousel: React.FC = () => {
+	const [index, setIndex] = useState(0)
+	const ref = useRef<Splide>(null)
+
+	useEffect(() => {
+		if (ref.current && ref.current.splide) {
+			const splideInstance = ref.current.splide
+
+			// Log initial index
+			console.log('Initial index:', splideInstance.index)
+
+			// Listen for slide move events
+			splideInstance.on('move', (newIndex: number) => {
+				console.log('Slide moved to:', newIndex)
+				setIndex(newIndex)
+			})
+
+			return () => {
+				splideInstance.destroy()
+			}
+		}
+	}, [])
+
 	return (
-		<section
-			id="image-carousel"
-			className="splide w-full max-w-4xl mx-auto"
-			aria-label="Beautiful Images"
-		>
-			<Splide
-				options={{
-					type: 'loop',
-					perPage: 1,
-					gap: '1rem',
-					breakpoints: {
-						640: { perPage: 1 },
-					},
-					heightRatio: 0.5,
-				}}
-				aria-labelledby="image-carousel"
+		<div className="">
+			<section
+				id="image-carousel"
+				className="splide w-full max-w-4xl mx-auto"
+				aria-label="Beautiful Images"
 			>
-				{images.map((image, index) => (
-					<SplideSlide key={index} className="relative">
-						<img
-							src={image.src}
-							alt={image.alt}
-							className="w-full h-full object-cover rounded-lg shadow-md"
-						/>
-						<div className="absolute bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
-							{image.description}
-						</div>
-					</SplideSlide>
-				))}
-			</Splide>
-		</section>
+				<Splide
+					options={{
+						type: 'loop',
+						perPage: 1,
+						gap: '1rem',
+						breakpoints: {
+							640: { perPage: 1 },
+						},
+						heightRatio: 0.5,
+					}}
+					aria-labelledby="image-carousel"
+					ref={ref}
+					// onMove={(splide: Splide) => setIndex(splide.index)} // Update index on slide move
+					// onArrowMounted={(splide, prev, next) => console.log(next)}
+				>
+					{images.map((image, index) => (
+						<SplideSlide key={index} className="relative">
+							<img
+								src={image.src}
+								alt={image.alt}
+								className="w-full h-full object-cover rounded-lg shadow-md"
+							/>
+							<div className="absolute bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
+								{image.description}
+							</div>
+						</SplideSlide>
+					))}
+				</Splide>
+			</section>
+
+			<ProgressBar index={index + 1} total={images.length} duration={1000} />
+		</div>
 	)
 }
 

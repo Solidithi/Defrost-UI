@@ -27,7 +27,7 @@ const AllProjectCard = () => {
 	}
 
 	return (
-		<div className="relative">
+		<div className="relative shadow-lg">
 			{/* Apply GlowingEffect */}
 			<GlowingEffect
 				spread={40} // Controls how far the glow effect spreads
@@ -38,9 +38,9 @@ const AllProjectCard = () => {
 				className="absolute inset-0 rounded-2xl"
 			/>
 
-			<div className="glass-component-1 w-full h-full rounded-xl">
+			<div className="glass-component-3 w-full h-full rounded-xl">
 				{/* Image */}
-				<div className="relative bg-black rounded-lg overflow-hidden">
+				<div className="relative rounded-lg overflow-hidden">
 					<div className="flex justify-center items-center">
 						<Image
 							src=""
@@ -62,12 +62,14 @@ const AllProjectCard = () => {
 
 				{/* Title */}
 				<div className="flex justify-center items-center mt-3">
-					<h2 className="text-white text-2xl font-orbitron">{projectName}</h2>
+					<h2 className="text-white text-2xl font-orbitron font-bold">
+						{projectName}
+					</h2>
 				</div>
 
 				{/* Short Description */}
 				<div className="flex justify-center items-center mt-5">
-					<p className="px-8 text-white text-sm font-comfortaa text-center">
+					<p className="px-10 text-white text-sm font-comfortaa text-center">
 						{projectShortDescription}
 					</p>
 				</div>
