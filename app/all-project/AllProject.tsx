@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import SplitText from '../components/SplitText'
+import SplitText from '../components/UI/SplitText'
 import CarouselWithProgress from '../components/UI/Carousel'
 import GlowingSearchBar from '../components/UI/GlowingSearchBar'
 import ScrollFloat from '../components/UI/ScrollFloat'
@@ -12,6 +12,7 @@ import SwitchTableOrCard from '../components/UI/SwitchTableOrCard'
 import { orbitron, comfortaa } from '../lib/font'
 import { StaticImageData } from 'next/image'
 import AllProjectCard from '../components/UI/AllProjectCard'
+import SectionComponent from '../components/UI/SectionComponent'
 
 const AllProject = () => {
 	const [isCard, setIsCard] = useState(true)
@@ -109,12 +110,13 @@ const AllProject = () => {
 						{/* Mapping for the project cards */}
 						<div className="grid grid-cols-3 gap-8 w-full mx-auto mb-24">
 							{projectCards.map((card, index) => (
-								<AllProjectCard
-									key={index}
+								<SectionComponent key={index}>
+									<AllProjectCard
 									// projectName={card.projectName}
 									// projectShortDescription={card.projectShortDescription}
 									// projectAPR={card.projectAPR}
-								/>
+									/>
+								</SectionComponent>
 							))}
 						</div>
 					</div>
