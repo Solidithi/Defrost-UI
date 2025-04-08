@@ -92,14 +92,14 @@ export default function Stepper({
 
 	const handleBack = () => {
 		if (currentStep > 1) {
-			setDirection(-1)
+			setDirection(1)
 			updateStep(currentStep - 1)
 		}
 	}
 
 	const handleNext = () => {
 		if (!isLastStep) {
-			setDirection(1)
+			setDirection(-1)
 			updateStep(currentStep + 1)
 		}
 	}
