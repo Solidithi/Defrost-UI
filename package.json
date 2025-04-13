@@ -21,6 +21,7 @@
 		]
 	},
 	"dependencies": {
+		"@prisma/client": "^6.6.0",
 		"@react-spring/parallax": "^9.7.5",
 		"@react-spring/web": "^9.7.5",
 		"@splidejs/react-splide": "^0.7.12",
@@ -34,6 +35,7 @@
 		"motion": "^12.5.0",
 		"next": "13.5.8",
 		"ogl": "^1.0.11",
+		"prisma": "^6.6.0",
 		"react": "^18",
 		"react-dom": "^18",
 		"react-scroll-parallax": "^3.4.5",
