@@ -5,12 +5,23 @@ import { project, pool } from '@prisma/client'
 import { shortenStr } from '../lib/utils'
 import { PrismaClient } from '@prisma/client'
 import SwitchTableOrCard from '@/app/components/UI/SwitchTableOrCard'
+import DataTable from '@/app/components/UI/DataTable'
+import { Column } from '@/app/components/UI/DataTable'
 import Head from 'next/head'
 import Image from 'next/image'
 
 // Create a custom type that extends the Prisma project type to include pool data
 type ProjectWithPools = project & {
 	pool?: pool[]
+}
+
+// Enriched project type with calculated fields
+type EnrichedProject = ProjectWithPools & {
+	avgApy: number
+	tokenAddress: string | false | undefined
+	totalStaked: number
+	poolCount: number
+	totalStakers: number
 }
 
 export default function MyProject() {
@@ -134,6 +145,67 @@ export default function MyProject() {
 				project.pool?.reduce((sum, pool) => sum + pool.total_stakers, 0) || 0,
 		}
 	})
+
+	// Import Column type from DataTable component
+
+	// Define columns for the DataTable
+	const tableColumns: Column<EnrichedProject>[] = [
+		{
+			header: 'Project',
+			accessor: (project: EnrichedProject) => (
+				<div className="flex items-center">
+					{project.logo ? (
+						<div className="h-8 w-8 mr-3 rounded-full flex items-center justify-center overflow-hidden">
+							<img
+								src={`data:image/png;base64,${project.logo}`}
+								alt={`${project.name} logo`}
+								className="w-full h-full object-cover"
+							/>
+						</div>
+					) : (
+						<div className="h-8 w-8 mr-3 rounded-full bg-gradient-to-br from-purple-500 to-blue-500" />
+					)}
+					<div>
+						<div className="font-medium">{project.name}</div>
+						<div className="text-xs text-gray-400">
+							{shortenStr(project.project_owner)}
+						</div>
+					</div>
+				</div>
+			),
+		},
+		{
+			header: 'Pools',
+			accessor: (project: EnrichedProject) => project.poolCount,
+		},
+		{
+			header: 'Total Staked',
+			accessor: (project: EnrichedProject) =>
+				project.totalStaked.toLocaleString(),
+		},
+		{
+			header: 'APY',
+			accessor: (project: EnrichedProject) =>
+				project.avgApy > 0 ? `${project.avgApy.toFixed(2)}%` : '-',
+		},
+		{
+			header: 'Created',
+			accessor: (project: EnrichedProject) =>
+				new Date(project.created_at).toLocaleDateString(),
+		},
+	]
+
+	// Define actions for DataTable rows
+	const renderTableActions = (project: EnrichedProject) => (
+		<div className="flex justify-end space-x-2">
+			<button className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]">
+				View
+			</button>
+			<button className="bg-gradient-to-r from-[#F05550] to-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold">
+				Edit
+			</button>
+		</div>
+	)
 
 	return (
 		<div className="min-h-screen relative">
@@ -407,78 +479,14 @@ export default function MyProject() {
 											</div>
 										))
 									) : (
-										<div className="glass-component-3 w-full max-w-6xl rounded-[26px] overflow-hidden">
-											<div className="overflow-x-auto">
-												<table className="w-full">
-													<thead>
-														<tr className="border-b border-white border-opacity-10">
-															<th className="text-left p-4">Project</th>
-															<th className="text-left p-4">Pools</th>
-															<th className="text-left p-4">Total Staked</th>
-															<th className="text-left p-4">APY</th>
-															<th className="text-left p-4">Created</th>
-															<th className="text-right p-4">Actions</th>
-														</tr>
-													</thead>
-													<tbody>
-														{enrichedProjects.map((project) => (
-															<tr
-																key={project.id}
-																className="border-b border-white border-opacity-10 hover:bg-white hover:bg-opacity-5"
-															>
-																<td className="p-4">
-																	<div className="flex items-center">
-																		{project.logo ? (
-																			<div className="h-8 w-8 mr-3 rounded-full flex items-center justify-center overflow-hidden">
-																				<img
-																					src={`data:image/png;base64,${project.logo}`}
-																					alt={`${project.name} logo`}
-																					className="w-full h-full object-cover"
-																				/>
-																			</div>
-																		) : (
-																			<div className="h-8 w-8 mr-3 rounded-full bg-gradient-to-br from-purple-500 to-blue-500" />
-																		)}
-																		<div>
-																			<div className="font-medium">
-																				{project.name}
-																			</div>
-																			<div className="text-xs text-gray-400">
-																				{shortenStr(project.project_owner)}
-																			</div>
-																		</div>
-																	</div>
-																</td>
-																<td className="p-4">{project.poolCount}</td>
-																<td className="p-4">
-																	{project.totalStaked.toLocaleString()}
-																</td>
-																<td className="p-4">
-																	{project.avgApy > 0
-																		? `${project.avgApy.toFixed(2)}%`
-																		: '-'}
-																</td>
-																<td className="p-4">
-																	{new Date(
-																		project.created_at
-																	).toLocaleDateString()}
-																</td>
-																<td className="p-4 text-right">
-																	<div className="flex justify-end space-x-2">
-																		<button className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]">
-																			View
-																		</button>
-																		<button className="bg-gradient-to-r from-[#F05550] to-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold">
-																			Edit
-																		</button>
-																	</div>
-																</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
-											</div>
-										</div>
+										<DataTable
+											data={enrichedProjects}
+											columns={tableColumns}
+											keyField="id"
+											renderActions={renderTableActions}
+											className="max-w-6xl"
+											noDataMessage="No projects found"
+										/>
 									)}
 								</>
 							)}
