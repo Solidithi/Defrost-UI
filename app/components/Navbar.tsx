@@ -12,7 +12,9 @@ import Image from 'next/image'
 import DefrostLogo from '../../public/Logo.png'
 import { Menu, X } from 'lucide-react'
 import { orbitron, comfortaa, permanentMarker } from '../lib/font'
-import Button from './UI/Button'
+// import ConnectButton, { useNavbarVisibility } from './ConnectButton'
+import ConnectButton from './ConnectButton'
+
 const Navbar = ({
 	navItems,
 	className,
@@ -93,10 +95,8 @@ const Navbar = ({
 						))}
 					</div>
 
-					{/* <button className="hidden lg:flex items-center bg-gradient-to-r from-[#F05550] to-[#54A4F2] text-white px-5 rounded-full h-10">
-						<span className="text-md font-bold relative">Connect Wallet</span>
-					</button> */}
-					<Button>Connect Wallet</Button>
+					<ConnectButton />
+
 					<div className="lg:hidden md:flex flex-col justify-end">
 						<button onClick={toggleNavbar}>
 							{toggle ? (
