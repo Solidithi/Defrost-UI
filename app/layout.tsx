@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Orbitron, Comfortaa, Permanent_Marker } from 'next/font/google'
+import { Providers } from './providers'
+import { headers } from 'next/headers'
 import './globals.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -29,17 +31,19 @@ export default function RootLayout({
 			<body
 				className={`${comfortaa.variable} ${orbitron.variable} ${permanentMarker.variable}`}
 			>
-				<Navbar
-					navItems={[
-						{ name: 'My Project', link: '/' },
-						{ name: 'My Staking', link: '/about' },
-						{ name: 'Launchpool', link: '/about' },
-						{ name: 'Pre-market', link: '/about' },
-						{ name: 'Dashboard', link: '/about' },
-					]}
-				/>
-				{children}
-				<Footer />
+				<Providers cookies={headers().get('cookie')}>
+					<Navbar
+						navItems={[
+							{ name: 'My Project', link: '/' },
+							{ name: 'My Staking', link: '/about' },
+							{ name: 'Launchpool', link: '/about' },
+							{ name: 'Pre-market', link: '/about' },
+							{ name: 'Dashboard', link: '/about' },
+						]}
+					/>
+					{children}
+					<Footer />
+				</Providers>
 			</body>
 		</html>
 	)
