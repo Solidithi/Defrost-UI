@@ -16,9 +16,9 @@ import DataTable from '../components/UI/DataTable'
 import { Column } from '../components/UI/DataTable'
 import Image from 'next/image'
 import { shortenStr } from '../lib/utils'
-import StakingInTable from './StakingTableRow'
+import StakingTableRow from '@/app/components/StakingTableRow'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Pool } from './StakingTableRow'
+import { Pool } from '@/app/components/StakingTableRow'
 
 // Define project interface for DataTable
 interface Project {
@@ -277,7 +277,7 @@ const AllProject = () => {
 					transition={{ duration: 0.3 }}
 					className="w-full overflow-hidden"
 				>
-					<StakingInTable
+					<StakingTableRow
 						pools={project.pool as Pool[]}
 						projectName={`${project.name}`}
 						isWalletConnected={false}

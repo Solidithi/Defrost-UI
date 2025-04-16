@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown, Info, Zap, Rocket, Sprout } from 'lucide-react'
 import {
 	Tooltip,
@@ -15,7 +15,17 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/app/components/UI/shadcn/Dialog'
-import Button from '../components/UI/Button'
+import Spinner from '@/app/components/UI/Spinner'
+import Button from '@/app/components/UI/Button'
+import {
+	useAccount,
+	useReadContract,
+	useWriteContract,
+	useWaitForTransactionReceipt,
+} from 'wagmi'
+import { abi as launchpoolABI } from '@/abi/Launchpool.json'
+import { abi as ERC20ABI } from '@/abi/ERC20.json'
+import { parseUnits, formatUnits } from 'ethers'
 
 // Define pool types
 type PoolType = 'launchpool' | 'launchpad' | 'farm'
@@ -32,25 +42,7 @@ export interface Pool {
 	description?: string
 }
 
-// Adding Project interface
-// interface Project {
-// 	id: string
-// 	name: string
-// 	logo?: string
-// 	short_description: string
-// 	token_symbol: string
-// 	project_owner: string
-// 	pool?: {
-// 		staker_apy: number | string
-// 		total_staked: number | string
-// 		total_stakers: number
-// 	}[]
-// 	token_address?: string
-// 	created_at: Date
-// }
-
 interface StakingTableRowProps {
-	// project: Project
 	projectName: string
 	pools: Pool[]
 	onHarvest: (poolId: string) => void
@@ -105,6 +97,39 @@ const getPoolColors = (type: PoolType) => {
 	}
 }
 
+const getPoolNameFromType = (type: PoolType) => {
+	switch (type) {
+		case 'launchpool':
+			return 'Flexible Staking'
+		case 'launchpad':
+			return 'IDO participation'
+		case 'farm':
+			return 'Yield farming'
+		default:
+			return 'Unknown Pool'
+	}
+}
+
+const formatReadContract = (
+	data: string,
+	status: 'idle' | 'pending' | 'success' | 'error',
+	error: unknown,
+	loadingComponent?: React.ReactNode
+) => {
+	if (!loadingComponent) {
+		loadingComponent = <Spinner heightWidth={5} />
+	}
+
+	if (status === 'success') {
+		return data
+	} else if (status === 'error') {
+		console.error('Error :', error)
+		return '0'
+	} else if (status === 'pending') {
+		return loadingComponent
+	}
+}
+
 // Mock func
 const getAcceptedTokens = (pool: Pool): string[] => {
 	switch (pool.type) {
@@ -115,33 +140,144 @@ const getAcceptedTokens = (pool: Pool): string[] => {
 	}
 }
 
+const poolAddress = '0x3A4da384f189f132A8806Be91b17f38DA42375f3'
+
 export default function StakingTableRow({
 	projectName,
 	pools,
-	onHarvest,
 	onConnectWallet,
-	isWalletConnected = false,
+	isWalletConnected,
 	onStake,
 }: StakingTableRowProps) {
+	const account = useAccount()
 	const [selectedPoolId, setSelectedPoolId] = useState<string>(
 		pools[0]?.id || ''
 	)
 	const [stakeAmount, setStakeAmount] = useState<string>('')
+	const [isStakeInteded, setIsStakeIntended] = useState(false)
 
-	// Handle wallet connection
-	const handleConnectWallet = () => {
-		console.log('Connecting wallet for project', projectName)
-		alert('Wallet connection feature will be implemented soon')
+	// Contract read operations
+	const {
+		data: allowance,
+		error: readAllowanceError,
+		status: readAllowanceStatus,
+	} = useReadContract({
+		abi: ERC20ABI,
+		functionName: 'allowance',
+		address: '0xD02D73E05b002Cb8EB7BEf9DF8Ed68ed39752465',
+		args: [account.address, poolAddress],
+		query: { refetchInterval: 500 },
+	})
+
+	const {
+		data: claimables,
+		status: readClaimablesStatus,
+		error: readClaimablesError,
+	} = useReadContract({
+		abi: launchpoolABI,
+		functionName: 'getClaimableProjectToken',
+		address: poolAddress,
+		args: [account.address],
+		query: {
+			refetchInterval: 1000,
+		},
+	})
+
+	// Read user's staked balance in the pool
+	const {
+		data: userStake,
+		status: readUserStakedStatus,
+		error: readUserStakedError,
+	} = useReadContract({
+		abi: launchpoolABI,
+		functionName: 'getStakerNativeAmount',
+		address: poolAddress,
+		args: [account.address],
+		query: { refetchInterval: 1000 },
+	})
+
+	// Contract write operations
+	const {
+		data: approveHash,
+		writeContractAsync: approveAsync,
+		status: approveStatus,
+	} = useWriteContract()
+
+	const { writeContractAsync: stakeAsync, status: stakeStatus } =
+		useWriteContract()
+
+	const { writeContractAsync: claimAsync, status: claimStatus } =
+		useWriteContract()
+
+	// Handle staking intent
+	useEffect(() => {
+		console.log('isStakeInteded changed value to: ', isStakeInteded)
+		if (!isStakeInteded) return
+
+		const onChainStakeAmount = parseUnits(stakeAmount, 18)
+
+		if (
+			readAllowanceStatus === 'success' &&
+			BigInt(allowance as string) >= BigInt(onChainStakeAmount)
+		) {
+			console.log('Allowance is sufficient, proceeding to stake')
+			stakeAsync({
+				abi: launchpoolABI,
+				functionName: 'stake',
+				address: poolAddress,
+				args: [onChainStakeAmount],
+			})
+			setIsStakeIntended(false)
+		} else {
+			console.log('Allowance is insufficient, proceeding to approve')
+			approveAsync({
+				abi: ERC20ABI,
+				functionName: 'approve',
+				address: '0xD02D73E05b002Cb8EB7BEf9DF8Ed68ed39752465',
+				args: [poolAddress, onChainStakeAmount],
+			})
+		}
+	}, [isStakeInteded])
+
+	// Handle approval derived from a stake intent
+	useEffect(() => {
+		console.log('Approve status changed value to: ', approveStatus)
+		if (!isStakeInteded) return
+		switch (approveStatus) {
+			case 'idle':
+			case 'pending':
+				console.log('Approve status is either idle or pending, skipping...')
+				return
+
+			case 'success':
+				stakeAsync({
+					abi: launchpoolABI,
+					functionName: 'stake',
+					address: poolAddress,
+					args: [parseUnits(stakeAmount, 18)],
+				})
+				break
+
+			case 'error':
+				alert('Approval failed. Cannot stake. Please try again.')
+				break
+
+			default:
+				break
+		}
+
+		setIsStakeIntended(false)
+	}, [approveStatus])
+
+	// Handle claim action
+	const handleClaim = async () => {
+		console.log(`Claiming rewards for pool ${selectedPool.id}`)
+		await claimAsync({
+			abi: launchpoolABI,
+			functionName: 'claimProjectTokens',
+			address: poolAddress,
+		})
 	}
-
-	// Handle harvest action
-	const handleHarvest = (poolId: string) => {
-		console.log(`Harvesting from pool ${poolId} for project ${projectName}`)
-		alert('Harvest feature will be implemented soon')
-	}
-
-	// Convert project to pools format
-	// const pools = convertProjectToPools(project)
 
 	const selectedPool =
 		pools.find((pool) => pool.id === selectedPoolId) || pools[0]
@@ -153,18 +289,19 @@ export default function StakingTableRow({
 		setSelectedPoolId(value)
 	}
 
-	const handleStake = () => {
-		if (isWalletConnected && selectedPool) {
-			onStake(selectedPool.id, Number(stakeAmount))
-			console.log(
-				`Staking ${stakeAmount} in pool ${selectedPoolId} for project ${projectName}`
-			)
-			alert(
-				`Staking ${stakeAmount} ${selectedPool.tokenSymbol} tokens in ${projectName}`
-			)
-		} else {
-			onConnectWallet()
+	const handleStake = async () => {
+		// Ensure we have a valid amount and account connection
+		if (!stakeAmount || parseFloat(stakeAmount) <= 0) {
+			alert('Please enter a valid amount to stake')
+			return
 		}
+
+		if (!account.isConnected || !selectedPool) {
+			alert('Connect wallet first')
+			return
+		}
+
+		setIsStakeIntended(true)
 	}
 
 	return (
@@ -257,10 +394,21 @@ export default function StakingTableRow({
 															</p>
 														)}
 
-														<div className="flex justify-between items-center mt-2 text-xs text-gray-400">
+														<div className="flex flex-row justify-between items-center mt-2 text-xs text-gray-400">
 															<span>Duration: {pool.duration} days</span>
-															<span>
-																Earned: {pool.earned} {pool.tokenSymbol}
+															<span className="flex items-center">
+																Earned:&nbsp;
+																<span className="truncate max-w-[100px] overflow-hidden whitespace-nowrap inline-block align-bottom">
+																	{formatReadContract(
+																		formatUnits(
+																			(claimables as bigint) ?? '0',
+																			18
+																		),
+																		readClaimablesStatus,
+																		readClaimablesError
+																	)}
+																</span>
+																&nbsp;{pool.tokenSymbol}
 															</span>
 														</div>
 
@@ -368,36 +516,45 @@ export default function StakingTableRow({
 				{/* Right panel - Earned and Staking */}
 				<div className="w-full md:w-2/3 flex flex-col md:flex-row">
 					{/* Earned section */}
-					<div className="w-full md:w-1/2 p-6 backdrop-blur-md bg-black/20 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
+					<div className="md:w-1/2 p-6 backdrop-blur-md bg-black/20 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
 						<div>
 							<h2 className="text-xl font-medium mb-6 text-white">EARNED</h2>
-							<div className="text-2xl font-bold mb-2 text-white">
-								{selectedPool?.earned || 0}
-								<span className="text-sm text-gray-400 ml-1">
+							<div className="flex flex-row justify-start items-center text-2xl font-bold font-orbitron mb-2 text-white">
+								{/* This is to trim amount if too long */}
+								<span className="truncate block overflow-hidden whitespace-nowrap">
+									{formatReadContract(
+										formatUnits((claimables as bigint) ?? '0', 18),
+										readClaimablesStatus,
+										readClaimablesError
+									)}
+								</span>
+								<span className="text-sm text-gray-400 ml-1 flex-shrink-0">
 									{selectedPool?.tokenSymbol}
 								</span>
 							</div>
 						</div>
 						<button
-							// className="backdrop-blur-md bg-white/10 hover:bg-white/15 text-black py-2 px-4 w-full mt-4 transition-colors"
 							className="px-4 py-2 bg-white/10 hover:bg-white/35 text-white rounded-full font-comfortaa 
     transition-all duration-300 ease-in-out 
     hover:opacity-80 hover:shadow-lg hover:scale-105 
     active:scale-95 active:opacity-90"
-							onClick={() => onHarvest(selectedPool?.id || '')}
+							onClick={handleClaim}
 						>
-							Claim rewards
+							<div className="flex items-center justify-center">
+								Claim rewards &nbsp;
+								{claimStatus === 'pending' && <Spinner heightWidth={5} />}
+							</div>
 						</button>
 					</div>
 
 					{/* Start staking section */}
 					<div className="w-full md:w-1/2 p-6 backdrop-blur-md bg-black/20 flex flex-col justify-between">
 						<div>
-							<h2 className="text-xl font-medium mb-6 text-white">
+							<h2 className="text-xl font-medium font-orbitron mb-6 text-white">
 								START STAKING
 							</h2>
 
-							{isWalletConnected && (
+							{account.isConnected && (
 								<div className="mb-4">
 									<div className="flex items-center justify-between mb-1">
 										<label className="text-sm text-gray-400">Amount</label>
@@ -419,15 +576,83 @@ export default function StakingTableRow({
 										placeholder="0.0"
 										className="w-full bg-white/5 border border-white/10 rounded-md p-2 text-white backdrop-blur-md"
 									/>
+									<div className="mt-2 flex items-center gap-2 text-xs font-orbitron">
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<span className="inline-flex items-center cursor-help">
+														<span className="uppercase tracking-widest text-cyan-400/80 mr-1">
+															Allowance
+														</span>
+														<Info size={13} className="text-cyan-400/60" />
+													</span>
+												</TooltipTrigger>
+												<TooltipContent className="bg-black/80 border-white/10 text-xs text-white">
+													<p>
+														The maximum amount you can stake without another
+														approval.
+														<br />
+														Increase allowance by staking or approving more.
+													</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+										<span
+											className="bg-gradient-to-r from-cyan-400/20 to-blue-500/10 border border-cyan-400/20 rounded px-2 py-0.5 text-cyan-200 font-bold tracking-wide shadow-inner"
+											style={{ fontVariantNumeric: 'tabular-nums' }}
+										>
+											{readAllowanceStatus === 'success' ? (
+												`${formatUnits((allowance as bigint) ?? 0, 18)} ${selectedPool?.tokenSymbol}`
+											) : (
+												<span className="text-gray-400">Loading...</span>
+											)}
+										</span>
+									</div>
+
+									{/* Total Staked by User */}
+									<div className="mt-2 flex items-center gap-2 text-xs font-orbitron">
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<span className="inline-flex items-center cursor-help">
+														<span className="uppercase tracking-widest text-green-400/80 mr-1">
+															Your Stake
+														</span>
+														<Info size={13} className="text-green-400/60" />
+													</span>
+												</TooltipTrigger>
+												<TooltipContent className="bg-black/80 border-white/10 text-xs text-white">
+													<p>
+														Total amount of tokens you have staked in this pool.
+													</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+										<span
+											className="bg-gradient-to-r from-green-400/20 to-blue-500/10 border border-green-400/20 rounded px-2 py-0.5 text-green-200 font-bold tracking-wide shadow-inner"
+											style={{ fontVariantNumeric: 'tabular-nums' }}
+										>
+											{readUserStakedStatus === 'success' ? (
+												`${formatUnits((userStake as bigint) ?? 0, 18)} ${selectedPool?.tokenSymbol}`
+											) : (
+												<span className="text-gray-400">Loading...</span>
+											)}
+										</span>
+									</div>
 								</div>
 							)}
 						</div>
 
-						<Button
-							// className="bg-gradient-to-r from-red-500 to-blue-500 hover:from-red-600 hover:to-blue-600 text-white py-3 px-4 rounded-md w-full mt-4 transition-colors"
-							onClick={handleStake}
-						>
-							{isWalletConnected ? 'Stake Now' : 'Connect Wallet'}
+						<Button onClick={handleStake}>
+							{account.isConnected ? (
+								<div className="flex items-center justify-center">
+									Stake & Earn &nbsp;
+									{(approveStatus === 'pending' ||
+										stakeStatus === 'pending') && <Spinner heightWidth={5} />}
+								</div>
+							) : (
+								'Connect Wallet'
+							)}
 						</Button>
 					</div>
 				</div>
@@ -435,56 +660,3 @@ export default function StakingTableRow({
 		</div>
 	)
 }
-
-// Alternative component that accepts a Project object
-// interface StakingInTableProps {
-// 	project: Project
-// }
-
-const getPoolNameFromType = (type: PoolType) => {
-	switch (type) {
-		case 'launchpool':
-			return 'Flexible Staking'
-		case 'launchpad':
-			return 'IDO participation'
-		case 'farm':
-			return 'Yield farming'
-		default:
-			return 'Unknown Pool'
-	}
-}
-
-// Convert a project to pools format expected by original component
-// const convertProjectToPools = (project: Project): Pool[] => {
-// 	if (!project.pool || project.pool.length === 0) {
-// 		// Create a default pool if none exists
-// 		return [
-// 			{
-// 				id: 'default',
-// 				name: `${project.name} Pool`,
-// 				type: 'launchpool',
-// 				apr:
-// 					typeof project.pool?.[0]?.staker_apy === 'number'
-// 						? project.pool[0].staker_apy
-// 						: 0,
-// 				duration: 30, // default duration in days
-// 				earned: 0, // default earned amount
-// 				tokenSymbol: project.token_symbol,
-// 			},
-// 		]
-// 	}
-
-// 	return project.pool.map((pool, index) => ({
-// 		id: index.toString(),
-// 		name: `${project.name} Pool ${index + 1}`,
-// 		type: 'launchpool' as PoolType,
-// 		apr:
-// 			typeof pool.staker_apy === 'number'
-// 				? pool.staker_apy
-// 				: parseFloat(pool.staker_apy.toString()),
-// 		duration: 30, // default duration in days
-// 		earned: 0, // default earned amount
-// 		tokenSymbol: project.token_symbol,
-// 		description: `Stake ${project.token_symbol} tokens to earn rewards`,
-// 	}))
-// }
