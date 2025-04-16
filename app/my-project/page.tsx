@@ -9,6 +9,7 @@ import DataTable from '@/app/components/UI/DataTable'
 import { Column } from '@/app/components/UI/DataTable'
 import Head from 'next/head'
 import Image from 'next/image'
+import Spinner from '../components/UI/Spinner'
 
 // Create a custom type that extends the Prisma project type to include pool data
 type ProjectWithPools = project & {
@@ -378,7 +379,8 @@ export default function MyProject() {
 					{/* Project list */}
 					{isLoading ? (
 						<div className="glass-component-3 w-full max-w-6xl rounded-[26px] p-8 flex flex-col items-center justify-center mx-auto">
-							<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+							{/* <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div> */}
+							<Spinner className="border-blue-500" />
 							<div className="text-xl font-orbitron">Loading projects...</div>
 						</div>
 					) : (
