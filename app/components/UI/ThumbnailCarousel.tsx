@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react'
 import '@splidejs/splide/css'
 import ImageBarCarousel from './ImageBarCarousel'
 import Image from 'next/image'
+import Vector from '@/public/Vector.svg'
 
 interface Image {
 	src: string
@@ -58,24 +59,48 @@ const ImageCarousel: React.FC = () => {
 	}
 
 	return (
-		<div className="w-full">
+		<div className="relative w-full z-0">
 			<div className="flex flex-col items-center">
 				<section
 					id="image-carousel"
-					className="splide w-full max-w-full mx-auto"
+					className="relative w-full max-w-full mx-auto"
 					aria-label="Beautiful Images"
 				>
+					{/* Custom Arrows */}
+					<button
+						onClick={() => ref.current?.splide?.go('<')}
+						className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full w-10 p-2 shadow-lg pr-1 "
+					>
+						{/* <span className="material-icons text-black">chevron_left</span> */}
+						<Image
+							src={Vector}
+							alt="Previous"
+							width={16}
+							height={16}
+							className="rotate-180"
+						/>
+					</button>
+					<button
+						onClick={() => ref.current?.splide?.go('>')}
+						className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full w-10 p-2 shadow-lg pl-3"
+					>
+						{/* <span className="material-icons text-black">chevron_right</span> */}
+						<Image src={Vector} alt="Next" width={16} height={16} />
+					</button>
+
 					<Splide
 						options={{
 							type: 'loop',
 							perPage: 1,
 							gap: '1rem',
 							heightRatio: 0.5,
+							arrows: false, // 🔥 Disable default arrows
+							pagination: false, // 🔥 Disable default pagination
 						}}
 						ref={ref}
 					>
 						{images.map((image, index) => (
-							<SplideSlide key={index} className="relative">
+							<SplideSlide key={index}>
 								<Image
 									src={image.src}
 									alt={image.alt}
@@ -83,7 +108,7 @@ const ImageCarousel: React.FC = () => {
 									height={478}
 									className="w-full h-full object-cover rounded-lg shadow-md"
 								/>
-								<div className="absolute bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
+								<div className="bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
 									{image.description}
 								</div>
 							</SplideSlide>

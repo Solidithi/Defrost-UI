@@ -68,7 +68,7 @@ const ImageBarCarousel = ({
 									src={img.src}
 									alt={img.alt}
 									fill
-									className="object-cover z-10 relative"
+									className="object-cover relative"
 								/>
 							</div>
 						)
