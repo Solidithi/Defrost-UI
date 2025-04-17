@@ -38,7 +38,7 @@ const AllProjectCard = () => {
 				className="absolute inset-0 rounded-2xl"
 			/>
 
-			<div className="glass-component-3 w-full h-full rounded-xl">
+			<div className="glass-component-3 w-full h-full rounded-xl ">
 				{/* Image */}
 				<div className="relative rounded-lg overflow-hidden">
 					<div className="flex justify-center items-center">

@@ -147,9 +147,9 @@ const CreateProject = () => {
 	}
 
 	return (
-		<div className="p-10 flex flex-col items-center justify-center ">
+		<div className="page-container ">
 			<div
-				className={`mt-44 text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
+				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
 			>
 				<SplitText
 					text="Fill your project's information"
