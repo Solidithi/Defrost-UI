@@ -1,19 +1,14 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-import {
-	motion,
-	AnimatePresence,
-	// useScroll,
-	// useMotionValueEvent,
-} from 'framer-motion'
-import { cn } from '../lib/utils'
-import Link from 'next/link'
-import Image from 'next/image'
-import DefrostLogo from '../../public/Logo.png'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
-import { orbitron, comfortaa, permanentMarker } from '../lib/font'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import DefrostLogo from '../../public/Logo.png'
+import { comfortaa, orbitron, permanentMarker } from '../lib/font'
+import { cn } from '../lib/utils'
 // import ConnectButton, { useNavbarVisibility } from './ConnectButton'
-import ConnectButton from './ConnectButton'
+import Button from './UI/Button'
 
 const Navbar = ({
 	navItems,
@@ -61,7 +56,7 @@ const Navbar = ({
 				transition={{ duration: 0.2 }}
 				style={{ fontFamily: orbitron.style.fontFamily }}
 				className={cn(
-					'fixed top-0 inset-x-0 mx-auto z-[5000] max-w-fit rounded-full  shadow-lg px-5 py-2 space-x-4 mt-10 glass-component-1 ',
+					'fixed top-0 inset-x-0 z-[100] mx-auto  max-w-fit rounded-full  shadow-lg px-5 py-2 space-x-4 mt-10 glass-component-1 flex-2 ',
 					className
 				)}
 			>
@@ -95,8 +90,10 @@ const Navbar = ({
 						))}
 					</div>
 
-					<ConnectButton />
-
+					{/* <button className="hidden lg:flex items-center bg-gradient-to-r from-[#F05550] to-[#54A4F2] text-white px-5 rounded-full h-10">
+						<span className="text-md font-bold relative">Connect Wallet</span>
+					</button> */}
+					<Button className="warm-cool-bg">Connect Wallet</Button>
 					<div className="lg:hidden md:flex flex-col justify-end">
 						<button onClick={toggleNavbar}>
 							{toggle ? (
