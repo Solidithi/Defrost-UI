@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronDown, Info, Zap, Rocket, Sprout } from 'lucide-react'
+import {
+	ChevronDown,
+	Info,
+	Zap,
+	Rocket,
+	Sprout,
+	AlertCircle,
+} from 'lucide-react'
 import {
 	Tooltip,
 	TooltipContent,
@@ -155,6 +162,8 @@ export default function StakingTableRow({
 	)
 	const [stakeAmount, setStakeAmount] = useState<string>('')
 	const [isStakeInteded, setIsStakeIntended] = useState(false)
+	const [showAutoClaimNotice, setShowAutoClaimNotice] = useState(true)
+	const [showVTokenNotice, setShowVTokenNotice] = useState(true)
 
 	// Contract read operations
 	const {
@@ -517,9 +526,39 @@ export default function StakingTableRow({
 				<div className="w-full md:w-2/3 flex flex-col md:flex-row">
 					{/* Earned section */}
 					<div className="md:w-1/2 p-6 backdrop-blur-md bg-black/20 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
+						{/* Auto-claim notification */}
+						{showAutoClaimNotice && (
+							<div className="mb-4">
+								<div className="flex items-start bg-gradient-to-r from-blue-900/70 to-blue-700/40 border border-blue-400/30 rounded-lg p-3 text-blue-200 relative shadow-lg">
+									<AlertCircle className="w-5 h-5 mr-2 mt-0.5 text-blue-300 flex-shrink-0" />
+									<div className="flex-1 text-sm font-medium">
+										Whenever you stake or unstake, any pending{' '}
+										<span className="font-bold text-blue-100">
+											claimable project tokens
+										</span>{' '}
+										will be{' '}
+										<span className="font-bold text-green-200">
+											automatically sent to your wallet
+										</span>
+										.<br />
+										<span className="text-blue-300">
+											Your claimable amount will reset to 0 after staking or
+											unstaking.
+										</span>
+									</div>
+									<button
+										className="ml-3 text-blue-300 hover:text-blue-100 transition"
+										onClick={() => setShowAutoClaimNotice(false)}
+										aria-label="Dismiss"
+									>
+										&times;
+									</button>
+								</div>
+							</div>
+						)}
 						<div>
 							<h2 className="text-xl font-medium mb-6 text-white">EARNED</h2>
-							<div className="flex flex-row justify-start items-center text-2xl font-bold font-orbitron mb-2 text-white">
+							<div className="flex flex-row justify-start items-center text-2xl font-bold font-orbitron mb text-white">
 								{/* This is to trim amount if too long */}
 								<span className="truncate block overflow-hidden whitespace-nowrap">
 									{formatReadContract(
@@ -550,10 +589,47 @@ export default function StakingTableRow({
 					{/* Start staking section */}
 					<div className="w-full md:w-1/2 p-6 backdrop-blur-md bg-black/20 flex flex-col justify-between">
 						<div>
+							{/* vToken yield-bearing explanation */}
+							{showVTokenNotice && (
+								<div className="mb-4">
+									<div className="flex items-start bg-gradient-to-r from-purple-900/70 to-blue-700/40 border border-purple-400/30 rounded-lg p-3 text-purple-200 relative shadow-lg">
+										<AlertCircle className="w-5 h-5 mr-2 mt-0.5 text-purple-300 flex-shrink-0" />
+										<div className="flex-1 text-sm font-medium">
+											Your staked amount is shown in{' '}
+											<span className="font-bold text-purple-100">
+												native tokens
+											</span>{' '}
+											(not vTokens).
+											<br />
+											<span className="font-bold text-purple-100">
+												vTokens are yield-bearing
+											</span>
+											, so the vToken amount needed for the same native value{' '}
+											<span className="font-bold text-purple-100">
+												decreases over time
+											</span>{' '}
+											as the exchange rate changes.
+											<br />
+											<span className="text-purple-300">
+												This is normal and{' '}
+												<span className="font-bold">does not</span> mean your
+												stake is lost.
+											</span>
+										</div>
+										<button
+											className="ml-3 text-purple-300 hover:text-purple-100 transition"
+											onClick={() => setShowVTokenNotice(false)}
+											aria-label="Dismiss"
+										>
+											&times;
+										</button>
+									</div>
+								</div>
+							)}
+
 							<h2 className="text-xl font-medium font-orbitron mb-6 text-white">
 								START STAKING
 							</h2>
-
 							{account.isConnected && (
 								<div className="mb-4">
 									<div className="flex items-center justify-between mb-1">
@@ -574,7 +650,7 @@ export default function StakingTableRow({
 										value={stakeAmount}
 										onChange={(e) => setStakeAmount(e.target.value)}
 										placeholder="0.0"
-										className="w-full bg-white/5 border border-white/10 rounded-md p-2 text-white backdrop-blur-md"
+										className="w-full bg-white/5 border border-white/10 rounded-md p-2 mb-4 text-white backdrop-blur-md focus:outline-none focus:ring-0 focus:border-white/20"
 									/>
 									<div className="mt-2 flex items-center gap-2 text-xs font-orbitron">
 										<TooltipProvider>
@@ -616,7 +692,7 @@ export default function StakingTableRow({
 												<TooltipTrigger asChild>
 													<span className="inline-flex items-center cursor-help">
 														<span className="uppercase tracking-widest text-green-400/80 mr-1">
-															Your Stake
+															Your Stake (DOT)
 														</span>
 														<Info size={13} className="text-green-400/60" />
 													</span>
