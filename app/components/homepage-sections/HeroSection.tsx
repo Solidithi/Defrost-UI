@@ -100,7 +100,10 @@ const HeroSection = () => {
 							animate={{ opacity: 1, scale: 1 }}
 							transition={{ duration: 0.3, delay: 0.6 }}
 						>
-							<Button className="w-48 h-12 text-xl" onClick={handleSubmit}>
+							<Button
+								className="w-48 h-12 text-xl warm-cool-bg"
+								onClick={handleSubmit}
+							>
 								Start Now
 							</Button>
 						</motion.div>
