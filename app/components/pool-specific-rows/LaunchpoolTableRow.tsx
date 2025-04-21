@@ -8,13 +8,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '@/app/components/UI/shadcn/Tooltip'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/app/components/UI/shadcn/Dialog'
 import Spinner from '@/app/components/UI/Spinner'
 import Button from '@/app/components/UI/Button'
 import {
@@ -27,14 +20,14 @@ import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { parseUnits, formatUnits } from 'ethers'
 import AlertInfo from '../AlertInfo'
-import { UnifiedPool } from '@/custom-types/'
+import { UnifiedPool, EnrichedProject } from '@/custom-types'
+import { PoolSelector } from './PoolSelector'
+import { PoolCard } from './PoolCard'
 
 export interface LaunchpoolTableRowProps {
-	projectName: string
+	project: EnrichedProject
 	pool: UnifiedPool
-	onHarvest?: (poolId: string) => void
-	onConnectWallet?: () => void
-	onStake?: (poolId: string, amount: number) => void
+	onPoolSelected: (pool: UnifiedPool) => void
 }
 
 // Mock function for accepted tokens
@@ -46,8 +39,9 @@ const getAcceptedTokens = (): string[] => {
 const poolAddress = '0xd7667d3f4720ba6cff81f44a14ddef18dce02453'
 
 export default function LaunchpoolTableRow({
-	projectName,
+	project,
 	pool,
+	onPoolSelected,
 }: LaunchpoolTableRowProps) {
 	const account = useAccount()
 	const [stakeAmount, setStakeAmount] = useState<string>('')
@@ -211,22 +205,22 @@ export default function LaunchpoolTableRow({
 					<div>
 						{/* Pool type indicator */}
 						<div className="mb-6">
-							<div className="flex items-center gap-2 mb-2">
+							<div className="flex flex-row items-center gap-2 mb-3">
 								<Zap className="w-5 h-5 text-blue-400" />
 								<span className="font-medium uppercase text-xs text-blue-400">
 									{pool.type}
 								</span>
+								<span className="ml-auto">
+									<PoolSelector
+										project={project}
+										onPoolSelected={onPoolSelected}
+										initialSelectedPoolAddress={pool.id}
+									/>
+								</span>
 							</div>
 
 							<div className="rounded-xl p-4 backdrop-blur-md bg-gradient-to-br border from-blue-500/10 to-blue-600/5 border-blue-500/20">
-								<div className="flex justify-between items-center">
-									<span className="font-medium text-white">
-										Flexible Staking
-									</span>
-									<span className="text-green-400 font-medium">
-										{pool.staker_apy}% APR
-									</span>
-								</div>
+								<PoolCard isSelected={false} pool={pool} />
 
 								{pool.description && (
 									<p className="text-xs text-gray-400 mt-1">
@@ -271,7 +265,7 @@ export default function LaunchpoolTableRow({
 					<div className="mt-6">
 						<button
 							className="text-blue-400 hover:text-blue-300 text-sm flex items-center"
-							onClick={() => window.open(`/project/${projectName}`, '_blank')}
+							onClick={() => window.open(`/project/${project.name}`, '_blank')}
 						>
 							View Project Detail
 						</button>

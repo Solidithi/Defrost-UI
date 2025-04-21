@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import SplitText from '../components/UI/SplitText'
+import Spinner from '@/app/components/UI/Spinner'
 import CarouselWithProgress from '../components/UI/Carousel'
 import GlowingSearchBar from '../components/UI/GlowingSearchBar'
 import ScrollFloat from '../components/UI/ScrollFloat'
@@ -20,7 +21,6 @@ import LaunchpoolTableRow from '@/app/components/pool-specific-rows/LaunchpoolTa
 import { motion, AnimatePresence } from 'framer-motion'
 import { EnrichedProject } from '@/custom-types/project'
 import { UnifiedPool } from '@/custom-types/pool'
-
 // Define stat card interface
 interface StatCardItem {
 	type: 'Total Project' | 'Total Staking' | 'Unique Participant'
@@ -32,8 +32,10 @@ interface StatCardItem {
 const AllProject = () => {
 	const [isCard, setIsCard] = useState(true)
 	const [searchQuery, setSearchQuery] = useState('')
-	const [expandedRow, setExpandedRow] = useState<string | null>(null)
+	const [selectedProject, setSelectedProject] =
+		useState<EnrichedProject | null>(null)
 	const [projects, setProjects] = useState<EnrichedProject[]>([])
+	const [selectedPool, setSelectedPool] = useState<UnifiedPool | null>(null)
 
 	// Define stat cards
 	const statCardItems: StatCardItem[] = [
@@ -74,6 +76,14 @@ const AllProject = () => {
 	useEffect(() => {
 		fetchProjects()
 	}, [])
+
+	const handlePoolSelected = (pool: UnifiedPool): void => {
+		console.log('New pool selected:', pool.id)
+		setSelectedPool(pool)
+		if (selectedProject) {
+			renderExpandableRow(selectedProject)
+		}
+	}
 
 	// Create 9 project cards
 	const projectCards = Array.from({ length: 9 }, (_, i) => (
@@ -119,20 +129,16 @@ const AllProject = () => {
 		},
 	]
 
-	// Handle row expansion for displaying pool details
-	const toggleExpandRow = (id: string) => {
-		setExpandedRow((prev) => (prev === id ? null : id))
-	}
-
 	// Render appropriate component based on pool type
-	const renderPoolComponent = (pool: UnifiedPool, projectName: string) => {
+	const renderPoolComponent = (pool: UnifiedPool, project: EnrichedProject) => {
 		switch (pool.type) {
 			case 'launchpool':
 				return (
 					<LaunchpoolTableRow
 						key={pool.id}
-						projectName={projectName}
+						project={project}
 						pool={pool}
+						onPoolSelected={handlePoolSelected}
 					/>
 				)
 			case 'farmpool':
@@ -176,9 +182,9 @@ const AllProject = () => {
 	// Define actions for DataTable rows
 	const renderTableActions = (project: EnrichedProject) => (
 		<div className="flex justify-end space-x-2">
-			<button className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]">
+			{/* <button className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]">
 				View
-			</button>
+			</button> */}
 			<button className="bg-gradient-to-r from-[#F05550] to-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold">
 				Stake
 			</button>
@@ -188,7 +194,7 @@ const AllProject = () => {
 	// Render the expandable row contents with pools
 	const renderExpandableRow = (project: EnrichedProject) => (
 		<AnimatePresence>
-			{expandedRow === project.id && (
+			{selectedProject?.id === project.id && (
 				<motion.div
 					initial={{ opacity: 0, height: 0 }}
 					animate={{ opacity: 1, height: 'auto' }}
@@ -198,9 +204,22 @@ const AllProject = () => {
 				>
 					{project.unifiedPools && project.unifiedPools.length > 0 ? (
 						<div className="w-full space-y-6 my-4">
-							{project.unifiedPools.map((pool) =>
-								renderPoolComponent(pool, project.name || '')
-							)}
+							{/* Find the pool with the highest APR and display it */}
+							{project.unifiedPools
+								.sort((a, b) => b.staker_apy - a.staker_apy)
+								.slice(0, 1)
+								.map((pool) => {
+									console.log(
+										'Rendering pool component for new pool: ',
+										pool.id
+									)
+									if (!selectedPool) {
+										setSelectedPool(pool)
+										return renderPoolComponent(pool, project)
+									} else {
+										return renderPoolComponent(selectedPool, project)
+									}
+								})}
 						</div>
 					) : (
 						<div className="text-center py-8">
@@ -350,8 +369,10 @@ const AllProject = () => {
 										renderActions={renderTableActions}
 										renderExpandableRow={renderExpandableRow}
 										onRowClick={(project) =>
-											setExpandedRow(
-												expandedRow === project.id ? null : project.id
+											setSelectedProject(
+												selectedProject && selectedProject.id === project.id
+													? null
+													: project
 											)
 										}
 										className="max-w-full"
