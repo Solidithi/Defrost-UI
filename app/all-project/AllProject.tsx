@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import SplitText from '../components/UI/SplitText'
 import CarouselWithProgress from '../components/UI/Carousel'
 import GlowingSearchBar from '../components/UI/GlowingSearchBar'
@@ -16,22 +16,10 @@ import DataTable from '../components/UI/DataTable'
 import { Column } from '../components/UI/DataTable'
 import Image from 'next/image'
 import { shortenStr } from '../lib/utils'
-import StakingTableRow from '@/app/components/StakingTableRow'
+import LaunchpoolTableRow from '@/app/components/pool-specific-rows/LaunchpoolTableRow'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Pool } from '@/app/components/StakingTableRow'
-
-// Define project interface for DataTable
-interface Project {
-	id: string
-	name: string
-	logo?: string
-	short_description: string
-	token_symbol: string
-	project_owner: string
-	pool?: Pool[]
-	token_address?: string
-	created_at: Date
-}
+import { EnrichedProject } from '@/custom-types/project'
+import { UnifiedPool } from '@/custom-types/pool'
 
 // Define stat card interface
 interface StatCardItem {
@@ -45,6 +33,7 @@ const AllProject = () => {
 	const [isCard, setIsCard] = useState(true)
 	const [searchQuery, setSearchQuery] = useState('')
 	const [expandedRow, setExpandedRow] = useState<string | null>(null)
+	const [projects, setProjects] = useState<EnrichedProject[]>([])
 
 	// Define stat cards
 	const statCardItems: StatCardItem[] = [
@@ -68,194 +57,124 @@ const AllProject = () => {
 		},
 	]
 
-	// Mock project data for demonstration
-	const projects: Project[] = [
-		{
-			id: '1',
-			name: 'Project Alpha',
-			short_description:
-				'A decentralized finance protocol focused on yield optimization',
-			token_symbol: 'ALPHA',
-			project_owner: '0xfd48761638e3a8c368abaefa9859cf6baa6c3c27',
-			pool: [
-				{
-					id: 'pool1',
-					type: 'launchpool' as const,
-					staker_apy: 3.13,
-					duration: 77,
-					earned: 900,
-					tokenSymbol: 'TOKEN',
-					total_staked: BigInt(250000),
-					total_stakers: 1500,
-					description:
-						'Stake tokens with no lock period. Withdraw anytime with lower APR.',
-				},
-				{
-					id: 'pool2',
-					type: 'launchpad' as const,
-					staker_apy: 5.25,
-					duration: 30,
-					earned: 450,
-					tokenSymbol: 'TOKEN',
-					total_staked: BigInt(250000),
-					total_stakers: 1500,
-					description:
-						'Stake to participate in upcoming token launches and IDOs.',
-				},
-				{
-					id: 'pool3',
-					// name: 'Yield Farming',
-					type: 'farm' as const,
-					staker_apy: 8.75,
-					duration: 90,
-					earned: 0,
-					tokenSymbol: 'TOKEN',
-					total_staked: BigInt(250000),
-					total_stakers: 1500,
-					description:
-						'Provide liquidity and earn farming rewards with higher APR.',
-				},
-				{
-					id: 'pool4',
-					// name: 'Premium Launchpad',
-					type: 'launchpad' as const,
-					staker_apy: 12.5,
-					duration: 180,
-					earned: 0,
-					tokenSymbol: 'TOKEN',
-					total_stakers: 1500,
-					total_staked: BigInt(250000),
-					description:
-						'Premium tier for early access to token sales with guaranteed allocation.',
-				},
-				{
-					id: 'pool5',
-					// name: 'High Yield Farm',
-					type: 'farm' as const,
-					staker_apy: 18.25,
-					duration: 365,
-					earned: 0,
-					tokenSymbol: 'TOKEN',
-					total_staked: BigInt(250000),
-					total_stakers: 1500,
-					description:
-						'Long-term farming with boosted rewards and governance rights.',
-				},
-			],
-			token_address: '0x7a250d5630b4cf539739df2c5dacb4c659f2488d',
-			created_at: new Date('2023-06-15'),
-		},
-		{
-			id: '2',
-			name: 'Beta Chain',
-			short_description:
-				'Next generation blockchain with high throughput and low fees',
-			token_symbol: 'BETA',
-			project_owner: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-			token_address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-			created_at: new Date('2023-08-22'),
-		},
-		{
-			id: '3',
-			name: 'Gamma Protocol',
-			short_description:
-				'Cross-chain interoperability solution for DeFi applications',
-			token_symbol: 'GAMMA',
-			project_owner: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-			token_address: '0x6b175474e89094c44da98b954eedeac495271d0f',
-			created_at: new Date('2024-01-10'),
-		},
-		{
-			id: '4',
-			name: 'Delta Finance',
-			short_description: 'Automated market maker with innovative tokenomics',
-			token_symbol: 'DELTA',
-			project_owner: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
-			token_address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-			created_at: new Date('2022-11-05'),
-		},
-		{
-			id: '5',
-			name: 'Epsilon Network',
-			short_description: 'Layer 2 scaling solution with zero-knowledge proofs',
-			token_symbol: 'EPS',
-			project_owner: '0xe41d2489571d322189246dafa5ebde1f4699f498',
-			token_address: '0x514910771af9ca656af840dff83e8264ecf986ca',
-			created_at: new Date('2023-12-01'),
-		},
-	]
+	// Fetch projects from the API
+	const fetchProjects = async () => {
+		try {
+			const response = await fetch('/api/all-project')
+			if (!response.ok) {
+				throw new Error('Network response was not ok')
+			}
+			const data = await response.json()
+			setProjects(data.projects)
+		} catch (error) {
+			console.error('Error fetching projects:', error)
+		}
+	}
+
+	useEffect(() => {
+		fetchProjects()
+	}, [])
 
 	// Create 9 project cards
 	const projectCards = Array.from({ length: 9 }, (_, i) => (
 		<AllProjectCard key={i} />
 	))
 
-	// Define columns for DataTable
-	const tableColumns: Column<Project>[] = [
+	// Define table column customization for DataTable
+	const tableColumns: Column<EnrichedProject>[] = [
 		{
 			header: 'Project',
-			accessor: (project: Project) => (
+			accessor: (project) => (
 				<div className="flex items-center">
 					{project.logo ? (
-						<div className="h-8 w-8 mr-3 rounded-full flex items-center justify-center overflow-hidden">
-							<img
-								src={`data:image/png;base64,${project.logo}`}
-								alt={`${project.name} logo`}
-								className="w-full h-full object-cover"
-							/>
-						</div>
+						<img
+							src={`data:image/png;base64,${project.logo}`}
+							alt={project.name || 'Project logo'}
+							className="w-8 h-8 mr-3 rounded-full"
+						/>
 					) : (
-						<div className="h-8 w-8 mr-3 rounded-full bg-gradient-to-br from-purple-500 to-blue-500" />
+						<div className="w-8 h-8 mr-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full" />
 					)}
 					<div>
-						<div className="font-medium">{project.name}</div>
-						<div className="text-xs text-gray-400">
-							{project.short_description.length > 40
-								? project.short_description.substring(0, 40) + '...'
-								: project.short_description}
+						<div className="text-white font-medium">{project.name}</div>
+						<div className="text-sm text-gray-400 truncate max-w-[200px]">
+							{project.short_description || 'No description available'}
 						</div>
 					</div>
 				</div>
 			),
 		},
 		{
-			header: 'Token',
-			accessor: (project: Project) => project.token_symbol,
+			header: 'Pools',
+			accessor: (project) => project.poolCount,
 		},
 		{
-			header: 'Owner',
-			accessor: (project: Project) => shortenStr(project.project_owner, 10),
+			header: 'Total Value Staked',
+			accessor: (project) => `$${project.totalStaked.toLocaleString()}`,
 		},
 		{
-			header: 'APR',
-			accessor: (project: Project) =>
-				project?.pool?.[0]?.staker_apy
-					? `${project.pool[0].staker_apy}%`
-					: 'N/A',
-		},
-		{
-			header: 'Total Staked',
-			accessor: (project: Project) =>
-				project.pool?.[0]?.total_staked
-					? project.pool[0].total_staked.toLocaleString()
-					: 'N/A',
-		},
-		{
-			header: 'Total Stakers',
-			accessor: (project: Project) =>
-				project.pool?.[0]?.total_stakers
-					? project.pool[0].total_stakers.toLocaleString()
-					: 'N/A',
-		},
-		{
-			header: 'Created',
-			accessor: (project: Project) =>
-				new Date(project.created_at).toLocaleDateString(),
+			header: 'APY',
+			accessor: (project) =>
+				project.avgApy ? `${project.avgApy.toFixed(2)}%` : '-',
 		},
 	]
 
+	// Handle row expansion for displaying pool details
+	const toggleExpandRow = (id: string) => {
+		setExpandedRow((prev) => (prev === id ? null : id))
+	}
+
+	// Render appropriate component based on pool type
+	const renderPoolComponent = (pool: UnifiedPool, projectName: string) => {
+		switch (pool.type) {
+			case 'launchpool':
+				return (
+					<LaunchpoolTableRow
+						key={pool.id}
+						projectName={projectName}
+						pool={pool}
+					/>
+				)
+			case 'farmpool':
+				// Future implementation for FarmpoolTableRow
+				return (
+					<div
+						key={pool.id}
+						className="bg-black/20 p-4 rounded-xl border border-white/10"
+					>
+						<p className="text-white">
+							Farm pool component will be implemented soon.
+						</p>
+						<p className="text-gray-400 text-sm mt-2">Pool ID: {pool.id}</p>
+					</div>
+				)
+			case 'launchpad':
+				// Future implementation for LaunchpadTableRow
+				return (
+					<div
+						key={pool.id}
+						className="bg-black/20 p-4 rounded-xl border border-white/10"
+					>
+						<p className="text-white">
+							Launchpad component will be implemented soon.
+						</p>
+						<p className="text-gray-400 text-sm mt-2">Pool ID: {pool.id}</p>
+					</div>
+				)
+			default:
+				return (
+					<div
+						key={pool.id}
+						className="bg-black/20 p-4 rounded-xl border border-white/10"
+					>
+						<p className="text-white">Unknown pool type: {pool.type}</p>
+					</div>
+				)
+		}
+	}
+
 	// Define actions for DataTable rows
-	const renderTableActions = (project: Project) => (
+	const renderTableActions = (project: EnrichedProject) => (
 		<div className="flex justify-end space-x-2">
 			<button className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]">
 				View
@@ -266,8 +185,8 @@ const AllProject = () => {
 		</div>
 	)
 
-	// Define expandable row content of DataTable
-	const renderExpandableRow = (project: Project) => (
+	// Render the expandable row contents with pools
+	const renderExpandableRow = (project: EnrichedProject) => (
 		<AnimatePresence>
 			{expandedRow === project.id && (
 				<motion.div
@@ -277,14 +196,19 @@ const AllProject = () => {
 					transition={{ duration: 0.3 }}
 					className="w-full overflow-hidden"
 				>
-					<StakingTableRow
-						pools={project.pool as Pool[]}
-						projectName={`${project.name}`}
-						isWalletConnected={false}
-						onConnectWallet={() => {}}
-						onHarvest={() => {}}
-						onStake={() => {}}
-					/>
+					{project.unifiedPools && project.unifiedPools.length > 0 ? (
+						<div className="w-full space-y-6 my-4">
+							{project.unifiedPools.map((pool) =>
+								renderPoolComponent(pool, project.name || '')
+							)}
+						</div>
+					) : (
+						<div className="text-center py-8">
+							<p className="text-lg text-gray-400">
+								No pools available for this project
+							</p>
+						</div>
+					)}
 				</motion.div>
 			)}
 		</AnimatePresence>
@@ -368,7 +292,8 @@ const AllProject = () => {
 										{projects
 											.reduce(
 												(acc, project) =>
-													acc + Number(project.pool?.[0]?.total_staked || 0),
+													acc +
+													Number(project.unifiedPools?.[0]?.total_staked || 0),
 												0
 											)
 											.toLocaleString()}
@@ -382,7 +307,7 @@ const AllProject = () => {
 										{projects
 											.reduce(
 												(acc, project) =>
-													acc + (project.pool?.[0]?.total_stakers || 0),
+													acc + (project.unifiedPools?.[0]?.total_stakers || 0),
 												0
 											)
 											.toLocaleString()}
@@ -411,13 +336,13 @@ const AllProject = () => {
 										data={projects.filter(
 											(project) =>
 												project.name
-													.toLowerCase()
+													?.toLowerCase()
 													.includes(searchQuery.toLowerCase()) ||
 												project.short_description
-													.toLowerCase()
+													?.toLowerCase()
 													.includes(searchQuery.toLowerCase()) ||
 												project.token_symbol
-													.toLowerCase()
+													?.toLowerCase()
 													.includes(searchQuery.toLowerCase())
 										)}
 										columns={tableColumns}

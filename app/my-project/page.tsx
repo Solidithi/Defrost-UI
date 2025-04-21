@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { project, pool } from '@prisma/client'
 import { shortenStr } from '../lib/utils'
-import { PrismaClient } from '@prisma/client'
+import { EnrichedProject } from '@/custom-types/project'
 import SwitchTableOrCard from '@/app/components/UI/SwitchTableOrCard'
 import DataTable from '@/app/components/UI/DataTable'
 import { Column } from '@/app/components/UI/DataTable'
@@ -11,28 +10,13 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Spinner from '../components/UI/Spinner'
 
-// Create a custom type that extends the Prisma project type to include pool data
-type ProjectWithPools = project & {
-	pool?: pool[]
-}
-
-// Enriched project type with calculated fields
-type EnrichedProject = ProjectWithPools & {
-	avgApy: number
-	tokenAddress: string | false | undefined
-	totalStaked: number
-	poolCount: number
-	totalStakers: number
-}
-
 export default function MyProject() {
 	const [sortOption, setSortOption] = useState('newest')
 	const [filterCriteria, setFilterCriteria] = useState('all')
-	const [viewMode, setViewMode] = useState('card')
-	const [projects, setProjects] = useState<ProjectWithPools[]>([])
+	const [projects, setProjects] = useState<EnrichedProject[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
 	const [isLoading, setIsLoading] = useState(true)
-	const [isCard, setIsCard] = useState(true)
+	const [isCardView, setIsCardView] = useState(true)
 
 	const fetchProjects = async () => {
 		setIsLoading(true)
@@ -48,6 +32,7 @@ export default function MyProject() {
 			.then((raw) => raw.json())
 			.catch((error) => console.error('Error fetching projects:', error))
 			.then((res) => {
+				console.log('fetched projects: ', res.projects)
 				setProjects(res.projects || [])
 				setIsLoading(false)
 			})
@@ -76,15 +61,13 @@ export default function MyProject() {
 				case 'all':
 					return true
 				case 'has-pools':
-					return project.pool && project.pool.length > 0
+					return project.unifiedPools && project.unifiedPools.length > 0
 				case 'no-pools':
-					return !project.pool || project.pool.length === 0
+					return !project.unifiedPools || project.unifiedPools.length === 0
 				case 'high-apy':
-					return project.pool?.some(
-						(pool) => parseFloat(pool.staker_apy.toString()) > 10
-					) // APY > 10%
+					return project.unifiedPools?.some((pool) => pool.staker_apy > 10) // APY > 10%
 				case 'active-stakers':
-					return project.pool?.some((pool) => pool.total_stakers > 5) // More than 5 stakers
+					return project.unifiedPools?.some((pool) => pool.total_stakers > 5) // More than 5 stakers
 				default:
 					return true
 			}
@@ -101,53 +84,10 @@ export default function MyProject() {
 			} else if (sortOption === 'alphabetical') {
 				return (a.name || '').localeCompare(b.name || '')
 			} else if (sortOption === 'most-staked') {
-				const getTotalStaked = (p: ProjectWithPools) =>
-					p.pool?.reduce(
-						(sum, pool) => sum + parseFloat(pool.total_staked.toString()),
-						0
-					) || 0
-				return getTotalStaked(b) - getTotalStaked(a)
+				return b.totalStaked - a.totalStaked
 			}
 			return 0
 		})
-
-	// Calculate metrics for each project from available data
-	const enrichedProjects = filteredProjects.map((project) => {
-		// Get combined APY from all pools, or use staker_apy if available
-		const avgApy =
-			project.pool && project.pool?.length > 0
-				? project.pool.reduce(
-						(sum, pool) => sum + parseFloat(pool.staker_apy.toString()),
-						0
-					) / project.pool.length
-				: 0
-
-		// Get most relevant token address
-		const tokenAddress =
-			project.token_address ||
-			(project.pool &&
-				project.pool?.length > 0 &&
-				project.pool[0].project_token_address)
-
-		// Get total staked across all pools
-		const totalStaked =
-			project.pool?.reduce(
-				(sum, pool) => sum + parseFloat(pool.total_staked.toString()),
-				0
-			) || 0
-
-		return {
-			...project,
-			avgApy,
-			tokenAddress,
-			totalStaked,
-			poolCount: project.pool?.length || 0,
-			totalStakers:
-				project.pool?.reduce((sum, pool) => sum + pool.total_stakers, 0) || 0,
-		}
-	})
-
-	// Import Column type from DataTable component
 
 	// Define columns for the DataTable
 	const tableColumns: Column<EnrichedProject>[] = [
@@ -169,7 +109,7 @@ export default function MyProject() {
 					<div>
 						<div className="font-medium">{project.name}</div>
 						<div className="text-xs text-gray-400">
-							{shortenStr(project.project_owner)}
+							{shortenStr(project.owner_id || '')}
 						</div>
 					</div>
 				</div>
@@ -297,8 +237,8 @@ export default function MyProject() {
 
 								{/* View Type Toggle - Card/Table */}
 								<SwitchTableOrCard
-									isCard={isCard}
-									setIsCard={setIsCard}
+									isCard={isCardView}
+									setIsCard={setIsCardView}
 								></SwitchTableOrCard>
 							</div>
 						</div>
@@ -352,7 +292,7 @@ export default function MyProject() {
 								<div className="text-sm text-gray-300">Total Pools</div>
 								<div className="text-2xl font-orbitron font-bold mt-1">
 									{projects.reduce(
-										(acc, project) => acc + (project.pool?.length || 0),
+										(acc, project) => acc + project.poolCount,
 										0
 									)}
 								</div>
@@ -361,15 +301,7 @@ export default function MyProject() {
 								<div className="text-sm text-gray-300">Total Value Staked</div>
 								<div className="text-2xl font-orbitron font-bold mt-1">
 									{projects
-										.reduce((acc, project) => {
-											const poolTotalStaked =
-												project.pool?.reduce(
-													(sum, pool) =>
-														sum + parseFloat(pool.total_staked.toString()),
-													0
-												) || 0
-											return acc + poolTotalStaked
-										}, 0)
+										.reduce((acc, project) => acc + project.totalStaked, 0)
 										.toLocaleString()}
 								</div>
 							</div>
@@ -385,7 +317,7 @@ export default function MyProject() {
 						</div>
 					) : (
 						<div className="space-y-10 mb-16 flex flex-col items-center font-comfortaa">
-							{enrichedProjects.length === 0 ? (
+							{filteredProjects.length === 0 ? (
 								<div className="glass-component-3 w-full max-w-6xl rounded-[26px] p-8 flex flex-col items-center justify-center">
 									<div className="text-xl font-orbitron mb-4">
 										No projects found
@@ -399,8 +331,8 @@ export default function MyProject() {
 								</div>
 							) : (
 								<>
-									{isCard ? (
-										enrichedProjects.map((project) => (
+									{isCardView ? (
+										filteredProjects.map((project) => (
 											<div
 												key={project.id}
 												className="glass-component-3 w-full max-w-6xl rounded-[26px] p-4 flex items-center relative"
@@ -459,7 +391,7 @@ export default function MyProject() {
 												<div className="flex-1">
 													<div className="text-sm">
 														{project.avgApy > 0 ? (
-															<>Staker APY: {project.avgApy.toFixed(2)}%</>
+															<>Average APY: {project.avgApy.toFixed(2)}%</>
 														) : (
 															<>Stakers: {project.totalStakers}</>
 														)}
@@ -482,7 +414,7 @@ export default function MyProject() {
 										))
 									) : (
 										<DataTable
-											data={enrichedProjects}
+											data={filteredProjects}
 											columns={tableColumns}
 											keyField="id"
 											renderActions={renderTableActions}
@@ -495,7 +427,7 @@ export default function MyProject() {
 						</div>
 					)}
 
-					{enrichedProjects.length > 10 && (
+					{filteredProjects.length > 10 && (
 						<div className="flex justify-center mt-6 select-none">
 							<button className="bg-gradient-to-r from-[#F05550] to-[#54A4F2] rounded-full px-8 py-2 text-sm font-bold">
 								Show more

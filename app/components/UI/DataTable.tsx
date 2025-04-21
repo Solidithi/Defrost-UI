@@ -21,7 +21,7 @@ export interface DataTableProps<T> {
 	renderActions?: (item: T) => React.ReactNode
 	isLoading?: boolean
 	renderExpandableRow?: (item: T) => React.ReactNode
-	onRowClick?: (item: T) => void
+	onRowClick?: (item: T | any) => void
 }
 
 // Generic DataTable component
