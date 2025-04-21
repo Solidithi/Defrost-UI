@@ -150,7 +150,7 @@ interface TabsProps {
 const Tabs: React.FC<TabsProps> = ({
 	tabs,
 	containerClassName = 'w-full',
-	tabListClassName = 'flex',
+	tabListClassName = 'flex gap-2',
 	tabClassName = 'px-4 py-2 cursor-pointer transition-colors',
 	activeTabClassName = 'border-b-2 border-blue-500 text-blue-500',
 	contentClassName = 'py-4',
@@ -166,7 +166,7 @@ const Tabs: React.FC<TabsProps> = ({
 						role="tab"
 						aria-selected={activeIndex === idx}
 						className={`focus:outline-none
-							rounded-xl px-4 py-2 w-36 mr-2 font-orbitron font-bold cursor-pointer transition-all duration-300 
+							rounded-xl px-4 py-2 w-36 font-orbitron font-bold cursor-pointer transition-all duration-300 
 							${tabClassName} ${
 								activeIndex === idx
 									? `border-b-2 border-blue-500  !text-[#59A1EC] 
