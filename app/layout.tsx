@@ -41,7 +41,7 @@ export default function RootLayout({
 							{ name: 'Dashboard', link: '/about' },
 						]}
 					/>
-					<main className="flex-1 overflow-auto">{children}</main>
+					<main className="flex-1">{children}</main>
 					<Footer />
 					<div id="modal-root" />
 				</Providers>
