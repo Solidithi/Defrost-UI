@@ -9,160 +9,98 @@ import SteplineChart from '../components/UI/SteplineChart'
 import { toast, ToastContainer } from 'react-toastify'
 import { red } from 'tailwindcss/colors'
 import AnimatedBlobs from '../components/UI/Background/AnimatedBlobs'
-interface FormDataType {
-	chain: string
-	token: string
-	tokenSupply: string
-	maxStake: string
-	from: string
-	to: string
-	emissionRate: string
-}
-
-interface PhaseDataType {
-	emissionRate: string
-	from: string
-	to: string
-}
+import { usePoolStore } from '../store/store'
 
 const CreatePool = () => {
-	const [tokenAddress, setTokenAddress] = useState('')
+	// const [tokenAddress, setTokenAddress] = useState('')
 
-	const [forms, setForms] = useState<number[]>([])
-	const [formsData, setFormsData] = useState<FormDataType[]>(
-		forms.map(() => ({
-			chain: '',
-			token: '',
-			tokenSupply: '',
-			maxStake: '',
-			from: '',
-			to: '',
-			emissionRate: '',
-		}))
-	)
-	const [isConfirming, setIsConfirming] = useState<{
-		open: boolean
-		id: number | null
-	}>({
-		open: false,
-		id: null,
-	})
-	const [isOpenEmissionRate, setIsOpenEmissionRate] = useState(false)
-	const [phase, setPhase] = useState<number[]>([])
-	const [phaseData, setPhaseData] = useState<PhaseDataType[]>(
-		phase.map(() => ({
-			emissionRate: '',
-			from: '',
-			to: '',
-		}))
-	)
+	const {
+		tokenAddress,
+		setTokenAddress,
+		pool,
+		poolData,
+		addPool,
+		removePool,
+		updatePoolItem,
+		phase,
+		phaseData,
+		addPhase,
+		removePhase,
+		updatePhaseItem,
+		isConfirming,
+		setIsConfirming,
+		isOpenEmissionRate,
+		setIsOpenEmissionRate,
+	} = usePoolStore()
 
-	/* --------------------------------------Handle Add Form----------------------------------------------------- */
-
-	const addForm = () => {
-		setForms((prevForms) => {
-			const newForms = [...prevForms, Date.now()]
-			setFormsData((prevData) => [
-				...prevData,
-				{
-					chain: '',
-					token: '',
-					tokenSupply: '',
-					maxStake: '',
-					from: '',
-					to: '',
-					emissionRate: '',
-				},
-			])
-			return newForms
-		})
+	/* ---------------------- Add pool ---------------------- */
+	const handleAddPool = () => {
+		addPool()
 	}
 
-	/* --------------------------------------Handle Close Modal----------------------------------------------------- */
-	const handleOpenConfirmModal = (id: number) => {
-		setIsConfirming({ open: true, id })
-	}
-
-	const handleCloseConfirmModal = () => {
-		setIsConfirming({ open: false, id: null })
-	}
-
-	const handleConfirmRemoveForm = () => {
-		if (isConfirming.id !== null) {
-			setForms((prev) => prev.filter((id) => id !== isConfirming.id))
-		}
-		handleCloseConfirmModal()
-	}
-
-	/* -----------------------------------------Handle Open and Close Emission Rate Pop Up-------------------------------------------------- */
-
-	const handleOpenEmissionRateModal = () => {
-		setIsOpenEmissionRate(true)
-	}
-
-	const handleCloseEmissionRateModal = () => {
-		setIsOpenEmissionRate(false)
-	}
-
-	const addPhase = () => {
+	/* ---------------------- Add phase ---------------------- */
+	const handleAddPhase = () => {
 		if (phase.length >= 3) {
 			toast.warning('You must add only 3 phases.', {
 				style: { backgroundColor: red[500], color: 'white' },
-				icon: undefined,
 			})
 			return
 		}
-
-		setPhase((prevPhase) => {
-			const newPhase = [...prevPhase, Date.now()]
-			setPhaseData((prevData) => [
-				...prevData,
-				{ emissionRate: '', from: '', to: '' },
-			])
-			return newPhase
-		})
+		addPhase()
 	}
 
-	const handleConfirmRemovePhase = () => {
+	/* ---------------------- Handle delete pool/phase ---------------------- */
+	const handleConfirmRemove = () => {
 		if (isConfirming.id !== null) {
-			setPhase((prev) => prev.filter((id) => id !== isConfirming.id))
+			if (isConfirming.type === 'form') {
+				removePool(isConfirming.id)
+			} else if (isConfirming.type === 'phase') {
+				removePhase(isConfirming.id)
+			}
 		}
-		handleCloseConfirmModal()
+		setIsConfirming({ open: false, id: null, type: null })
 	}
 
-	/* ------------------------------------------------------------------------------------------- */
-
-	const handleChange = (
+	/* ---------------------- Handle Change Pool ---------------------- */
+	const handleChangePool = (
 		index: number,
-		field: keyof FormDataType,
+		field: keyof (typeof poolData)[0],
 		value: string
 	) => {
-		setFormsData((prev) => {
-			if (!prev[index]) return prev
-			const updated = [...prev]
-			updated[index] = { ...updated[index], [field]: value }
-			return updated
-		})
+		updatePoolItem(index, { [field]: value })
 	}
 
+	/* ---------------------- Handle Change EmissionRate ---------------------- */
 	const handleChangeEmissionRate = (
 		index: number,
-		field: keyof PhaseDataType,
+		field: keyof (typeof phaseData)[0],
 		value: string
 	) => {
-		setPhaseData((prev) => {
-			if (!prev[index]) return prev
-			const updated = [...prev]
-			updated[index] = { ...updated[index], [field]: value }
-			return updated
-		})
+		updatePhaseItem(index, { [field]: value })
+	}
+
+	/* ---------------------- Open and Close Confirm Model ---------------------- */
+	const handleOpenConfirmModal = (id: number, type: 'form' | 'phase') => {
+		setIsConfirming({ open: true, id, type })
+	}
+
+	const handleCloseConfirmModal = () => {
+		setIsConfirming({ open: false, id: null, type: null })
+	}
+
+	/* ---------------------- Open and Close popup EmissionRate ---------------------- */
+	const handleOpenEmissionRateModal = () => {
+		setIsOpenEmissionRate(true)
+	}
+	const handleCloseEmissionRateModal = () => {
+		setIsOpenEmissionRate(false)
 	}
 
 	return (
 		<div className="relative page-container overflow-hidden">
 			<AnimatedBlobs count={4} />
 			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
-			<div className=" text-center">
+			<div className=" text-center z-20">
 				<SplitText
 					text="Unleash Your Web3-Native Launchpool"
 					className="title-text"
@@ -173,7 +111,7 @@ const CreatePool = () => {
 					rootMargin="-50px"
 				/>
 			</div>
-			<div className="mt-[30px] text-center max-w-5xl mx-auto">
+			<div className="mt-[30px] text-center max-w-5xl mx-auto z-20">
 				<SplitText
 					text="Provide the key details—goals, timeline, and requirements—to bring your Web3-native launchpool to life for stakeholders. This form collects everything needed to showcase your pool with impact on our platform."
 					className="content-text text-gray-300"
@@ -188,7 +126,7 @@ const CreatePool = () => {
 			{/* -------------------------------------------Form------------------------------------------------ */}
 
 			<div
-				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300`}
+				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
 			>
 				<Stepper
 					className="w-full"
@@ -221,7 +159,7 @@ const CreatePool = () => {
 								Select staking token
 							</span>
 							<Button
-								onClick={addForm}
+								onClick={handleAddPool}
 								className="h-16 w-16 rounded-full glass-component-3 flex items-center justify-center "
 							>
 								<svg
@@ -247,7 +185,7 @@ const CreatePool = () => {
 							</Button>
 
 							<div className="flex flex-wrap gap-3 w-full">
-								{forms.map((formId, index) => (
+								{pool.map((formId, index) => (
 									<motion.div
 										key={formId}
 										initial={{ opacity: 0, y: 50 }}
@@ -257,7 +195,7 @@ const CreatePool = () => {
 										style={{ width: 'calc(50% - 0.375rem)' }}
 									>
 										<Button
-											onClick={() => handleOpenConfirmModal(formId)}
+											onClick={() => handleOpenConfirmModal(formId, 'form')}
 											className="absolute top-5 right-5 glass-component-3 px-3 py-1"
 										>
 											X
@@ -268,9 +206,9 @@ const CreatePool = () => {
 												<span className="font-orbitron text-lg">Chain</span>
 												<div className="relative group">
 													<select
-														value={formsData[index]?.chain || ''}
+														value={poolData[index]?.chain || ''}
 														onChange={(e) =>
-															handleChange(index, 'chain', e.target.value)
+															handleChangePool(index, 'chain', e.target.value)
 														}
 														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
@@ -303,9 +241,9 @@ const CreatePool = () => {
 
 												<div className="relative group">
 													<select
-														value={formsData[index]?.token || ''}
+														value={poolData[index]?.token || ''}
 														onChange={(e) =>
-															handleChange(index, 'token', e.target.value)
+															handleChangePool(index, 'token', e.target.value)
 														}
 														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
@@ -343,11 +281,11 @@ const CreatePool = () => {
 											<div className="flex gap-5">
 												<input
 													type="number"
-													value={formsData[index]?.tokenSupply || ''}
+													value={poolData[index]?.tokenSupply || ''}
 													onChange={(e) => {
 														const value = e.target.value
 														if (/^\d*$/.test(value)) {
-															handleChange(index, 'tokenSupply', value)
+															handleChangePool(index, 'tokenSupply', value)
 														}
 													}}
 													onKeyDown={(e) => {
@@ -377,11 +315,11 @@ const CreatePool = () => {
 											</span>
 											<input
 												type="number"
-												value={formsData[index]?.maxStake || ''}
+												value={poolData[index]?.maxStake || ''}
 												onChange={(e) => {
 													const value = e.target.value
 													if (/^\d*$/.test(value)) {
-														handleChange(index, 'maxStake', value)
+														handleChangePool(index, 'maxStake', value)
 													}
 												}}
 												onKeyDown={(e) => {
@@ -404,9 +342,9 @@ const CreatePool = () => {
 											<span className="font-orbitron text-lg">From</span>
 											<input
 												type="datetime-local"
-												value={formsData[index]?.from || ''}
+												value={poolData[index]?.from || ''}
 												onChange={(e) =>
-													handleChange(index, 'from', e.target.value)
+													handleChangePool(index, 'from', e.target.value)
 												}
 												placeholder="Enter start date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
@@ -417,9 +355,9 @@ const CreatePool = () => {
 											<span className="font-orbitron text-lg">To</span>
 											<input
 												type="datetime-local"
-												value={formsData[index]?.to || ''}
+												value={poolData[index]?.to || ''}
 												onChange={(e) =>
-													handleChange(index, 'to', e.target.value)
+													handleChangePool(index, 'to', e.target.value)
 												}
 												placeholder="Enter end date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
@@ -497,7 +435,7 @@ const CreatePool = () => {
 					</div>
 					<div className="flex flex-col gap-5">
 						<Button
-							onClick={addPhase}
+							onClick={handleAddPhase}
 							className="h-16 w-16 rounded-full glass-component-3 flex items-center justify-center"
 						>
 							<svg
@@ -533,7 +471,7 @@ const CreatePool = () => {
 									style={{ width: 'calc(33% - 0.375rem)' }}
 								>
 									<Button
-										onClick={() => handleOpenConfirmModal(phaseId)}
+										onClick={() => handleOpenConfirmModal(phaseId, 'phase')}
 										className="absolute top-5 right-5 glass-component-3 px-3 py-1"
 									>
 										X
@@ -611,7 +549,7 @@ const CreatePool = () => {
 						No
 					</Button>
 					<Button
-						onClick={handleConfirmRemoveForm}
+						onClick={handleConfirmRemove}
 						className="warm-cool-bg text-white px-4 py-2 rounded-full"
 					>
 						Yes
