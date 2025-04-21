@@ -22,7 +22,7 @@ const FooterColumn = ({ title, children }: FooterColumnProps) => {
 }
 export function Footer() {
 	return (
-		<footer className="relative  bg-[#1D114F] text-white overflow-hidden h-96 glass-component-1">
+		<footer className="  bg-[#1D114F] text-white overflow-hidden h-auto glass-component-1 ">
 			<span className="absolute inset-0 flex items-center justify-center text-[200px] font-bold text-white opacity-5 z-0 mt-20">
 				DEFROST
 			</span>

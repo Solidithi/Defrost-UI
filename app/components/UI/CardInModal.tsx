@@ -5,7 +5,7 @@ import Logo from '@/public/Logo.png'
 import { useState } from 'react'
 import { GlowingEffect } from './GlowingEffect'
 
-const AllProjectCard = () => {
+const CardInModal = () => {
 	const [projectAPR, setProjectAPR] = useState(0)
 	const [projectName, setProjectName] = useState('Project Name')
 	const [projectShortDescription, setProjectShortDescription] = useState(
@@ -38,7 +38,7 @@ const AllProjectCard = () => {
 				className="absolute inset-0 rounded-2xl"
 			/>
 
-			<div className="glass-component-3 w-full h-full rounded-xl ">
+			<div className="glass-component-3 w-full h-full rounded-xl">
 				{/* Image */}
 				<div className="relative rounded-lg overflow-hidden">
 					<div className="flex justify-center items-center">
@@ -103,5 +103,4 @@ const AllProjectCard = () => {
 	)
 }
 
-export default AllProjectCard
-//230x570
+export default CardInModal

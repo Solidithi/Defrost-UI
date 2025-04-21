@@ -29,7 +29,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
-				className={`${comfortaa.variable} ${orbitron.variable} ${permanentMarker.variable}`}
+				className={`${comfortaa.variable} ${orbitron.variable} ${permanentMarker.variable} min-h-screen flex flex-col`}
 			>
 				<Providers cookies={headers().get('cookie')}>
 					<Navbar
@@ -41,8 +41,9 @@ export default function RootLayout({
 							{ name: 'Dashboard', link: '/about' },
 						]}
 					/>
-					{children}
+					<main className="flex-1">{children}</main>
 					<Footer />
+					<div id="modal-root" />
 				</Providers>
 			</body>
 		</html>

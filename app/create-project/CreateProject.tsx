@@ -8,6 +8,7 @@ import NetworkSelector from '../components/UI/NetworkSelector'
 import Folder from '../components/UI/Folder'
 import ImageManager from '../components/UI/ImageManager'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 interface ImageItem {
 	id: string
@@ -31,6 +32,7 @@ const CreateProject = () => {
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
+	const route = useRouter()
 
 	const availableNetworks = [
 		{
@@ -50,6 +52,14 @@ const CreateProject = () => {
 			name: 'Kusama',
 		},
 	]
+
+	const handleComplete = () => {
+		try {
+			route.push('/create-project/preview')
+		} catch (error) {
+			console.log('Error:', error)
+		}
+	}
 
 	// Render image previews for the folder component
 	const renderImagePreviews = () => {
@@ -137,9 +147,9 @@ const CreateProject = () => {
 	}
 
 	return (
-		<div className="p-10 flex flex-col items-center justify-center ">
+		<div className="page-container ">
 			<div
-				className={`mt-44 text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
+				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
 			>
 				<SplitText
 					text="Fill your project's information"
@@ -176,7 +186,7 @@ const CreateProject = () => {
 					onStepChange={(step: any) => {
 						console.log(step)
 					}}
-					onFinalStepCompleted={() => console.log('All steps completed!')}
+					onFinalStepCompleted={() => handleComplete()}
 					backButtonText="Previous"
 					nextButtonText="Next"
 				>

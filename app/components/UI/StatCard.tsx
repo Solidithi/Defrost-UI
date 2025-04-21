@@ -9,7 +9,7 @@ interface StatCardProps {
 	type: 'Total Project' | 'Total Staking' | 'Unique Participant'
 	count: number
 	label: string
-	icon: StaticImageData
+	icon: string
 }
 
 const StatCard = ({ count = 0, label, icon, type }: StatCardProps) => {

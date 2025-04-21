@@ -5,7 +5,19 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const ScrollFloat = ({
+interface ScrollFloatProps {
+	children: React.ReactNode
+	scrollContainerRef?: React.RefObject<HTMLElement>
+	containerClassName?: string
+	textClassName?: string
+	animationDuration?: number
+	ease?: string
+	scrollStart?: string
+	scrollEnd?: string
+	stagger?: number
+}
+
+const ScrollFloat: React.FC<ScrollFloatProps> = ({
 	children,
 	scrollContainerRef,
 	containerClassName = '',
@@ -16,7 +28,7 @@ const ScrollFloat = ({
 	scrollEnd = 'bottom bottom-=40%',
 	stagger = 0.03,
 }) => {
-	const containerRef = useRef(null)
+	const containerRef = useRef<HTMLHeadingElement>(null)
 
 	const splitText = useMemo(() => {
 		const text = typeof children === 'string' ? children : ''

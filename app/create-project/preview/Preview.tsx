@@ -18,7 +18,7 @@ import {
 	DescriptionTab,
 } from '@/app/components/project-detail-sections/ContentTab'
 
-const ProjectDetail = () => {
+const Preview = () => {
 	const projectDetail = {
 		id: 1,
 		name: 'Project Name',
@@ -208,4 +208,4 @@ const ProjectDetail = () => {
 	)
 }
 
-export default ProjectDetail
+export default Preview
