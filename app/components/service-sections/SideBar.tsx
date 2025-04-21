@@ -128,15 +128,16 @@ const SideBar = () => {
 
 	return (
 		<div
-			className={`transition-all duration-300 ease-in-out ${collapsed ? 'w-[80px]' : 'w-[250px]'}`}
+			onMouseEnter={() => setHovering(true)}
+			onMouseLeave={() => setHovering(false)}
+			className={`transition-all duration-300 ease-in-out ${isExpanded ? 'w-[250px]' : 'w-[80px]'}`}
 		>
 			<div
-				className={`glass-component-1 rounded-xl p-5 relative ${collapsed ? 'flex flex-col items-center' : ''}`}
+				className={`glass-component-1 rounded-xl p-5 relative ${isExpanded ? '' : 'flex flex-col items-center'}`}
 			>
 				{/* Title area */}
 				<div className="w-full mb-4">
-					{collapsed ? (
-						// Collapsed view: only toggle button centered
+					{!isExpanded ? (
 						<div className="flex justify-center">
 							<button
 								className="bg-white rounded-full p-1 shadow-md"
@@ -146,7 +147,6 @@ const SideBar = () => {
 							</button>
 						</div>
 					) : (
-						// Expanded view: logo + text + toggle
 						<div className="flex justify-between items-center">
 							<div className="flex items-center">
 								<Image src={DefrostLogo} alt="Logo" className="h-7 w-7 mr-2" />
@@ -169,7 +169,7 @@ const SideBar = () => {
 					)}
 				</div>
 				{/* Glass APR Stat */}
-				{!collapsed && ( // Hide in collapsed mode
+				{isExpanded && (
 					<div className="mt-6 glass-component-1 rounded-xl">
 						<div className="flex">
 							<div className="p-3 text-center w-1/2 text-white font-orbitron font-bold">
@@ -187,7 +187,8 @@ const SideBar = () => {
 						</div>
 					</div>
 				)}
-				{!collapsed && (
+				{/* Hide available networks when collapsed */}
+				{isExpanded && (
 					<div className="flex justify-center flex-wrap gap-x-8 gap-y-2 mt-4">
 						{availableNetworks.map((network) => (
 							<div
@@ -207,16 +208,12 @@ const SideBar = () => {
 						))}
 					</div>
 				)}
-
 				<div className="">
-					{/* Sections */}
 					{sections.map((section) => (
 						<Link
 							href={`/${section.name.toLowerCase()}`}
 							key={section.id}
-							className={`text-white font-orbitron font-bold text-base hover:bg-white/10 p-2 rounded-xl flex items-center ${
-								collapsed ? 'mt-8' : 'mt-14'
-							}`}
+							className={`text-white font-orbitron font-bold text-base hover:bg-white/10 p-2 rounded-xl flex items-center ${isExpanded ? 'mt-14' : 'mt-4'}`}
 						>
 							<div className="flex justify-start items-center gap-4">
 								<div className="w-10 h-10 bg-white rounded-full flex justify-center items-center">
@@ -228,7 +225,7 @@ const SideBar = () => {
 										height={24}
 									/>
 								</div>
-								{!collapsed && section.name}
+								{isExpanded && section.name}
 							</div>
 						</Link>
 					))}
