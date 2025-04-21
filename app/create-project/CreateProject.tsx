@@ -203,10 +203,24 @@ const CreateProject = () => {
 								/>
 							</div>
 							<div className=""></div>
-							<p className="text-gray-300 text-center mt-4 font-comfortaa">
-								Choose the blockchain network where your launchpool will be
-								deployed
-							</p>
+							<div className="mt-8 mb-2 rounded-lg bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 border-l-4 border-cyan-500 backdrop-blur-sm">
+								<p className="text-gray-300 text-center font-comfortaa max-w-3xl mx-auto leading-relaxed">
+									<span className="text-cyan-400 font-bold">
+										Select the blockchain network
+									</span>{' '}
+									for your project deployment. You can utilize this network for
+									various DeFi activities including{' '}
+									<span className="text-blue-300">yield farming</span>,{' '}
+									<span className="text-blue-300">launchpools</span>,{' '}
+									<span className="text-blue-300">token launchpad</span>,{' '}
+									<span className="text-blue-300">liquidity provision</span>, or
+									any custom protocol integration. Your selection will{' '}
+									<span className="italic text-cyan-300">
+										shape your project&apos;s ecosystem connectivity
+									</span>
+									.
+								</p>
+							</div>
 						</div>
 					</Step>
 					<Step>
