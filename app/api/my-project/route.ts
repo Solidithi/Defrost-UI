@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prismaClient } from "@/app/lib/prisma";
-import { toUnifiedPool, UnifiedPool, EnrichedProject } from "@/custom-types";
+import {
+	toUnifiedPool,
+	UnifiedPool,
+	EnrichedProject,
+	calcPoolsAvgApy,
+} from "@/custom-types";
+import { calcGeneratorDuration } from "framer-motion";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
@@ -20,7 +26,12 @@ export async function GET(request: Request) {
 				owner_id: address,
 			},
 			include: {
-				launchpool: true,
+				launchpool: {
+					where: {
+						start_date: { lte: new Date() },
+						end_date: { gte: new Date() },
+					},
+				},
 				// farmpool: true, // Include farmpool if it exists in your schema
 				// launchpad: true, // Include launchpad if it exists in your schema
 			},
@@ -63,10 +74,11 @@ export async function GET(request: Request) {
 				0
 			);
 
-			const avgApy = unifiedPools.length
-				? unifiedPools.reduce((sum, pool) => sum + pool.staker_apy, 0) /
-					unifiedPools.length
-				: 0;
+			// const avgApy = unifiedPools.length
+			// 	? unifiedPools.reduce((sum, pool) => sum + pool.staker_apy, 0) /
+			// 		unifiedPools.length
+			// 	: 0;
+			const avgApy = calcPoolsAvgApy(unifiedPools);
 
 			// Get most relevant token address
 			const tokenAddress =

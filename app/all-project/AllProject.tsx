@@ -80,6 +80,7 @@ const AllProject = () => {
 	const handlePoolSelected = (pool: UnifiedPool): void => {
 		console.log('New pool selected:', pool.id)
 		setSelectedPool(pool)
+		console.log('Selected pool:', selectedPool?.id)
 		if (selectedProject) {
 			renderExpandableRow(selectedProject)
 		}
@@ -119,11 +120,11 @@ const AllProject = () => {
 			accessor: (project) => project.poolCount,
 		},
 		{
-			header: 'Total Value Staked',
+			header: 'Staked',
 			accessor: (project) => `$${project.totalStaked.toLocaleString()}`,
 		},
 		{
-			header: 'APY',
+			header: 'Mean APY%',
 			accessor: (project) =>
 				project.avgApy ? `${project.avgApy.toFixed(2)}%` : '-',
 		},
@@ -276,7 +277,7 @@ const AllProject = () => {
 							stagger={0.03}
 							textClassName="font-orbitron"
 						>
-							Launchpool
+							Yield Ecosystem
 						</ScrollFloat>
 
 						<div className="flex flex-row gap-12">

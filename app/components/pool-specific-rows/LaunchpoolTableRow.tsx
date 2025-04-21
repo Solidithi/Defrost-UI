@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronDown, Info, Zap } from 'lucide-react'
+import { ChevronDown, Info, Zap, BarChart3, Flame } from 'lucide-react'
 import {
 	Tooltip,
 	TooltipContent,
@@ -23,6 +23,7 @@ import AlertInfo from '../AlertInfo'
 import { UnifiedPool, EnrichedProject } from '@/custom-types'
 import { PoolSelector } from './PoolSelector'
 import { PoolCard } from './PoolCard'
+import ProgressBar from '../UI/ProjectProgress/ProgressBar'
 
 export interface LaunchpoolTableRowProps {
 	project: EnrichedProject
@@ -36,7 +37,7 @@ const getAcceptedTokens = (): string[] => {
 }
 
 // Placeholder for actual contract address
-const poolAddress = '0xd7667d3f4720ba6cff81f44a14ddef18dce02453'
+// const poolAddress = '0xd7667d3f4720ba6cff81f44a14ddef18dce02453'
 
 export default function LaunchpoolTableRow({
 	project,
@@ -46,6 +47,7 @@ export default function LaunchpoolTableRow({
 	const account = useAccount()
 	const [stakeAmount, setStakeAmount] = useState<string>('')
 	const [isStakeInteded, setIsStakeIntended] = useState(false)
+	const poolAddress = pool.id as `0x${string}`
 
 	// Contract read operations
 	const {
@@ -86,6 +88,58 @@ export default function LaunchpoolTableRow({
 		args: [account.address],
 		query: { refetchInterval: 1000 },
 	})
+
+	// Read emission rate from contract
+	const {
+		data: emissionRate,
+		status: readEmissionRateStatus,
+		error: readEmissionRateError,
+	} = useReadContract({
+		abi: launchpoolABI,
+		functionName: 'getEmissionRate',
+		address: poolAddress,
+		query: { refetchInterval: 1000 },
+	})
+
+	// Read total staked in the pool
+	const {
+		data: totalStaked,
+		status: readTotalStakedStatus,
+		error: readTotalStakedError,
+	} = useReadContract({
+		abi: launchpoolABI,
+		functionName: 'totalNativeStake',
+		address: poolAddress,
+		query: { refetchInterval: 1000 },
+	})
+
+	// Calculate user stake percentage
+	const calculateStakePercentage = () => {
+		if (
+			readUserStakedStatus === 'success' &&
+			readTotalStakedStatus === 'success'
+		) {
+			if (
+				totalStaked &&
+				userStake &&
+				BigInt(totalStaked.toString()) > BigInt(0)
+			) {
+				const percentage =
+					(BigInt(userStake.toString()) * BigInt(10000)) /
+					BigInt(totalStaked.toString())
+				return Number(percentage) / 100
+			}
+		}
+		return 0
+	}
+
+	/** How many tokens am I earning per block? */
+	const calculatePersonalEearningRate = () => {
+		const emissionRateNum = Number(
+			formatUnits((emissionRate as bigint) ?? '0', 18)
+		)
+		return (emissionRateNum * calculateStakePercentage()) / 100
+	}
 
 	// Contract write operations
 	const {
@@ -195,22 +249,22 @@ export default function LaunchpoolTableRow({
 		setIsStakeIntended(true)
 	}
 
-	const tokenSymbol = pool.token_symbol || 'TOKENS'
+	const tokenSymbol = pool.token_symbol || 'tokens'
 
 	return (
-		<div className="w-full rounded-xl overflow-hidden backdrop-blur-xl bg-black/30 border border-white/10 shadow-xl">
+		<div className="w-full rounded-xl overflow-hidden backdrop-blur-xl bg-black/30 border border-white/10 shadow-xl overflow-hidden">
 			<div className="flex flex-col md:flex-row">
 				{/* Left panel - Pool info */}
 				<div className="w-full md:w-1/3 p-6 backdrop-blur-md bg-black/40 flex flex-col justify-between border-r border-white/5">
-					<div>
+					<div className="overflow-hidden">
 						{/* Pool type indicator */}
 						<div className="mb-6">
 							<div className="flex flex-row items-center gap-2 mb-3">
 								<Zap className="w-5 h-5 text-blue-400" />
-								<span className="font-medium uppercase text-xs text-blue-400">
+								<span className="font-medium uppercase text-xs text-blue-400 whitespace-nowrap">
 									{pool.type}
 								</span>
-								<span className="ml-auto">
+								<span className="ml-auto flex-shrink-0">
 									<PoolSelector
 										project={project}
 										onPoolSelected={onPoolSelected}
@@ -234,7 +288,7 @@ export default function LaunchpoolTableRow({
 								<div className="text-xs text-gray-400 mb-1">
 									Accepted tokens:
 								</div>
-								<div className="flex flex-wrap gap-1">
+								<div className="flex flex-wrap gap-2">
 									{getAcceptedTokens().map((token) => (
 										<div
 											key={token}
@@ -247,16 +301,16 @@ export default function LaunchpoolTableRow({
 							</div>
 						</div>
 
-						<div className="flex justify-between mb-2 text-sm">
-							<div className="text-gray-400">APR:</div>
-							<div className="font-medium text-white">
-								{pool?.staker_apy || 0}%
+						<div className="flex justify-between mb-2 text-sm max-w-full truncate block overflow-hidden whitespace-nowrap">
+							<div className="text-gray-400">APY:</div>
+							<div className="font-bold text-white">
+								{(pool?.staker_apy || 0).toFixed(2) || 0}%
 							</div>
 						</div>
 
 						<div className="flex justify-between text-sm">
 							<div className="text-gray-400">Ends in:</div>
-							<div className="font-medium text-white">
+							<div className="font-bold text-white">
 								{pool?.duration || 0} days
 							</div>
 						</div>
@@ -309,6 +363,108 @@ export default function LaunchpoolTableRow({
 								<span className="text-sm text-gray-400 ml-1 flex-shrink-0">
 									{tokenSymbol}
 								</span>
+							</div>
+						</div>
+
+						{/* Token emission & stake metrics */}
+						<div className="mt-3 mb-4 p-4 rounded-lg bg-gradient-to-br from-blue-900/30 via-cyan-800/20 to-blue-900/30 backdrop-filter backdrop-blur-md border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
+							{/* Frost visual effect */}
+							<div className="absolute inset-0 rounded-lg bg-gradient-to-b from-white/5 to-transparent opacity-30 pointer-events-none"></div>
+
+							{/* Emission Rate */}
+							<div>
+								<div className="flex items-center gap-2 mb-2">
+									<Flame className="w-4 h-4 text-cyan-400" />
+									<h3 className="text-sm font-medium text-white">
+										Earning Rate
+									</h3>
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger>
+												<Info size={13} className="text-gray-400" />
+											</TooltipTrigger>
+											<TooltipContent className="bg-black/80 border-white/10 text-white">
+												<p>
+													Your estimated token earnings per block based on your
+													current stake.
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								</div>
+								<div className="pl-6 mb-3">
+									<div className="font-medium text-cyan-300 text-sm">
+										{readEmissionRateStatus === 'success' ? (
+											`+${calculatePersonalEearningRate()} ${tokenSymbol}/block`
+										) : readEmissionRateStatus === 'pending' ? (
+											<Spinner heightWidth={4} />
+										) : (
+											'0.00'
+										)}
+									</div>
+								</div>
+							</div>
+
+							{/* Stake Statistics */}
+							<div>
+								<div className="flex items-center gap-2 mb-2">
+									<BarChart3 className="w-4 h-4 text-cyan-400" />
+									<h3 className="text-sm font-medium text-white">
+										Your Stake Statistics
+									</h3>
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger>
+												<Info size={13} className="text-gray-400" />
+											</TooltipTrigger>
+											<TooltipContent className="bg-black/80 border-white/10 text-white">
+												<p>
+													The larger your share of the pool, the more rewards
+													you earn per block. Increase your stake to maximize
+													your earnings
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								</div>
+
+								{/* Stake details */}
+								<div className="pl-6">
+									<div className="flex justify-between text-xs">
+										<span className="text-gray-400">Your stake:</span>
+										<span className="text-white font-medium">
+											{readUserStakedStatus === 'success'
+												? formatUnits((userStake as bigint) ?? '0', 18)
+												: '0.00'}{' '}
+											{tokenSymbol}
+										</span>
+									</div>
+									<div className="flex justify-between text-xs">
+										<span className="text-gray-400">Pool total:</span>
+										<span className="text-white font-medium">
+											{readTotalStakedStatus === 'success'
+												? formatUnits((totalStaked as bigint) ?? '0', 18)
+												: '0.00'}{' '}
+											{tokenSymbol}
+										</span>
+									</div>
+									<div className="flex justify-between text-xs">
+										<span className="text-gray-400">Your share:</span>
+										<span className="text-cyan-300 font-bold">
+											{calculateStakePercentage()}%
+										</span>
+									</div>
+
+									<ProgressBar
+										index={calculateStakePercentage()}
+										total={100}
+										duration={1}
+										overrideClassName={true}
+										barClassName="w-full mt-2 h-2 bg-gray-800/50 rounded-full overflow-hidden backdrop-blur-sm"
+										colorClassName="bg-gradient-to-r from-cyan-500 to-[#A5F2F3] relative h-full transition-all ease-out duration-700"
+									/>
+								</div>
+								{/* <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-shimmer"></div> */}
 							</div>
 						</div>
 
@@ -385,9 +541,9 @@ export default function LaunchpoolTableRow({
 										value={stakeAmount}
 										onChange={(e) => setStakeAmount(e.target.value)}
 										placeholder="0.0"
-										className="w-full bg-white/5 border border-white/10 rounded-xl p-3 mb-4 text-white backdrop-blur-md focus:outline-none focus:ring-0 focus:border-white/20"
+										className="w-full bg-white/5 border border-white/10 rounded-xl p-3 mt-5 mb-4 text-white backdrop-blur-md focus:outline-none focus:ring-0 focus:border-white/20"
 									/>
-									<div className="mt-2 flex items-center gap-2 text-xs font-orbitron">
+									<div className="mt-2 flex items-center gap-2 text-xs font-orbitron max-w-[75%]">
 										<TooltipProvider>
 											<Tooltip>
 												<TooltipTrigger asChild>
@@ -409,7 +565,9 @@ export default function LaunchpoolTableRow({
 											</Tooltip>
 										</TooltipProvider>
 										<span
-											className="bg-gradient-to-r from-cyan-400/20 to-blue-500/10 border border-cyan-400/20 rounded px-2 py-0.5 text-cyan-200 font-bold tracking-wide shadow-inner"
+											className="bg-gradient-to-r from-cyan-400/20 to-blue-500/10 border border-cyan-400/20 rounded 
+											px-2 py-0.5 text-cyan-200 font-bold tracking-wide shadow-inner
+											truncate block overflow-hidden whitespace-nowrap"
 											style={{ fontVariantNumeric: 'tabular-nums' }}
 										>
 											{readAllowanceStatus === 'success' ? (
@@ -440,7 +598,9 @@ export default function LaunchpoolTableRow({
 											</Tooltip>
 										</TooltipProvider>
 										<span
-											className="bg-gradient-to-r from-green-400/20 to-blue-500/10 border border-green-400/20 rounded px-2 py-0.5 text-green-200 font-bold tracking-wide shadow-inner"
+											className="bg-gradient-to-r from-green-400/20 to-blue-500/10 border border-green-400/20 
+											rounded px-2 py-0.5 text-green-200 font-bold tracking-wide shadow-inner
+											truncate block overflow-hidden whitespace-nowrap"
 											style={{ fontVariantNumeric: 'tabular-nums' }}
 										>
 											{readUserStakedStatus === 'success' ? (

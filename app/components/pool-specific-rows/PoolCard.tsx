@@ -118,11 +118,11 @@ export function PoolCard({ isSelected, pool, onClick }: PoolCardProps) {
 					{getPoolNameFromType(pool.type)}
 				</span>
 				<span
-					className={`font-medium ${
+					className={`font-bold  ${
 						isSelected ? 'text-green-300 brightness-125' : 'text-green-400'
 					}`}
 				>
-					{pool.staker_apy}% APR
+					{(pool.staker_apy || 0).toFixed(2)}% APY
 				</span>
 			</div>
 

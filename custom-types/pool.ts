@@ -71,3 +71,23 @@ export function toUnifiedPool(
 		description: pool.description || "",
 	};
 }
+
+export function isPoolActive(pool: UnifiedPool | launchpool): boolean {
+	const now = new Date();
+	return pool.start_date <= now && pool.end_date >= now;
+}
+
+export function calcPoolsAvgApy(pools: UnifiedPool[]): number {
+	if (pools.length === 0) return 0;
+
+	let poolsWithApyCount = 0;
+	const avgApy =
+		pools.reduce((sum, pool) => {
+			if (pool.staker_apy > 0) {
+				poolsWithApyCount++;
+			}
+			return sum + pool.staker_apy;
+		}, 0) / poolsWithApyCount;
+
+	return avgApy;
+}
