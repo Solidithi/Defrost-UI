@@ -8,6 +8,7 @@ import Modal from '../components/UI/Modal'
 import SteplineChart from '../components/UI/SteplineChart'
 import { toast, ToastContainer } from 'react-toastify'
 import { red } from 'tailwindcss/colors'
+import AnimatedBlobs from '../components/UI/Background/AnimatedBlobs'
 interface FormDataType {
 	chain: string
 	token: string
@@ -158,7 +159,8 @@ const CreatePool = () => {
 	}
 
 	return (
-		<div className="page-container">
+		<div className="relative page-container overflow-hidden">
+			<AnimatedBlobs count={4} />
 			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
 			<div className=" text-center">
 				<SplitText
@@ -186,7 +188,7 @@ const CreatePool = () => {
 			{/* -------------------------------------------Form------------------------------------------------ */}
 
 			<div
-				className={`mt-14 w-2/3 h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300`}
+				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300`}
 			>
 				<Stepper
 					className="w-full"
@@ -206,7 +208,7 @@ const CreatePool = () => {
 								value={tokenAddress}
 								onChange={(e) => setTokenAddress(e.target.value)}
 								placeholder="Enter your token address"
-								className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+								className="p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full"
 							/>
 						</div>
 					</Step>
@@ -270,7 +272,7 @@ const CreatePool = () => {
 														onChange={(e) =>
 															handleChange(index, 'chain', e.target.value)
 														}
-														className="p-3 pr-10 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
+														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
 															Select your chain
@@ -305,7 +307,7 @@ const CreatePool = () => {
 														onChange={(e) =>
 															handleChange(index, 'token', e.target.value)
 														}
-														className="p-3 pr-10 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
+														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
 															Select your token
@@ -358,12 +360,12 @@ const CreatePool = () => {
 														}
 													}}
 													placeholder="Enter project token supply"
-													className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     																[&::-webkit-inner-spin-button]:appearance-none 
     																[&::-webkit-outer-spin-button]:appearance-none"
 												/>
 
-												<Button className="glass-component-3 rounded-lg">
+												<Button className="glass-component-3 rounded-xl">
 													Check
 												</Button>
 											</div>
@@ -392,7 +394,7 @@ const CreatePool = () => {
 													}
 												}}
 												placeholder="Enter max stake"
-												className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
 											/>
@@ -407,7 +409,7 @@ const CreatePool = () => {
 													handleChange(index, 'from', e.target.value)
 												}
 												placeholder="Enter start date"
-												className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
 											/>
 										</div>
 
@@ -420,7 +422,7 @@ const CreatePool = () => {
 													handleChange(index, 'to', e.target.value)
 												}
 												placeholder="Enter end date"
-												className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
 											/>
 										</div>
 
@@ -453,7 +455,7 @@ const CreatePool = () => {
 
 											<Button
 												onClick={() => handleOpenEmissionRateModal()}
-												className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm flex justify-center items-center"
+												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm flex justify-center items-center"
 											>
 												<svg
 													width="29"
@@ -551,7 +553,7 @@ const CreatePool = () => {
 													)
 												}
 												placeholder="Enter emission rate"
-												className="p-3 pr-10 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
 											/>
 											<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-sm">
 												%
@@ -568,7 +570,7 @@ const CreatePool = () => {
 												handleChangeEmissionRate(index, 'from', e.target.value)
 											}
 											placeholder="Enter start date"
-											className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
 										/>
 									</div>
 
@@ -581,7 +583,7 @@ const CreatePool = () => {
 												handleChangeEmissionRate(index, 'to', e.target.value)
 											}
 											placeholder="Enter end date"
-											className="p-3 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
 										/>
 									</div>
 								</motion.div>
