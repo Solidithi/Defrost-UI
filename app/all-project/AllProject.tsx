@@ -237,7 +237,7 @@ const AllProject = () => {
 			<div className="text-white mb-20">
 				<div className="mt-44 text-center">
 					<SplitText
-						text="Launchpool"
+						text="Explore & Discover Projects"
 						className="text-7xl text-center font-bold text-white font-orbitron"
 						delay={150}
 						animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
