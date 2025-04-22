@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { shortenStr } from '../lib/utils'
-import { EnrichedProject } from '@/types/project'
+import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import SwitchTableOrCard from '@/app/components/UI/SwitchTableOrCard'
 import DataTable from '@/app/components/UI/DataTable'
 import { Column } from '@/app/components/UI/DataTable'

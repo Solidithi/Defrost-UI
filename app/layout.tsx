@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { Orbitron, Comfortaa, Permanent_Marker } from 'next/font/google'
-import { Providers } from './providers'
+import { Providers } from './provider/providers'
 import { headers } from 'next/headers'
 import './globals.css'
-import Navbar from './components/Navbar'
+import Navbar from './components/layout/Navbar'
 import Footer from './components/Footer'
 
 export const metadata: Metadata = {

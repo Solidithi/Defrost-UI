@@ -6,7 +6,6 @@ import {
 	EnrichedProject,
 	calcPoolsAvgApy,
 } from "@/app/types";
-import { calcGeneratorDuration } from "framer-motion";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
