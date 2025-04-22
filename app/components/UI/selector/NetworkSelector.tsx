@@ -2,10 +2,11 @@ import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 
 interface NetworkOption {
-	id: string
+	id: number
 	name: string
 	icon?: string
 	address?: string
+	isTestnet: boolean
 }
 
 interface NetworkSelectorProps {
@@ -103,6 +104,8 @@ const NetworkSelector = ({
 							<Image
 								src={selectedNetwork.icon}
 								alt={selectedNetwork.name}
+								width={24}
+								height={24}
 								className="w-6 h-6 rounded-full"
 							/>
 						)}
@@ -136,17 +139,29 @@ const NetworkSelector = ({
 							{options.map((network) => (
 								<div
 									key={network.id}
-									className={`glass-component-3 hover:bg-gray-600 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 ${
+									className={`relative glass-component-3 hover:bg-gray-600 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 ${
 										selectedNetwork && selectedNetwork.id === network.id
 											? 'ring-2 ring-blue-500'
 											: ''
-									}`}
+									} border-2 bg-gradient-to-br from-pink-900/30 to-blue-900/30 shadow-lg ${network.isTestnet ? 'border-pink-400 shadow-pink-500/20' : 'border-blue-400 shadow-blue-500/20'}`}
 									onClick={() => handleNetworkSelect(network)}
 								>
+									{/* Testnet Ribbon Decoration */}
+									{network.isTestnet && (
+										<div className="absolute -top-3 -right-3 z-10">
+											<span className="bg-gradient-to-r from-pink-500 to-blue-400 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg uppercase tracking-wider animate-pulse">
+												Testnet
+											</span>
+										</div>
+									)}
 									{network.icon ? (
 										<Image
 											src={network.icon}
 											alt={network.name}
+											width={40}
+											height={40}
+											loading="lazy"
+											quality={100}
 											className="w-10 h-10 rounded-full mb-2"
 										/>
 									) : (
