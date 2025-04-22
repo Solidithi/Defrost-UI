@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { prismaClient } from "@/app/lib/prisma";
 import {
 	toUnifiedPool,
@@ -12,10 +11,7 @@ export async function GET(request: Request) {
 	const address = searchParams.get("address");
 
 	if (!address) {
-		return NextResponse.json(
-			{ error: "Address is required" },
-			{ status: 400 }
-		);
+		return Response.json({ error: "Address is required" }, { status: 400 });
 	}
 
 	try {
@@ -98,10 +94,10 @@ export async function GET(request: Request) {
 			} as EnrichedProject;
 		});
 
-		return NextResponse.json({ projects: enrichedProjects });
+		return Response.json({ projects: enrichedProjects });
 	} catch (error) {
 		console.error("Error fetching projects:", error);
-		return NextResponse.json(
+		return Response.json(
 			{ error: "Failed to fetch projects" },
 			{ status: 500 }
 		);
