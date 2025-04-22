@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { shortenStr } from '../lib/utils'
-import { EnrichedProject } from '@/custom-types/project'
+import { shortenStr } from '../../lib/utils'
+import { EnrichedProject } from '@/app/custom-types/project'
 import SwitchTableOrCard from '@/app/components/UI/SwitchTableOrCard'
 import DataTable from '@/app/components/UI/DataTable'
 import { Column } from '@/app/components/UI/DataTable'
 import Head from 'next/head'
 import Image from 'next/image'
-import Spinner from '../components/UI/Spinner'
+import Spinner from '../../components/UI/Spinner'
 
 export default function MyProject() {
 	const [sortOption, setSortOption] = useState('newest')

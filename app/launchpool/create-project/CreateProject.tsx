@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import SplitText from '../components/UI/SplitText'
-import Stepper, { Step } from '../components/UI/Stepper'
-import NetworkSelector from '../components/UI/NetworkSelector'
-import Folder from '../components/UI/Folder'
-import ImageManager from '../components/UI/ImageManager'
+import SplitText from '../../components/UI/SplitText'
+import Stepper, { Step } from '../../components/UI/Stepper'
+import NetworkSelector from '../../components/UI/NetworkSelector'
+import Folder from '../../components/UI/Folder'
+import ImageManager from '../../components/UI/ImageManager'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 

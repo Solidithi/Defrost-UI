@@ -1,15 +1,14 @@
 'use client'
-import React, { useState } from 'react'
-import SplitText from '../components/UI/SplitText'
-import Stepper, { Step } from '../components/UI/Stepper'
-import Button from '../components/UI/Button'
 import { motion } from 'framer-motion'
-import Modal from '../components/UI/Modal'
-import SteplineChart from '../components/UI/SteplineChart'
 import { toast, ToastContainer } from 'react-toastify'
 import { red } from 'tailwindcss/colors'
-import AnimatedBlobs from '../components/UI/Background/AnimatedBlobs'
-import { usePoolStore } from '../store/store'
+import AnimatedBlobs from '../../components/UI/Background/AnimatedBlobs'
+import Button from '../../components/UI/Button'
+import Modal from '../../components/UI/Modal'
+import SplitText from '../../components/UI/SplitText'
+import SteplineChart from '../../components/UI/SteplineChart'
+import Stepper, { Step } from '../../components/UI/Stepper'
+import { usePoolStore } from '../../store/store'
 
 const CreatePool = () => {
 	// const [tokenAddress, setTokenAddress] = useState('')
@@ -97,8 +96,9 @@ const CreatePool = () => {
 	}
 
 	return (
-		<div className="relative page-container overflow-hidden">
+		<div className="relative page-container ">
 			<AnimatedBlobs count={4} />
+
 			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
 			<div className=" text-center z-20">
 				<SplitText

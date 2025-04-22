@@ -5,7 +5,7 @@ import {
 	UnifiedPool,
 	EnrichedProject,
 	calcPoolsAvgApy,
-} from "@/custom-types";
+} from "@/app/custom-types";
 import { calcGeneratorDuration } from "framer-motion";
 
 export async function GET(request: Request) {

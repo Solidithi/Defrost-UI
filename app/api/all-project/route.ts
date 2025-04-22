@@ -6,7 +6,7 @@ import {
 	EnrichedProject,
 	isPoolActive,
 	calcPoolsAvgApy,
-} from "@/custom-types";
+} from "@/app/custom-types";
 
 export async function GET(request: Request) {
 	try {
