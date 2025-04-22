@@ -1,9 +1,9 @@
-import { FOOTER_LINKS } from '../constants/index'
+import { FOOTER_LINKS } from '@/app/constants/index'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
-import Particles from './UI/Particles'
-import DefrostLogo from '../../public/Logo.png'
+import Particles from '@/app/components/UI/Particles'
+import DefrostLogo from '@/public/Logo.png'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
