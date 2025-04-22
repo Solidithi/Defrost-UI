@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Logo from '@/public/Logo.png'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
-import ThumbNailCarousel from '@/app/components/UI/ThumbnailCarousel'
+import ThumbNailCarousel from '@/app/components/UI/carousel/ThumbnailCarousel'
 import ProjectProgress from '@/app/components/UI/project-progress/ProjectProgress'
 import {
 	Modal,
@@ -16,10 +16,234 @@ import {
 	AllPoolsTab,
 	DescriptionTab,
 } from '@/app/components/project-detail-sections/ContentTab'
-import { useProjectStore } from '@/app/store/project'
+import {
+	useAccount,
+	useChainId,
+	useReadContract,
+	useWriteContract,
+	useWaitForTransactionReceipt,
+} from 'wagmi'
+import Button from '@/app/components/UI/button/Button'
+import Spinner from '@/app/components/UI/effect/Spinner'
+
+import { abi as ProjectHubABI } from '@/abi/ProjectHubUpgradeable.json'
+import { useCreateProjectStore } from '@/app/store/create-project'
 import StakeArea from '@/app/components/UI/shared/StakeArea'
+import chains from '@/app/config/chains.json'
+import { useEffect, useState } from 'react'
+import { normalizeAddress } from '@/app/lib/utils'
+import { fileToBase64 } from '@/app/lib/utils'
 
 const Preview = () => {
+	const createProjectStore = useCreateProjectStore((state) => state)
+	const account = useAccount()
+	const chainIdStr = account?.chainId?.toString() || ''
+	const projectHubProxyAddress = chains[chainIdStr as keyof typeof chains]
+		?.deployedContracts?.ProjectHubUpgradeableProxy as `0x${string}`
+
+	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
+	const [isUpdatingDetails, setIsUpdatingDetails] = useState(false)
+	const [finalError, setFinalError] = useState<string | null>(null)
+	const [isProjectCreated, setIsProjectCreated] = useState(false)
+
+	const {
+		writeContract: createProject,
+		status: createProjectStatus,
+		data: createProjectHash,
+	} = useWriteContract()
+
+	const { status: createProjectReceiptStatus, data: createProjectReceipt } =
+		useWaitForTransactionReceipt({
+			hash: createProjectHash,
+		})
+
+	useEffect(() => {
+		if (
+			createProjectStore.longDescription &&
+			createProjectStore.shortDescription &&
+			createProjectStore.images.length > 0 &&
+			createProjectStore.logo &&
+			createProjectStore.name
+		) {
+			console.log('Setting createProjectStore to complete')
+			createProjectStore.setIsComplete(true)
+		}
+	}, []) // Empty dependency array ensures this runs only once
+
+	useEffect(() => {
+		console.log('Receipt Status:', createProjectReceiptStatus)
+		console.log('Receipt Data:', createProjectReceipt)
+
+		if (createProjectReceiptStatus === 'success') {
+			console.log('Transaction confirmed! Receipt:', createProjectReceipt)
+			// --- START POLLING FOR INDEXER HERE ---
+			setIsWaitingForIndexer(true)
+			setFinalError(null) // Clear previous errors
+
+			const txHash = normalizeAddress(createProjectReceipt.transactionHash)
+			pollIndexerStatus(txHash) // Call the polling function (implement below)
+		} else if (createProjectReceiptStatus === 'error') {
+			console.error('Error waiting for transaction receipt')
+			setFinalError('Error confirming transaction on-chain.')
+			// Reset other statuses if needed
+			setIsWaitingForIndexer(false)
+			setIsUpdatingDetails(false)
+		}
+	}, [createProjectReceiptStatus, createProjectReceipt]) // Depend on status and receipt data
+
+	/** Continual API call to know deteremine whether indexer saved project */
+	const pollIndexerStatus = async (txHash: `0x${string}`) => {
+		const maxRetries = 20 // e.g., 20 retries * 3 seconds = 1 minute timeout
+		const interval = 3000 // 3 seconds
+		let retries = 0
+
+		const poll = async () => {
+			if (retries >= maxRetries) {
+				console.error('Polling timed out waiting for indexer.')
+				setFinalError('Indexer did not process the transaction in time.')
+				setIsWaitingForIndexer(false)
+				return
+			}
+
+			try {
+				console.log(`Polling indexer... Attempt ${retries + 1}`)
+				const response = await fetch(
+					`/api/create-project/is-indexed?txHash=${txHash}`
+				)
+				if (!response.ok) {
+					throw new Error(`API request failed with status ${response.status}`)
+				}
+				const { isIndexed } = await response.json()
+
+				if (isIndexed) {
+					console.log('Indexer confirmed record exists!')
+					setIsWaitingForIndexer(false)
+					await updateProjectDetails(txHash)
+				} else {
+					retries++
+					setTimeout(poll, interval)
+				}
+			} catch (error) {
+				console.error('Polling error:', error)
+				setFinalError('Error checking indexer status.')
+				setIsWaitingForIndexer(false)
+				// Optionally retry on specific errors or stop immediately
+				// retries++;
+				// setTimeout(poll, interval);
+				// Or push to queue to handle later
+			}
+		}
+
+		await poll() // Start the first poll
+	}
+
+	// --- Function to Update Details via API ---
+	const updateProjectDetails = async (txHash: `0x${string}`) => {
+		setIsUpdatingDetails(true)
+		setFinalError(null)
+		console.log('Updating project details for txHash:', txHash)
+
+		// 1. Convert image files to base64
+		// This part needs implementation based on your storage solution
+		// let logoUrl = ''
+		let logoBase64 = await fileToBase64(createProjectStore.logo!)
+		let imagesBase64 = await Promise.all(
+			createProjectStore.images.map((imageFile) => fileToBase64(imageFile))
+		)
+		// let imageUrls: string[] = []
+		try {
+			// Example: Upload logo (replace with your actual upload logic)
+			// if (createProjectStore.logo) {
+			// 	// logoUrl = await uploadFile(createProjectStore.logo);
+			// 	// logoUrl = 'placeholder-logo-url' // Replace with actual URL after upload
+			// }
+			// // Example: Upload images
+			// if (createProjectStore.images.length > 0) {
+			// 	// imageUrls = await Promise.all(createProjectStore.images.map(uploadFile));
+			// 	// imageUrls = ['placeholder-img1-url', 'placeholder-img2-url'] // Replace
+			// }
+
+			// 2. Send data to your update API endpoint
+			const response = await fetch('/api/create-project/update-detail', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					txHash: txHash,
+					name: createProjectStore.name,
+					short_description: createProjectStore.shortDescription,
+					long_description: createProjectStore.longDescription,
+					logo: logoBase64,
+					images: imagesBase64,
+				}),
+			})
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}))
+				throw new Error(
+					errorData.message ||
+						`API request failed with status ${response.status}`
+				)
+			}
+
+			const result = await response.json()
+			console.log('Project details updated successfully:', result)
+			setIsProjectCreated(true) // Set final success state
+		} catch (error: any) {
+			console.error('Error updating project details:', error)
+			setFinalError(`Failed to save project details: ${error.message}`)
+		} finally {
+			setIsUpdatingDetails(false)
+		}
+	}
+
+	const handleCreateProject = () => {
+		console.log('handling create project')
+
+		if (!createProjectStore.isComplete) {
+			console.error('createProjectStore is not complete')
+			console.log('createProjectStore', createProjectStore)
+			return
+		}
+
+		if (!projectHubProxyAddress) {
+			console.error('ProjectHubProxy address is not defined')
+			return
+		}
+
+		console.log('Creating project with hub address:', projectHubProxyAddress)
+		createProject({
+			abi: ProjectHubABI,
+			address: projectHubProxyAddress,
+			functionName: 'createProject',
+		})
+	}
+
+	// --- Determine Button Text/State ---
+	const getButtonState = () => {
+		if (createProjectStatus === 'pending')
+			return { text: 'Submitting...', loading: true, disabled: true }
+		else if (
+			createProjectReceiptStatus === 'pending' &&
+			createProjectStatus !== 'idle'
+		)
+			return { text: 'Confirming Tx...', loading: true, disabled: true }
+		if (isWaitingForIndexer)
+			return { text: 'Waiting for Indexer...', loading: true, disabled: true }
+		if (isUpdatingDetails)
+			return { text: 'Saving Details...', loading: true, disabled: true }
+		if (isProjectCreated)
+			return { text: 'Project Created!', loading: false, disabled: true } // Or maybe enable for another action
+		if (finalError)
+			return { text: 'Error Occurred', loading: false, disabled: false } // Allow retry?
+		return {
+			text: 'YOLO! (Deploy Project)',
+			loading: false,
+			disabled: account.isDisconnected || !createProjectStore.isComplete,
+		}
+	}
+
+	const buttonState = getButtonState()
+
 	const projectDetail = {
 		id: 1,
 		name: 'Project Name',
@@ -108,16 +332,6 @@ const Preview = () => {
 				</div>
 			),
 		},
-		// {
-		// 	title: 'Pools',
-		// 	value: 'pools',
-		// 	content: (
-		// 		<div className="flex flex-col gap-4">
-		// 			{/* Add content for Pools tab */}
-		// 			<p>Pools Content</p>
-		// 		</div>
-		// 	),
-		// },
 	]
 
 	return (
@@ -172,6 +386,26 @@ const Preview = () => {
 						<div className="">
 							<StakeArea />
 						</div>
+						<Button
+							onClick={handleCreateProject}
+							disabled={buttonState.disabled}
+							className="mt-6 mb-4"
+						>
+							<span className="font-bold">
+								{buttonState.text} &nbsp;
+								{buttonState.loading && <Spinner heightWidth={5} />}
+							</span>
+						</Button>
+						{finalError && (
+							<p className="text-red-500 text-xs text-center mt-2">
+								{finalError}
+							</p>
+						)}
+						{isProjectCreated && (
+							<p className="text-green-500 text-xs text-center mt-2">
+								Project successfully created and details saved!
+							</p>
+						)}
 					</div>
 				</div>
 				<ModalBody>

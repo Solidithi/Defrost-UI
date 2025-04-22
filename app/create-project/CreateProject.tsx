@@ -9,7 +9,8 @@ import Folder from '@/app/components/UI/selector/Folder'
 import ImageManager from '@/app/components/UI/shared/ImageManager'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useProjectStore } from '../store/project'
+import { useCreateProjectStore } from '../store/create-project'
+import chains from '@/app/config/chains.json'
 
 interface ImageItem {
 	id: string
@@ -33,50 +34,29 @@ const CreateProject = () => {
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
-	const {
-		storeLogo,
-		storedLogo,
-		storeImages,
-		storedImages,
-		storeLongDescription,
-		storedLongDescription,
-		storeShortDescription,
-		storedShortDescription,
-	} = useProjectStore((state) => {
-		return {
-			storeLogo: state.setLogo,
-			storedLogo: state.logo,
-			storeImages: state.setImages,
-			storedImages: state.images,
-			storeShortDescription: state.setShortDescription,
-			storedShortDescription: state.shortDescription,
-			storeLongDescription: state.setLongDescription,
-			storedLongDescription: state.longDescription,
-		}
-	})
+	const createProjectStore = useCreateProjectStore((state) => state)
+
 	const route = useRouter()
 
-	const availableNetworks = [
-		{
-			id: 'moonbeam',
-			name: 'Moonbeam',
-		},
-		{
-			id: 'astar',
-			name: 'Astar',
-		},
-		{
-			id: 'polkadot',
-			name: 'Polkadot',
-		},
-		{
-			id: 'kusama',
-			name: 'Kusama',
-		},
-	]
+	// const availableNetworks = Objec(chains as ChainConfig)
+	const availableNetworks = Object.entries(chains).map(([_, chain]) => ({
+		id: chain.chainID,
+		name: chain.chainName,
+		icon: chain.chainIcon,
+		isTestnet: chain.isTestnet,
+		address: '',
+	}))
 
 	const handleComplete = () => {
 		try {
+			// Check if all required fields are filled
+			if (!selectedNetwork) {
+				alert('Please select a blockchain network')
+				return
+			}
+			if (!createProjectStore.name) {
+			}
+
 			route.push('/create-project/preview')
 		} catch (error) {
 			console.log('Error:', error)
@@ -104,6 +84,7 @@ const CreateProject = () => {
 
 	const handleNetworkChange = (option: any) => {
 		setSelectedNetwork(option.name)
+
 		// console.log(`Selected network: ${option.name}`)
 	}
 
@@ -116,6 +97,8 @@ const CreateProject = () => {
 			const files = Array.from(e.target.files)
 
 			// Process each file
+			const imageFiles: File[] = []
+
 			files.forEach((file) => {
 				const reader = new FileReader()
 				reader.onload = (event) => {
@@ -126,12 +109,14 @@ const CreateProject = () => {
 							file: file,
 						}
 
-						// Add the new image to state
+						imageFiles.push(newImage.file)
 						setProjectImages((prev) => [...prev, newImage])
 					}
 				}
 				reader.readAsDataURL(file)
 			})
+			// Add the new image to state
+			createProjectStore.setImages(imageFiles)
 
 			// Open the folder when files are selected
 			setImageUploadFolderOpen(true)
@@ -149,6 +134,7 @@ const CreateProject = () => {
 			}
 
 			setProjectLogo(file)
+			createProjectStore.setLogo(file)
 
 			// Open the folder when file is selected
 			setLogoUploadFolderOpen(true)
@@ -261,7 +247,10 @@ const CreateProject = () => {
 									<input
 										id="projectName"
 										value={name}
-										onChange={(e) => setName(e.target.value)}
+										onChange={(e) => {
+											setName(e.target.value)
+											createProjectStore.setName(e.target.value)
+										}}
 										placeholder="Enter your project name"
 										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
 									/>
@@ -284,7 +273,7 @@ const CreateProject = () => {
 												e.target.value.length < shortDescription.length
 											) {
 												setShortDescription(e.target.value)
-												storeShortDescription(e.target.value)
+												createProjectStore.setShortDescription(e.target.value)
 											}
 										}}
 										placeholder="Brief overview of your project (100 words max)"
@@ -310,7 +299,7 @@ const CreateProject = () => {
 										id="longDescription"
 										value={longDescription}
 										onChange={(e) => {
-											storeLongDescription(e.target.value)
+											createProjectStore.setLongDescription(e.target.value)
 											setLongDescription(e.target.value)
 										}}
 										placeholder="Detailed description of your project"
