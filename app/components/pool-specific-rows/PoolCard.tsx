@@ -1,4 +1,4 @@
-import { UnifiedPool } from '@/custom-types'
+import { UnifiedPool } from '@/app/types'
 import { Zap, Rocket, Sprout } from 'lucide-react'
 
 export const getPoolColors = (type: string) => {

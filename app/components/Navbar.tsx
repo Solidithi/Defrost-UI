@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import DefrostLogo from '../../public/Logo.png'
 import { comfortaa, orbitron, permanentMarker } from '../lib/font'
 import { cn } from '../lib/utils'
-// import ConnectButton, { useNavbarVisibility } from './ConnectButton'
+import ConnectButton from './ConnectButton'
 import Button from './UI/Button'
 
 const Navbar = ({
@@ -93,7 +93,8 @@ const Navbar = ({
 					{/* <button className="hidden lg:flex items-center bg-gradient-to-r from-[#F05550] to-[#54A4F2] text-white px-5 rounded-full h-10">
 						<span className="text-md font-bold relative">Connect Wallet</span>
 					</button> */}
-					<Button className="warm-cool-bg">Connect Wallet</Button>
+					{/* <Button className="warm-cool-bg">Connect Wallet</Button> */}
+					<ConnectButton />
 					<div className="lg:hidden md:flex flex-col justify-end">
 						<button onClick={toggleNavbar}>
 							{toggle ? (

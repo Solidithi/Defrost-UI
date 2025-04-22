@@ -9,6 +9,7 @@ import Folder from '../components/UI/Folder'
 import ImageManager from '../components/UI/ImageManager'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useProjectStore } from '../store/project'
 
 interface ImageItem {
 	id: string
@@ -32,6 +33,27 @@ const CreateProject = () => {
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
+	const {
+		storeLogo,
+		storedLogo,
+		storeImages,
+		storedImages,
+		storeLongDescription,
+		storedLongDescription,
+		storeShortDescription,
+		storedShortDescription,
+	} = useProjectStore((state) => {
+		return {
+			storeLogo: state.setLogo,
+			storedLogo: state.logo,
+			storeImages: state.setImages,
+			storedImages: state.images,
+			storeShortDescription: state.setShortDescription,
+			storedShortDescription: state.shortDescription,
+			storeLongDescription: state.setLongDescription,
+			storedLongDescription: state.longDescription,
+		}
+	})
 	const route = useRouter()
 
 	const availableNetworks = [
@@ -262,6 +284,7 @@ const CreateProject = () => {
 												e.target.value.length < shortDescription.length
 											) {
 												setShortDescription(e.target.value)
+												storeShortDescription(e.target.value)
 											}
 										}}
 										placeholder="Brief overview of your project (100 words max)"
@@ -286,7 +309,10 @@ const CreateProject = () => {
 									<textarea
 										id="longDescription"
 										value={longDescription}
-										onChange={(e) => setLongDescription(e.target.value)}
+										onChange={(e) => {
+											storeLongDescription(e.target.value)
+											setLongDescription(e.target.value)
+										}}
 										placeholder="Detailed description of your project"
 										className="p-4 rounded-lg glass-component-2 text-white font-comfortaa h-56 resize-none w-full"
 									/>

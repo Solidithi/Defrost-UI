@@ -17,8 +17,9 @@ import Image from 'next/image'
 import { shortenStr } from '../lib/utils'
 import LaunchpoolTableRow from '@/app/components/pool-specific-rows/LaunchpoolTableRow'
 import { motion, AnimatePresence } from 'framer-motion'
-import { EnrichedProject } from '@/custom-types/project'
-import { UnifiedPool } from '@/custom-types/pool'
+import { EnrichedProject } from '@/types/project'
+import { UnifiedPool } from '@/app/types/extended-models/unified-pool'
+
 // Define stat card interface
 interface StatCardItem {
 	type: 'Total Project' | 'Total Staking' | 'Unique Participant'

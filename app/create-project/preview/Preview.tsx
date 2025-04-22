@@ -17,6 +17,7 @@ import {
 	AllPoolsTab,
 	DescriptionTab,
 } from '@/app/components/project-detail-sections/ContentTab'
+import { useProjectStore } from '@/app/store/project'
 
 const Preview = () => {
 	const projectDetail = {

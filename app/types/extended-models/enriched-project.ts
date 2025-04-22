@@ -1,5 +1,5 @@
 import { project, launchpool } from "@prisma/client";
-import { UnifiedPool } from "./pool";
+import { UnifiedPool } from "./unified-pool";
 
 // Project with potentially multiple types of pools
 export type ProjectWithPools = project & {

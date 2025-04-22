@@ -6,7 +6,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/app/components/UI/shadcn/Dialog'
-import { EnrichedProject, UnifiedPool } from '@/custom-types'
+import { EnrichedProject, UnifiedPool } from '@/app/types'
 import { useState } from 'react'
 import Spinner from '@/app/components/UI/Spinner'
 import { formatUnits } from 'ethers'
