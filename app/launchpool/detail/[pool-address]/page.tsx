@@ -1,4 +1,4 @@
-import ProjectDetail from './project-detail'
+import ProjectDetail from './LaunchpoolDetail'
 
 const ProjectDetailPage = () => {
 	return (
