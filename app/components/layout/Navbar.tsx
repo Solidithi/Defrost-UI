@@ -4,11 +4,11 @@ import { Menu, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import DefrostLogo from '../../public/Logo.png'
-import { comfortaa, orbitron, permanentMarker } from '../../lib/font'
-import { cn } from '../../lib/utils'
+import DefrostLogo from '@/public/Logo.png'
+import { comfortaa, orbitron, permanentMarker } from '@/app/lib/font'
+import { cn } from '@/app/lib/utils'
 import ConnectButton from '../ConnectButton'
-import Button from '../UI/Button'
+import Button from '@/app/components/UI/Button'
 
 const Navbar = ({
 	navItems,

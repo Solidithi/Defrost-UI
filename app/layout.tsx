@@ -4,7 +4,7 @@ import { Providers } from './provider/providers'
 import { headers } from 'next/headers'
 import './globals.css'
 import Navbar from './components/layout/Navbar'
-import Footer from './components/Footer'
+import Footer from './components/layout/Footer'
 
 export const metadata: Metadata = {
 	title: 'Defrost',
