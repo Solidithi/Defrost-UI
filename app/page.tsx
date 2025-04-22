@@ -4,7 +4,7 @@ import HeroSection from './components/homepage-sections/HeroSection'
 import PartnerSection from './components/homepage-sections/PartnersSection'
 import OurTeam from './components/homepage-sections/OurTeam'
 import FeaturesSection from './components/homepage-sections/FeaturesSection'
-import SectionComponent from './components/UI/SectionComponent'
+import SectionComponent from './components/UI/effect/SectionComponent'
 import BenefitSection from './components/homepage-sections/BenefitSection'
 import MotivationSection from './components/homepage-sections/MotivationSection'
 export default function Home() {

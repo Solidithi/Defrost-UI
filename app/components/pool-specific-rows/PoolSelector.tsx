@@ -8,7 +8,7 @@ import {
 } from '@/app/components/UI/shadcn/Dialog'
 import { EnrichedProject, UnifiedPool } from '@/app/types'
 import { useState } from 'react'
-import Spinner from '@/app/components/UI/Spinner'
+import Spinner from '@/app/components/UI/effect/Spinner'
 import { formatUnits } from 'ethers'
 import { PoolCard } from './PoolCard'
 

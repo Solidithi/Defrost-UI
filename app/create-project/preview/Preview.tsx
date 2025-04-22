@@ -4,20 +4,20 @@ import Image from 'next/image'
 import Logo from '@/public/Logo.png'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
 import ThumbNailCarousel from '@/app/components/UI/ThumbnailCarousel'
-import ProjectProgress from '@/app/components/UI/ProjectProgress/ProjectProgress'
-import StakeArea from '@/app/components/UI/StakeArea'
+import ProjectProgress from '@/app/components/UI/project-progress/ProjectProgress'
 import {
 	Modal,
 	ModalBody,
 	ModalContent,
-} from '@/app/components/UI/AnimatedModal'
+} from '@/app/components/UI/modal/AnimatedModal'
 import { motion } from 'framer-motion'
-import Tabs from '@/app/components/UI/Tabs'
+import Tabs from '@/app/components/UI/shared/Tabs'
 import {
 	AllPoolsTab,
 	DescriptionTab,
 } from '@/app/components/project-detail-sections/ContentTab'
 import { useProjectStore } from '@/app/store/project'
+import StakeArea from '@/app/components/UI/shared/StakeArea'
 
 const Preview = () => {
 	const projectDetail = {

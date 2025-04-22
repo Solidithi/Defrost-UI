@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react'
 import { shortenStr } from '../lib/utils'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
-import SwitchTableOrCard from '@/app/components/UI/SwitchTableOrCard'
-import DataTable from '@/app/components/UI/DataTable'
-import { Column } from '@/app/components/UI/DataTable'
+import SwitchTableOrCard from '@/app/components/UI/button/SwitchTableOrCard'
+import DataTable from '@/app/components/UI/shared/DataTable'
+import { Column } from '@/app/components/UI/shared/DataTable'
 import Head from 'next/head'
 import Image from 'next/image'
-import Spinner from '../components/UI/Spinner'
+import Spinner from '../components/UI/effect/Spinner'
 
 export default function MyProject() {
 	const [sortOption, setSortOption] = useState('newest')

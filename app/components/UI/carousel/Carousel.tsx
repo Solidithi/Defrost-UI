@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Splide, SplideSlide } from '@splidejs/react-splide'
 import '@splidejs/splide/css'
 import Logo from '@/public/Logo.png'
-import ProgressBar from './ProjectProgress/ProgressBar'
+import ProgressBar from '../project-progress/ProgressBar'
 
 interface Image {
 	src: string
@@ -31,7 +31,7 @@ const images: Image[] = [
 
 const progress = 100 / images.length
 
-const ImageCarousel: React.FC = () => {
+const CarouselWithProgress: React.FC = () => {
 	const [index, setIndex] = useState(0)
 	const ref = useRef<Splide>(null)
 
@@ -96,4 +96,4 @@ const ImageCarousel: React.FC = () => {
 	)
 }
 
-export default ImageCarousel
+export default CarouselWithProgress

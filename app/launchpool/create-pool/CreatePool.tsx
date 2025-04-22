@@ -2,13 +2,13 @@
 import { motion } from 'framer-motion'
 import { toast, ToastContainer } from 'react-toastify'
 import { red } from 'tailwindcss/colors'
-import AnimatedBlobs from '../../components/UI/Background/AnimatedBlobs'
-import Button from '../../components/UI/Button'
-import Modal from '../../components/UI/Modal'
-import SplitText from '../../components/UI/SplitText'
-import SteplineChart from '../../components/UI/SteplineChart'
-import Stepper, { Step } from '../../components/UI/Stepper'
-import { usePoolStore } from '../../store/store'
+import AnimatedBlobs from '../../components/UI/background/AnimatedBlobs'
+import Button from '../../components/UI/button/Button'
+import Modal from '../../components/UI/modal/Modal'
+import SplitText from '../../components/UI/effect/SplitText'
+import SteplineChart from '../../components/charts/SteplineChart'
+import Stepper, { Step } from '../../components/UI/project-progress/Stepper'
+import { usePoolStore } from '@/app/store/launchpool'
 
 const CreatePool = () => {
 	// const [tokenAddress, setTokenAddress] = useState('')

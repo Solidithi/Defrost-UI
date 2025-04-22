@@ -1,7 +1,7 @@
-import { AnimatedTestimonials } from '@/app/components/UI/AnimatedTestimonials'
+import { AnimatedTestimonials } from '@/app/components/UI/shared/AnimatedTestimonials'
 import { OUR_TEAM } from '@/app/constants'
 import { motion } from 'framer-motion'
-import { Boxes } from '../UI/BackgroundBoxes'
+import { Boxes } from '../UI/background/BackgroundBoxes'
 
 const OurTeam = () => {
 	const testimonials = OUR_TEAM

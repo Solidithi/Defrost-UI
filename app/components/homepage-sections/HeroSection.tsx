@@ -3,13 +3,13 @@
 import Image from 'next/image'
 import Logo from '../../../public/Logo.png'
 import { orbitron, comfortaa } from '../../lib/font'
-import { Boxes } from '@/app/components/UI/BackgroundBoxes'
+import { Boxes } from '@/app/components/UI/background/BackgroundBoxes'
 // import SplitText from '../SplitText'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 // Removed incorrect Router import
 import { useRouter } from 'next/navigation'
-import Button from '../UI/Button'
+import Button from '../UI/button/Button'
 
 const HeroSection = () => {
 	const router = useRouter()

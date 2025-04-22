@@ -1,7 +1,7 @@
 'use client'
 
 import { comfortaa, orbitron } from '@/app/lib/font'
-import Threads from '@/app/components/UI/Threads'
+import Threads from '@/app/components/UI/background/Threads'
 import { motion, useInView } from 'framer-motion'
 import Spline from '@splinetool/react-spline'
 import { useRef } from 'react'

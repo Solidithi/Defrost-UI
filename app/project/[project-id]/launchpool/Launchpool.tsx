@@ -1,7 +1,7 @@
 'use client'
 import { AllPoolsTab } from '@/app/components/project-detail-sections/ContentTab'
 import SideBar from '@/app/components/service-sections/SideBar'
-import Tabs from '@/app/components/UI/Tabs'
+import Tabs from '@/app/components/UI/shared/Tabs'
 
 const Launchpool = () => {
 	const projectDetail = {

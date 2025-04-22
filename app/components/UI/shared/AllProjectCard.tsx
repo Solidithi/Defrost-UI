@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Logo from '@/public/Logo.png'
 import { useState } from 'react'
-import { GlowingEffect } from './GlowingEffect'
+import { GlowingEffect } from './effect/GlowingEffect'
 
 const AllProjectCard = () => {
 	const [projectAPR, setProjectAPR] = useState(0)

@@ -8,8 +8,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '@/app/components/UI/shadcn/Tooltip'
-import Spinner from '@/app/components/UI/Spinner'
-import Button from '@/app/components/UI/Button'
+import Spinner from '@/app/components/UI/effect/Spinner'
+import Button from '@/app/components/UI/button/Button'
 import {
 	useAccount,
 	useReadContract,
@@ -19,11 +19,11 @@ import {
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { parseUnits, formatUnits } from 'ethers'
-import AlertInfo from '../AlertInfo'
+import AlertInfo from '../UI/shared/AlertInfo'
 import { UnifiedPool, EnrichedProject } from '@/app/types'
 import { PoolSelector } from './PoolSelector'
 import { PoolCard } from './PoolCard'
-import ProgressBar from '../UI/ProjectProgress/ProgressBar'
+import ProgressBar from '../UI/project-progress/ProgressBar'
 
 export interface LaunchpoolTableRowProps {
 	project: EnrichedProject

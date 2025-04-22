@@ -2,8 +2,8 @@
 import React from 'react'
 import clsx from 'clsx'
 import Image, { StaticImageData } from 'next/image'
-import { GlowingEffect } from '@/app/components/UI/GlowingEffect'
-import CountUp from './Countup'
+import { GlowingEffect } from '@/app/components/UI/effect/GlowingEffect'
+import CountUp from './effect/Countup'
 
 interface StatCardProps {
 	type: 'Total Project' | 'Total Staking' | 'Unique Participant'

@@ -15,11 +15,11 @@ const gradients = [
 const AnimatedBlobs = ({ count = 3 }: { count?: number }) => {
 	const blobs = useMemo(() => {
 		return Array.from({ length: count }).map(() => ({
-			top: getRandomVH(-20, 80),
-			left: getRandomVW(-30, 90),
-			width: `${30 + Math.random() * 10}vw`,
-			height: `${30 + Math.random() * 10}vw`,
-			blur: `${80 + Math.random() * 30}vw`,
+			top: getRandomVH(0, 40),
+			left: getRandomVW(-30, 50),
+			width: `${25 + Math.random() * 5}vw`,
+			height: `${25 + Math.random() * 5}vw`,
+			blur: `${80 + Math.random() * 10}vw`,
 			duration: 6 + Math.random() * 4,
 			dx: 5 + Math.random() * 10,
 			dy: Math.random() > 0.5 ? 5 : 0,

@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react'
 import DefrostLogo from '@/public/Logo.png'
 import { comfortaa, orbitron, permanentMarker } from '@/app/lib/font'
 import { cn } from '@/app/lib/utils'
-import ConnectButton from '../ConnectButton'
-import Button from '@/app/components/UI/Button'
+import ConnectButton from '../UI/button/ConnectButton'
+import Button from '@/app/components/UI/button/Button'
 
 const Navbar = ({
 	navItems,

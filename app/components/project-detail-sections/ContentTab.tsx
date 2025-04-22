@@ -1,6 +1,6 @@
 import { Key } from 'react'
-import SectionComponent from '../UI/SectionComponent'
-import CardInModal from '../UI/CardInModal'
+import SectionComponent from '../UI/effect/SectionComponent'
+import CardInModal from '../UI/modal/CardInModal'
 
 const DescriptionTab = () => {
 	return (
