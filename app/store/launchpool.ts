@@ -3,7 +3,7 @@ import {
 	ConfirmState,
 	FormDataType,
 	PhaseDataType,
-} from "../interface/interface";
+} from "../types/input/create-launchpool";
 
 type PoolStore = {
 	tokenAddress: string;
