@@ -11,6 +11,14 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useCreateProjectStore } from '../store/create-project'
 import chains from '@/app/config/chains.json'
+import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@/app/components/UI/shadcn/Tooltip'
+import { Info } from 'lucide-react'
 
 interface ImageItem {
 	id: string
@@ -148,20 +156,30 @@ const CreateProject = () => {
 		}
 	}
 
+	const handleLogoDelete = () => {
+		setProjectLogo(null)
+		setProjectLogoPreview(null)
+		createProjectStore.setLogo(null)
+	}
+
 	const handleImageDelete = (imageId: string) => {
-		setProjectImages((prevImages) =>
-			prevImages.filter((image) => image.id !== imageId)
-		)
+		const updatedImages = projectImages.filter((image) => image.id !== imageId)
+		setProjectImages(updatedImages)
+
+		// Update the store with just the file objects
+		const imageFiles = updatedImages.map((img) => img.file)
+		createProjectStore.setImages(imageFiles)
 	}
 
 	return (
-		<div className="page-container ">
+		<div className="relative page-container ">
+			<AnimatedBlobs count={4} />
 			<div
 				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
 			>
 				<SplitText
 					text="Fill your project's information"
-					className="text-7xl text-center font-bold text-white font-orbitron"
+					className="text-7xl text-center font-bold text-white font-orbitron z-20"
 					delay={50}
 					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
 					animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
@@ -177,7 +195,7 @@ const CreateProject = () => {
 			>
 				<SplitText
 					text="Enter detailed information about your project to help potential stakeholders understand your goals, timeline, and requirements. This comprehensive form is designed to gather all necessary details to showcase your project effectively on our platform"
-					className="text-lg text-center text-gray-300 font-comfortaa"
+					className="text-lg text-center text-gray-300 font-comfortaa z-20"
 					delay={10}
 					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
 					animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
@@ -186,10 +204,10 @@ const CreateProject = () => {
 				/>
 			</div>
 			<div
-				className={`mt-8 w-2/3 h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300`}
+				className={`mt-8 w-2/3 h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
 			>
 				<Stepper
-					className="w-full"
+					className="w-full z-20"
 					initialStep={1}
 					onStepChange={(step: any) => {
 						console.log(step)
@@ -347,9 +365,9 @@ const CreateProject = () => {
 											? `${projectImages.length} image(s) selected. Click to add more.`
 											: 'Drag & drop your project images here\nor click to browse'}
 									</p>
-									<p className="text-xs text-gray-400 mt-2">
+									<span className="text-cyan-400 font-bold mt-2 text-xs">
 										Recommended: 1200×630px, PNG or JPG
-									</p>
+									</span>
 								</div>
 
 								{/* Project Logo Upload */}
@@ -362,6 +380,22 @@ const CreateProject = () => {
 										className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 										title=""
 									/>
+									{/* Tooltip positioned in the top right corner */}
+									<div className="absolute top-2 right-2 z-10">
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger>
+													<Info
+														size={16}
+														className="text-gray-400 hover:text-cyan-400 transition-colors"
+													/>
+												</TooltipTrigger>
+												<TooltipContent className="bg-black/80 border-white/10 text-white">
+													<p>Only one image can be uploaded as project logo</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</div>
 									<div className="h-20 relative mt-2 overflow-visible">
 										<div className="absolute -top-4 left-1/2 -translate-x-1/2">
 											<Folder
@@ -399,20 +433,27 @@ const CreateProject = () => {
 											? 'Logo selected. Click to change.'
 											: 'Drag & drop your project logo here\nor click to browse'}
 									</p>
-									<p className="text-xs text-gray-400 mt-2">
+									<span className="text-cyan-400 font-bold mt-2 text-xs">
 										Recommended: 512×512px, PNG (transparent)
-									</p>
+									</span>
 								</div>
 							</div>
 
-							{projectImages.length > 0 && (
+							{(projectImages.length > 0 || projectLogo) && (
 								<div className="w-full mb-6">
 									<ImageManager
 										images={projectImages}
-										onDelete={handleImageDelete}
-										title="Manage Project Images"
+										logo={
+											projectLogo
+												? { url: projectLogoPreview || '', file: projectLogo }
+												: null
+										}
+										onDeleteImage={handleImageDelete}
+										onDeleteLogo={handleLogoDelete}
+										title="Manage Project Media"
 										buttonText="Manage Uploaded Images"
 										emptyText="No images uploaded yet"
+										showLogoTab={true}
 									/>
 								</div>
 							)}
