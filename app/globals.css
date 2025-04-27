@@ -64,19 +64,16 @@ body {
 	.section-container {
 		@apply relative overflow-hidden;
 	}
-}
 
-/* .my-carousel-progress {
-	background: #ccc;
-	height: 2px;
-	width: 100%;
-	position: relative;
-	margin-top: 10px;
-  }
-  
-  .my-carousel-progress-bar {
-	background: greenyellow;
-	height: 2px;
-	transition: width 400ms ease;
-	width: 0;
-  } */
+	.page-container {
+		@apply p-36 flex flex-col justify-center items-center;
+	}
+
+	.title-text {
+		@apply text-7xl font-bold text-white font-orbitron;
+	}
+
+	.content-text {
+		@apply text-lg text-center font-comfortaa;
+	}
+}

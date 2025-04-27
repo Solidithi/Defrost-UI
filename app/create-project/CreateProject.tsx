@@ -2,12 +2,15 @@
 
 import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import SplitText from '../components/UI/SplitText'
-import Stepper, { Step } from '../components/UI/Stepper'
-import NetworkSelector from '../components/UI/NetworkSelector'
-import Folder from '../components/UI/Folder'
-import ImageManager from '../components/UI/ImageManager'
+import SplitText from '@/app/components/UI/effect/SplitText'
+import Stepper, { Step } from '@/app/components/UI/project-progress/Stepper'
+import NetworkSelector from '@/app/components/UI/selector/NetworkSelector'
+import Folder from '@/app/components/UI/selector/Folder'
+import ImageManager from '@/app/components/UI/shared/ImageManager'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useCreateProjectStore } from '../store/create-project'
+import chains from '@/app/config/chains.json'
 
 interface ImageItem {
 	id: string
@@ -31,25 +34,34 @@ const CreateProject = () => {
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
+	const createProjectStore = useCreateProjectStore((state) => state)
 
-	const availableNetworks = [
-		{
-			id: 'moonbeam',
-			name: 'Moonbeam',
-		},
-		{
-			id: 'astar',
-			name: 'Astar',
-		},
-		{
-			id: 'polkadot',
-			name: 'Polkadot',
-		},
-		{
-			id: 'kusama',
-			name: 'Kusama',
-		},
-	]
+	const route = useRouter()
+
+	// const availableNetworks = Objec(chains as ChainConfig)
+	const availableNetworks = Object.entries(chains).map(([_, chain]) => ({
+		id: chain.chainID,
+		name: chain.chainName,
+		icon: chain.chainIcon,
+		isTestnet: chain.isTestnet,
+		address: '',
+	}))
+
+	const handleComplete = () => {
+		try {
+			// Check if all required fields are filled
+			if (!selectedNetwork) {
+				alert('Please select a blockchain network')
+				return
+			}
+			if (!createProjectStore.name) {
+			}
+
+			route.push('/create-project/preview')
+		} catch (error) {
+			console.log('Error:', error)
+		}
+	}
 
 	// Render image previews for the folder component
 	const renderImagePreviews = () => {
@@ -72,6 +84,7 @@ const CreateProject = () => {
 
 	const handleNetworkChange = (option: any) => {
 		setSelectedNetwork(option.name)
+
 		// console.log(`Selected network: ${option.name}`)
 	}
 
@@ -84,6 +97,8 @@ const CreateProject = () => {
 			const files = Array.from(e.target.files)
 
 			// Process each file
+			const imageFiles: File[] = []
+
 			files.forEach((file) => {
 				const reader = new FileReader()
 				reader.onload = (event) => {
@@ -94,12 +109,14 @@ const CreateProject = () => {
 							file: file,
 						}
 
-						// Add the new image to state
+						imageFiles.push(newImage.file)
 						setProjectImages((prev) => [...prev, newImage])
 					}
 				}
 				reader.readAsDataURL(file)
 			})
+			// Add the new image to state
+			createProjectStore.setImages(imageFiles)
 
 			// Open the folder when files are selected
 			setImageUploadFolderOpen(true)
@@ -117,6 +134,7 @@ const CreateProject = () => {
 			}
 
 			setProjectLogo(file)
+			createProjectStore.setLogo(file)
 
 			// Open the folder when file is selected
 			setLogoUploadFolderOpen(true)
@@ -137,9 +155,9 @@ const CreateProject = () => {
 	}
 
 	return (
-		<div className="p-10 flex flex-col items-center justify-center ">
+		<div className="page-container ">
 			<div
-				className={`mt-44 text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
+				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
 			>
 				<SplitText
 					text="Fill your project's information"
@@ -176,7 +194,7 @@ const CreateProject = () => {
 					onStepChange={(step: any) => {
 						console.log(step)
 					}}
-					onFinalStepCompleted={() => console.log('All steps completed!')}
+					onFinalStepCompleted={() => handleComplete()}
 					backButtonText="Previous"
 					nextButtonText="Next"
 				>
@@ -193,10 +211,24 @@ const CreateProject = () => {
 								/>
 							</div>
 							<div className=""></div>
-							<p className="text-gray-300 text-center mt-4 font-comfortaa">
-								Choose the blockchain network where your launchpool will be
-								deployed
-							</p>
+							<div className="mt-8 mb-2 rounded-lg bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 border-l-4 border-cyan-500 backdrop-blur-sm">
+								<p className="text-gray-300 text-center font-comfortaa max-w-3xl mx-auto leading-relaxed">
+									<span className="text-cyan-400 font-bold">
+										Select the blockchain network
+									</span>{' '}
+									for your project deployment. You can utilize this network for
+									various DeFi activities including{' '}
+									<span className="text-blue-300">yield farming</span>,{' '}
+									<span className="text-blue-300">launchpools</span>,{' '}
+									<span className="text-blue-300">token launchpad</span>,{' '}
+									<span className="text-blue-300">liquidity provision</span>, or
+									any custom protocol integration. Your selection will{' '}
+									<span className="italic text-cyan-300">
+										shape your project&apos;s ecosystem connectivity
+									</span>
+									.
+								</p>
+							</div>
 						</div>
 					</Step>
 					<Step>
@@ -215,7 +247,10 @@ const CreateProject = () => {
 									<input
 										id="projectName"
 										value={name}
-										onChange={(e) => setName(e.target.value)}
+										onChange={(e) => {
+											setName(e.target.value)
+											createProjectStore.setName(e.target.value)
+										}}
 										placeholder="Enter your project name"
 										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
 									/>
@@ -238,6 +273,7 @@ const CreateProject = () => {
 												e.target.value.length < shortDescription.length
 											) {
 												setShortDescription(e.target.value)
+												createProjectStore.setShortDescription(e.target.value)
 											}
 										}}
 										placeholder="Brief overview of your project (100 words max)"
@@ -262,7 +298,10 @@ const CreateProject = () => {
 									<textarea
 										id="longDescription"
 										value={longDescription}
-										onChange={(e) => setLongDescription(e.target.value)}
+										onChange={(e) => {
+											createProjectStore.setLongDescription(e.target.value)
+											setLongDescription(e.target.value)
+										}}
 										placeholder="Detailed description of your project"
 										className="p-4 rounded-lg glass-component-2 text-white font-comfortaa h-56 resize-none w-full"
 									/>

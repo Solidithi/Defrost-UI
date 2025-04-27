@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { Orbitron, Comfortaa, Permanent_Marker } from 'next/font/google'
+import { Providers } from './provider/providers'
+import { headers } from 'next/headers'
 import './globals.css'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
 
 export const metadata: Metadata = {
 	title: 'Defrost',
@@ -27,19 +29,22 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
-				className={`${comfortaa.variable} ${orbitron.variable} ${permanentMarker.variable}`}
+				className={`${comfortaa.variable} ${orbitron.variable} ${permanentMarker.variable} min-h-screen flex flex-col`}
 			>
-				<Navbar
-					navItems={[
-						{ name: 'My Project', link: '/' },
-						{ name: 'My Staking', link: '/about' },
-						{ name: 'Launchpool', link: '/about' },
-						{ name: 'Pre-market', link: '/about' },
-						{ name: 'Dashboard', link: '/about' },
-					]}
-				/>
-				{children}
-				<Footer />
+				<Providers cookies={headers().get('cookie')}>
+					<Navbar
+						navItems={[
+							{ name: 'My Project', link: '/' },
+							{ name: 'My Staking', link: '/about' },
+							{ name: 'Launchpool', link: '/about' },
+							{ name: 'Pre-market', link: '/about' },
+							{ name: 'Dashboard', link: '/about' },
+						]}
+					/>
+					<main className="flex-1">{children}</main>
+					<Footer />
+					<div id="modal-root" />
+				</Providers>
 			</body>
 		</html>
 	)

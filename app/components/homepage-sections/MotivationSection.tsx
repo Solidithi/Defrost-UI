@@ -1,6 +1,6 @@
 'use client'
 
-import Threads from '../UI/Threads'
+import Threads from '../UI/background/Threads'
 import { motion } from 'framer-motion'
 const MotivationSection = () => {
 	return (

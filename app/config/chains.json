@@ -1,0 +1,56 @@
+{
+	"1": {
+		"chainID": 1,
+		"chainName": "Ethereum",
+		"chainIcon": "/chain-icons/vitalik.png",
+		"squidGateway": "https://v2.archive.subsquid.io/network/ethereum-mainnet",
+		"rpc": "https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY",
+		"deployedContracts": {
+			"ProjectHubUpgradeableProxy": ""
+		},
+		"blockTime": 12,
+		"tokens": [],
+		"isTestnet": false
+	},
+	"1287": {
+		"chainID": 1287,
+		"chainName": "Moonbase Alpha",
+		"chainIcon": "/chain-icons/moonbeam.png",
+		"blockTime": 6,
+		"squidGateway": "https://v2.archive.subsquid.io/network/moonbase-testnet",
+		"rpc": "https://rpc.api.moonbase.moonbeam.network",
+		"deployedContracts": {
+			"ProjectHubUpgradeableProxy": "0xB8618EaEEbFf1c817e3DD32A2e27Ece62C9d2317"
+		},
+		"tokens": [
+			{
+				"alias": "MockVToken",
+				"address": "0xd02d73e05b002cb8eb7bef9df8ed68ed39752465",
+				"symbol": "VI",
+				"name": "Voucher Imaginary",
+				"decimals": 18
+			},
+			{
+				"address": "0x7a4ebae8ca815b9f52f23a8ac9a2f707d4d4ff81",
+				"symbol": "NAT",
+				"name": "Native Token",
+				"decimals": 18
+			}
+		],
+		"isTestnet": true
+	},
+	"11155111": {
+		"chainID": 11155111,
+		"chainName": "Sepolia",
+		"chainIcon": "/chain-icons/vitalik.png",
+		"blockTime": 12,
+		"squidGateway": "",
+		"rpc": "",
+		"deployedContracts": {
+			"ProjectHubUpgradeableProxy": ""
+		},
+		"tokens": [],
+		"indexFromBlock": 1,
+		"isTestnet": true
+	}
+}
