@@ -168,11 +168,7 @@ export default function Stepper({
 							{currentStep !== 1 && (
 								<button
 									onClick={handleBack}
-									className={`duration-350 rounded-full px-3.5 py-1.5 transition bg-gray-400 hover:bg-gray-200 ${
-										currentStep === 1
-											? 'pointer-events-none opacity-50 text-white'
-											: 'text-white hover:text-neutral-700'
-									}`}
+									className="min-w-[100px] rounded-full px-4 py-1.5 font-comfortaa font-medium tracking-tight transition-all duration-300 bg-white/10 text-gray-200 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
 									{...backButtonProps}
 								>
 									{backButtonText}
@@ -180,7 +176,7 @@ export default function Stepper({
 							)}
 							<button
 								onClick={isLastStep ? handleComplete : handleNext}
-								className="duration-350 min-w-[100px] flex items-center justify-center rounded-full bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+								className="min-w-[100px] flex items-center justify-center rounded-full bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] py-1.5 px-3.5 font-comfortaa font-medium tracking-tight text-white transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] hover:brightness-110 active:brightness-90 relative after:absolute after:inset-0 after:rounded-full after:opacity-0 after:bg-gradient-to-r after:from-[#F05550]/30 after:via-[#AD7386]/30 after:to-[#54A4F2]/30 after:blur-md hover:after:opacity-100 after:transition-opacity"
 								{...nextButtonProps}
 							>
 								{isLastStep ? 'Complete' : nextButtonText}
