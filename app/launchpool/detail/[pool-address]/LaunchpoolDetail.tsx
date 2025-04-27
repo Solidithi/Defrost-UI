@@ -144,7 +144,7 @@ const ProjectDetail = () => {
 							</p>
 						</div> */}
 
-						<div className="">
+						<div className="mb-28">
 							{/* <Tabs
 								tabs={tabs}
 								activeTabClassName="bg-white text-white dark:bg-zinc-800"
