@@ -1,10 +1,20 @@
 'use client'
+import { StatCardItem } from '@/app/all-project/AllProject'
+import BarChart from '@/app/components/charts/Barchart'
+import DonutChart from '@/app/components/charts/DonutChart'
+import LineChart from '@/app/components/charts/LineChart'
+import SidebarLineChart from '@/app/components/charts/SideBarLineChart'
+import StakedAmountChart from '@/app/components/charts/StatLineChart'
 import { AllPoolsTab } from '@/app/components/project-detail-sections/ContentTab'
 import SideBar from '@/app/components/service-sections/SideBar'
+import PoolTab from '@/app/components/service/launchpool/ContentTabs'
+import Button from '@/app/components/UI/button/Button'
+import StatCard from '@/app/components/UI/shared/StatCard'
 import Tabs from '@/app/components/UI/shared/Tabs'
+import { ProjectDetail } from '@/app/types'
 
 const Launchpool = () => {
-	const projectDetail = {
+	const projectDetail: ProjectDetail = {
 		id: 1,
 		name: 'Project Name',
 		description:
@@ -76,26 +86,83 @@ const Launchpool = () => {
 		],
 	}
 
+	const statCardItems: StatCardItem[] = [
+		{
+			type: 'Current number of investors',
+			count: 4000,
+			label: 'Current number of investors',
+			icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX////mAHrmAHjkAG3kAGzkAG/lAHXlAHP//f797/X62uf75e7++PvmAHv+9fn/+/374uzoNYn3w9jtbaT4zN751uX2u9P86vLwirTudqnpRI/ymr74y9398fbrV5jnGH/sYp7zpcT0r8vqTZPxkrnvga/2v9XynsDpOYrueqvoKITqSZL1tc/sZ6DtcKXwhrKggIhKAAALg0lEQVR4nO1da3siLQ+uMICH2qrVWrU6nqrWnv7/v3v17W5Xh1PCMIB9vL/tde1QIhBIcie5uQmBu8',
+		},
+		{
+			type: 'Current total staked',
+			count: 2657,
+			label: 'Current total staked',
+			icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX////mAHrmAHjkAG3kAGzkAG/lAHXlAHP//f797/X62uf75e7++PvmAHv+9fn/+/374uzoNYn3w9jtbaT4zN751uX2u9P86vLwirTudqnpRI/ymr74y9398fbrV5jnGH/sYp7zpcT0r8vqTZPxkrnvga/2v9XynsDpOYrueqvoKITqSZL1tc/sZ6DtcKXwhrKggIhKAAALg0lEQVR4nO1da3siLQ+uMICH2qrVWrU6nqrWnv7/v3v17W5Xh1PCMIB9vL/tde1QIhBIcie5uQmBu8',
+		},
+		{
+			type: 'Highest Total Staked Amount',
+			count: 3000,
+			label: 'Highest Total Staked Amount',
+			icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX////mAHrmAHjkAG3kAGzkAG/lAHXlAHP//f797/X62uf75e7++PvmAHv+9fn/+/374uzoNYn3w9jtbaT4zN751uX2u9P86vLwirTudqnpRI/ymr74y9398fbrV5jnGH/sYp7zpcT0r8vqTZPxkrnvga/2v9XynsDpOYrueqvoKITqSZL1tc/sZ6DtcKXwhrKggIhKAAALg0lEQVR4nO1da3siLQ+uMICH2qrVWrU6nqrWnv7/v3v17W5Xh1PCMIB9vL/tde1QIhBIcie5uQmBu8',
+		},
+	]
+
+	const barData = [4500, 5300, 3600, 1500]
+	const barLabels = ['vASTR', 'vDOT', 'vGLMR', 'vKSM']
+	const donutData = [6000, 4000]
+	const donutLabels = ['Remaining tokens', 'Owned tokens']
+
 	const tabs = [
 		{
 			title: 'Pools',
 			value: 'pools',
-			content: (
-				<div className="">
-					<AllPoolsTab
-						projectCards={projectDetail.tokenPools.map((pool) => ({
-							projectName: pool.name,
-							projectShortDescription: `Amount: ${pool.amount}, Percentage: ${pool.percentage}%`,
-							projectAPR: `${pool.percentage}%`,
-						}))}
-					/>
-				</div>
-			),
+			content: <PoolTab projectDetail={projectDetail}></PoolTab>,
 		},
 		{
 			title: 'Analytics',
 			value: 'analytics',
-			content: <p>Staking Content</p>,
+			content: (
+				<div className="">
+					<div className="grid grid-cols-3 gap-8 w-full mx-auto mt-10 mb-24">
+						{statCardItems.map((item, index) => (
+							<StatCard
+								key={index}
+								type={item.type}
+								count={item.count}
+								label={item.label}
+								icon={item.icon}
+							/>
+						))}
+					</div>
+					<div className="grid grid-cols-2 gap-8">
+						<div className="">
+							{/* <SidebarLineChart
+								data={barData}
+								height={500}
+								gradientFrom="#F05550"
+								gradientTo="#54A4F2"
+							/> */}
+							<StakedAmountChart />
+						</div>
+						<div className="">
+							<BarChart data={barData} label={barLabels} />
+						</div>
+						<div className="">
+							<LineChart />
+						</div>
+						<div className="">
+							<DonutChart
+								title="Remaining token"
+								series={donutData}
+								labels={donutLabels}
+							/>
+						</div>
+					</div>
+					<div className="w-full mt-8">
+						<LineChart />
+					</div>
+				</div>
+			),
 		},
 	]
 
