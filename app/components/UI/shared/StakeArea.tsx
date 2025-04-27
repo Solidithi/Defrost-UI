@@ -1,13 +1,13 @@
 import Logo from '@/public/Logo.png'
 import Image from 'next/image'
 import Vector from '@/public/Vector.svg'
-import Button from './button/Button'
+import Button from '@/app/components/UI/button/Button'
 import {
 	Modal,
 	ModalBody,
 	ModalContent,
 	ModalTrigger,
-} from './modal/AnimatedModal'
+} from '@/app/components/UI/modal/AnimatedModal'
 const StakeArea = () => {
 	return (
 		<div className="mt-6">

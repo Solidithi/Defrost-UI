@@ -3,7 +3,7 @@ import React from 'react'
 import clsx from 'clsx'
 import Image, { StaticImageData } from 'next/image'
 import { GlowingEffect } from '@/app/components/UI/effect/GlowingEffect'
-import CountUp from './effect/Countup'
+import CountUp from '@/app/components/UI/effect/Countup'
 
 interface StatCardProps {
 	type: 'Total Project' | 'Total Staking' | 'Unique Participant'
