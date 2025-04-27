@@ -1,6 +1,7 @@
 'use client'
-import React, { useState, MouseEvent } from 'react'
+import React, { useState, MouseEvent, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useHoverSideBarIndexStore } from '@/app/store/launchpool'
 
 interface SidebarLineChartProps {
 	data: number[]
@@ -18,6 +19,7 @@ const SidebarLineChart: React.FC<SidebarLineChartProps> = ({
 	gradientFrom = 'currentColor',
 	gradientTo = 'currentColor',
 }) => {
+	const { hoveredData, setHoveredData } = useHoverSideBarIndexStore()
 	const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 	const max = Math.max(...data)
 	const min = Math.min(...data)
@@ -39,10 +41,17 @@ const SidebarLineChart: React.FC<SidebarLineChartProps> = ({
 		const relX = e.clientX - left
 		const idx = Math.round((relX / w) * (data.length - 1))
 		setHoveredIndex(idx >= 0 && idx < data.length ? idx : null)
+		setHoveredData(idx >= 0 && idx < data.length ? data[idx] : null)
 	}
 
+	useEffect(() => {
+		if (hoveredData == null) {
+			setHoveredData(data[data.length - 1])
+		}
+	}, [hoveredData, data, setHoveredData])
+
 	return (
-		<div className="relative w-full overflow-hidden" style={{ height }}>
+		<div className="relative w-full" style={{ height }}>
 			<svg
 				viewBox="0 0 100 100"
 				preserveAspectRatio="none"
