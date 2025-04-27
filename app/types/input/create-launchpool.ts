@@ -8,15 +8,15 @@ export interface ConfirmState {
 export interface FormDataType {
 	chain: string;
 	token: string;
-	tokenSupply: string;
-	maxStake: string;
+	tokenSupply: number;
+	maxStake: number;
 	from: string;
 	to: string;
-	emissionRate: string;
+	// emissionRate: string;
 }
 
 export interface PhaseDataType {
-	emissionRate: string;
+	emissionRate: number;
 	from: string;
 	to: string;
 }
