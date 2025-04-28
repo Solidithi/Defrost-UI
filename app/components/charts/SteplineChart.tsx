@@ -364,14 +364,17 @@ const SteplineChart: React.FC = () => {
 	}
 
 	return (
-		<div id="chart" className="glass-component-3 rounded-xl py-5 pl-5 pr-16">
+		<div
+			id="chart"
+			className="glass-component-3 rounded-xl py-5 px-4 sm:px-5 lg:px-8 "
+		>
 			<div className="mb-4">
-				<span className="font-orbitron text-lg">
+				<span className="font-orbitron text-base sm:text-sm">
 					Total Supply: {poolData[0]?.tokenSupply.toLocaleString()} tokens
 				</span>
 			</div>
-			<ApexChart options={options} series={series} type="line" height={350} />
-			<div className="mt-4 text-sm font-comfortaa opacity-75">
+			<ApexChart options={options} series={series} type="line" height={280} />
+			<div className="mt-4 text-xs  sm:text-[9px] sm:leading-[12px] font-comfortaa opacity-75">
 				<p>
 					The chart shows token allocation per time segment. Each phase has its
 					configured emission rate, and remaining tokens are distributed evenly
