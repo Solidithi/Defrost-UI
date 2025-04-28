@@ -1116,25 +1116,27 @@ const CreatePool = () => {
 
 			{/* --------------------------------------Emission Rate Modal----------------------------------------------------- */}
 			<Modal
-				className="w-[1000px] "
+				className="w-full max-w-[1000px] sm-max-w-[700px]  px-4 sm:px-6 mx-5 "
 				open={isOpenEmissionRate}
 				onClose={handleCloseEmissionRateModal}
 			>
-				<div className="h-full w-full p-5 text-white">
+				<div className="h-full w-full p-3 sm:p-5 text-white overflow-y-auto max-h-[80vh] ">
+					{' '}
 					<div>
 						<SteplineChart />
 					</div>
-					<div className="flex flex-col gap-5 mt-5">
+					<div className="flex flex-col gap-3 sm:gap-5 mt-3 sm:mt-5 ">
 						<Button
 							onClick={handleAddPhase}
-							className="h-16 w-16 rounded-full glass-component-3 flex items-center justify-center"
+							className="h-12 w-12 sm:h-16 sm:w-16 rounded-full glass-component-3 flex items-center justify-center mx-auto sm:mx-0"
 						>
 							<svg
-								width="36"
-								height="36"
+								width="24"
+								height="24"
 								viewBox="0 0 46 46"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
+								className="sm:w-9 sm:h-9"
 							>
 								<path
 									d="M23 3V43"
@@ -1150,26 +1152,25 @@ const CreatePool = () => {
 								/>
 							</svg>
 						</Button>
-
-						<div className="flex flex-wrap gap-3 w-full">
+						<div className="flex flex-wrap gap-2 sm:gap-3 w-full">
 							{phase.map((phaseId, index) => (
 								<motion.div
 									key={phaseId}
 									initial={{ opacity: 0, y: 50 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ duration: 0.5 }}
-									className="glass-component-3 h-auto p-4 pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative"
-									style={{ width: 'calc(33% - 0.375rem)' }}
+									className="glass-component-3 h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
 								>
 									<Button
 										onClick={() => handleOpenConfirmModal(phaseId, 'phase')}
-										className="absolute top-5 right-5 glass-component-3 px-3 py-1"
+										className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-component-3 px-2 sm:px-3 py-1 text-sm sm:text-base"
 									>
 										X
 									</Button>
-
-									<div className="w-full flex flex-col gap-3 p-2">
-										<span className="font-orbitron text-lg">Emission Rate</span>
+									<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
+										<span className="font-orbitron text-base sm:text-lg">
+											Emission Rate
+										</span>
 										<div className="relative w-full">
 											<input
 												type="number"
@@ -1182,16 +1183,17 @@ const CreatePool = () => {
 													)
 												}
 												placeholder="Enter emission rate"
-												className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-2 sm:p-3 pr-8 sm:pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
 											/>
-											<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-sm">
+											<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-xs sm:text-sm">
 												%
 											</span>
 										</div>
 									</div>
-
-									<div className="w-full flex flex-col gap-3 p-2">
-										<span className="font-orbitron text-lg">From</span>
+									<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
+										<span className="font-orbitron text-base sm:text-lg">
+											From
+										</span>
 										<input
 											type="datetime-local"
 											value={formatDateTimeLocal(phaseData[index]?.from) || ''}
@@ -1199,12 +1201,13 @@ const CreatePool = () => {
 												handleChangeEmissionRate(index, 'from', e.target.value)
 											}
 											placeholder="Enter start date"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+											className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
 										/>
 									</div>
-
-									<div className="w-full flex flex-col gap-3 p-2">
-										<span className="font-orbitron text-lg">To</span>
+									<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
+										<span className="font-orbitron text-base sm:text-lg">
+											To
+										</span>
 										<input
 											type="datetime-local"
 											value={formatDateTimeLocal(phaseData[index]?.to) || ''}
@@ -1212,7 +1215,7 @@ const CreatePool = () => {
 												handleChangeEmissionRate(index, 'to', e.target.value)
 											}
 											placeholder="Enter end date"
-											className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+											className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
 										/>
 									</div>
 								</motion.div>
