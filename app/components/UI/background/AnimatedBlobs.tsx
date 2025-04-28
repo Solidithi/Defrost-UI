@@ -19,7 +19,7 @@ const AnimatedBlobs = ({ count = 3 }: { count?: number }) => {
 			left: getRandomVW(-30, 50),
 			width: `${25 + Math.random() * 5}vw`,
 			height: `${25 + Math.random() * 5}vw`,
-			blur: `${80 + Math.random() * 10}vw`,
+			blur: `${10 + Math.random()}vw`,
 			duration: 6 + Math.random() * 4,
 			dx: 5 + Math.random() * 10,
 			dy: Math.random() > 0.5 ? 5 : 0,

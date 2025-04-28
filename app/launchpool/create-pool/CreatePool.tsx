@@ -740,7 +740,7 @@ const CreatePool = () => {
 											<div className="flex gap-5">
 												<input
 													type="number"
-													value={poolData[index]?.tokenSupply || 0}
+													value={poolData[index]?.tokenSupply || ''}
 													onChange={(e) => {
 														const value = e.target.value
 														if (/^\d*$/.test(value)) {
