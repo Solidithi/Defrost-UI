@@ -36,6 +36,7 @@ interface StepContentWrapperProps {
 
 interface StepProps {
 	children: ReactNode
+	canGoToNextStep?: boolean
 }
 
 interface StepperProps {
@@ -84,6 +85,11 @@ export default function Stepper({
 	const isCompleted = currentStep > totalSteps
 	const isLastStep = currentStep === totalSteps
 
+	const currentStepElement = stepsArray[
+		currentStep - 1
+	] as React.ReactElement<StepProps>
+	const canGoToNextStep = currentStepElement.props.canGoToNextStep !== false // Default to true if not specified
+
 	const updateStep = (newStep: number) => {
 		setCurrentStep(newStep)
 		if (newStep > totalSteps) onFinalStepCompleted()
@@ -98,15 +104,19 @@ export default function Stepper({
 	}
 
 	const handleNext = () => {
-		if (!isLastStep) {
+		// Only proceed if the current step is valid
+		if (!isLastStep && canGoToNextStep) {
 			setDirection(-1)
 			updateStep(currentStep + 1)
 		}
 	}
 
 	const handleComplete = () => {
-		setDirection(1)
-		updateStep(totalSteps + 1)
+		// Only complete if the last step is valid
+		if (canGoToNextStep) {
+			setDirection(1)
+			updateStep(totalSteps + 1)
+		}
 	}
 
 	return (
@@ -176,7 +186,12 @@ export default function Stepper({
 							)}
 							<button
 								onClick={isLastStep ? handleComplete : handleNext}
-								className="min-w-[100px] flex items-center justify-center rounded-full bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] py-1.5 px-3.5 font-comfortaa font-medium tracking-tight text-white transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] hover:brightness-110 active:brightness-90 relative after:absolute after:inset-0 after:rounded-full after:opacity-0 after:bg-gradient-to-r after:from-[#F05550]/30 after:via-[#AD7386]/30 after:to-[#54A4F2]/30 after:blur-md hover:after:opacity-100 after:transition-opacity"
+								disabled={!canGoToNextStep}
+								className={`min-w-[100px] flex items-center justify-center rounded-full bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] py-1.5 px-3.5 font-comfortaa font-medium tracking-tight text-white transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] hover:brightness-110 active:brightness-90 relative after:absolute after:inset-0 after:rounded-full after:opacity-0 after:bg-gradient-to-r after:from-[#F05550]/30 after:via-[#AD7386]/30 after:to-[#54A4F2]/30 after:blur-md hover:after:opacity-100 after:transition-opacity ${
+									!canGoToNextStep
+										? 'opacity-50 cursor-not-allowed hover:shadow-none hover:brightness-100 hover:after:opacity-0'
+										: ''
+								}`}
 								{...nextButtonProps}
 							>
 								{isLastStep ? 'Complete' : nextButtonText}
@@ -262,7 +277,7 @@ const stepVariants: Variants = {
 	}),
 }
 
-export const Step: FC<StepProps> = ({ children }) => {
+export const Step: FC<StepProps> = ({ children, canGoToNextStep = true }) => {
 	return <div className="px-8">{children}</div>
 }
 
