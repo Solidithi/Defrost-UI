@@ -6,7 +6,13 @@ import { GlowingEffect } from '@/app/components/UI/effect/GlowingEffect'
 import CountUp from '@/app/components/UI/effect/Countup'
 
 interface StatCardProps {
-	type: 'Total Project' | 'Total Staking' | 'Unique Participant'
+	type:
+		| 'Total Project'
+		| 'Total Staking'
+		| 'Unique Participant'
+		| 'Current number of investors'
+		| 'Current total staked'
+		| 'Highest Total Staked Amount'
 	count: number
 	label: string
 	icon: string

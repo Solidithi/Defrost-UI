@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import SplitText from '@/app/components/UI/effect/SplitText'
 import Stepper, { Step } from '@/app/components/UI/project-progress/Stepper'
@@ -18,7 +18,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '@/app/components/UI/shadcn/Tooltip'
-import { Info } from 'lucide-react'
+import { Info, Edit2 } from 'lucide-react'
 
 interface ImageItem {
 	id: string
@@ -26,25 +26,81 @@ interface ImageItem {
 	file: File
 }
 
-const CreateProject = () => {
+const EditProject = () => {
+	const router = useRouter()
+	const createProjectStore = useCreateProjectStore()
+
+	// Load data from store
 	const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null)
-	const [name, setName] = useState('')
-	const [shortDescription, setShortDescription] = useState('')
-	const [longDescription, setLongDescription] = useState('')
+	const [name, setName] = useState(createProjectStore.name || '')
+	const [shortDescription, setShortDescription] = useState(
+		createProjectStore.shortDescription || ''
+	)
+	const [longDescription, setLongDescription] = useState(
+		createProjectStore.longDescription || ''
+	)
+	const [targetAudience, setTargetAudience] = useState(
+		createProjectStore.targetAudience || ''
+	)
 	const [isModalOpen, setIsModalOpen] = useState(false)
-	const [targetAudience, setTargetAudience] = useState('')
 
 	// Use ImageItem[] instead of separate state variables for images and previews
 	const [projectImages, setProjectImages] = useState<ImageItem[]>([])
-	const [projectLogo, setProjectLogo] = useState<File | null>(null)
+	const [projectLogo, setProjectLogo] = useState<File | null>(
+		createProjectStore.logo || null
+	)
 	const [projectLogoPreview, setProjectLogoPreview] = useState<string | null>(
 		null
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
-	const createProjectStore = useCreateProjectStore((state) => state)
 
-	const route = useRouter()
+	// Effect to load network from chainID
+	useEffect(() => {
+		// Find the network in chains based on chainID from the store
+		if (createProjectStore.chainID) {
+			const networkInfo = Object.values(chains).find(
+				(chain) => chain.chainID === createProjectStore.chainID
+			)
+			if (networkInfo) {
+				setSelectedNetwork(networkInfo.chainName)
+			}
+		}
+
+		// Load project logo preview if logo exists
+		if (createProjectStore.logo) {
+			const reader = new FileReader()
+			reader.onload = (event) => {
+				setProjectLogoPreview(event.target?.result as string)
+			}
+			reader.readAsDataURL(createProjectStore.logo)
+		}
+
+		// Load project images if they exist
+		if (createProjectStore.images && createProjectStore.images.length > 0) {
+			const loadedImages: ImageItem[] = []
+
+			createProjectStore.images.forEach((file) => {
+				const reader = new FileReader()
+				reader.onload = (event) => {
+					if (event.target?.result) {
+						const newImage: ImageItem = {
+							id: uuidv4(),
+							url: event.target.result as string,
+							file: file,
+						}
+						loadedImages.push(newImage)
+						setProjectImages((prev) => [...prev, newImage])
+					}
+				}
+				reader.readAsDataURL(file)
+			})
+		}
+	}, [
+		createProjectStore.chainID,
+		createProjectStore.logo,
+		createProjectStore.images,
+	])
 
 	// const availableNetworks = Objec(chains as ChainConfig)
 	const availableNetworks = Object.entries(chains).map(([_, chain]) => ({
@@ -62,10 +118,22 @@ const CreateProject = () => {
 				alert('Please select a blockchain network')
 				return
 			}
-			if (!createProjectStore.name) {
+			if (!name) {
+				alert('Please enter a project name')
+				return
+			}
+			if (!shortDescription) {
+				alert('Please enter a short description')
+				return
 			}
 
-			route.push('/create-project/preview')
+			// Set data to store before navigating
+			createProjectStore.setName(name)
+			createProjectStore.setShortDescription(shortDescription)
+			createProjectStore.setLongDescription(longDescription)
+			createProjectStore.setTargetAudience(targetAudience)
+
+			router.push('/create-project/preview')
 		} catch (error) {
 			console.log('Error:', error)
 		}
@@ -91,9 +159,8 @@ const CreateProject = () => {
 	}
 
 	const handleNetworkChange = (option: any) => {
-		setSelectedNetwork(option.name)
-
-		// console.log(`Selected network: ${option.name}`)
+		// Network is read-only in edit mode
+		console.log(`Network selection is read-only in edit mode`)
 	}
 
 	const handleModalStateChange = (isOpen: boolean) => {
@@ -124,7 +191,10 @@ const CreateProject = () => {
 				reader.readAsDataURL(file)
 			})
 			// Add the new image to state
-			createProjectStore.setImages(imageFiles)
+			createProjectStore.setImages([
+				...createProjectStore.images,
+				...imageFiles,
+			])
 
 			// Open the folder when files are selected
 			setImageUploadFolderOpen(true)
@@ -178,7 +248,7 @@ const CreateProject = () => {
 				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
 			>
 				<SplitText
-					text="Fill your project's information"
+					text="Edit your project's information"
 					className="text-7xl text-center font-bold text-white font-orbitron z-20"
 					delay={50}
 					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -194,7 +264,7 @@ const CreateProject = () => {
 				}`}
 			>
 				<SplitText
-					text="Enter detailed information about your project to help potential stakeholders understand your goals, timeline, and requirements. This comprehensive form is designed to gather all necessary details to showcase your project effectively on our platform"
+					text="Update your project information to better represent your goals and progress. The network your project was created on cannot be changed."
 					className="text-lg text-center text-gray-300 font-comfortaa z-20"
 					delay={10}
 					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -219,32 +289,30 @@ const CreateProject = () => {
 					<Step>
 						<div className="">
 							<span className="text-3xl font-orbitron text-white mb-4 flex justify-center w-full">
-								Select Blockchain Network
+								Blockchain Network
 							</span>
 							<div className="h-full rounded-lg p-4 mt-4">
+								{/* Disabled NetworkSelector with disabled prop */}
 								<NetworkSelector
 									options={availableNetworks}
 									onChange={handleNetworkChange}
 									onModalStateChange={handleModalStateChange}
+									defaultValue={selectedNetwork || undefined}
+									disabled={true}
 								/>
 							</div>
 							<div className=""></div>
 							<div className="mt-8 mb-2 rounded-lg bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 border-l-4 border-cyan-500 backdrop-blur-sm">
 								<p className="text-gray-300 text-center font-comfortaa max-w-3xl mx-auto leading-relaxed">
 									<span className="text-cyan-400 font-bold">
-										Select the blockchain network
+										The blockchain network
 									</span>{' '}
-									for your project deployment. You can utilize this network for
-									various DeFi activities including{' '}
+									for your project cannot be changed after creation. This
+									network is used for various DeFi activities including{' '}
 									<span className="text-blue-300">yield farming</span>,{' '}
 									<span className="text-blue-300">launchpools</span>,{' '}
-									<span className="text-blue-300">token launchpad</span>,{' '}
-									<span className="text-blue-300">liquidity provision</span>, or
-									any custom protocol integration. Your selection will{' '}
-									<span className="italic text-cyan-300">
-										shape your project&apos;s ecosystem connectivity
-									</span>
-									.
+									<span className="text-blue-300">token launchpad</span>, and{' '}
+									<span className="text-blue-300">liquidity provision</span>.
 								</p>
 							</div>
 						</div>
@@ -262,16 +330,23 @@ const CreateProject = () => {
 									>
 										Project Name
 									</label>
-									<input
-										id="projectName"
-										value={name}
-										onChange={(e) => {
-											setName(e.target.value)
-											createProjectStore.setName(e.target.value)
-										}}
-										placeholder="Enter your project name"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
-									/>
+									<div className="relative w-full">
+										<input
+											id="projectName"
+											value={name}
+											onChange={(e) => {
+												setName(e.target.value)
+												createProjectStore.setName(e.target.value)
+											}}
+											placeholder="Enter your project name"
+											className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										/>
+										<Edit2
+											size={18}
+											className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+											title="Click to edit"
+										/>
+									</div>
 								</div>
 
 								<div className="flex flex-col space-y-3 w-full">
@@ -281,22 +356,29 @@ const CreateProject = () => {
 									>
 										Short Description (100 words max)
 									</label>
-									<textarea
-										id="shortDescription"
-										value={shortDescription}
-										onChange={(e) => {
-											const words = e.target.value.trim().split(/\s+/)
-											if (
-												words.length <= 100 ||
-												e.target.value.length < shortDescription.length
-											) {
-												setShortDescription(e.target.value)
-												createProjectStore.setShortDescription(e.target.value)
-											}
-										}}
-										placeholder="Brief overview of your project (100 words max)"
-										className="p-4 font-comfortaa text-white rounded-lg glass-component-2 h-32 resize-none w-full"
-									/>
+									<div className="relative w-full">
+										<textarea
+											id="shortDescription"
+											value={shortDescription}
+											onChange={(e) => {
+												const words = e.target.value.trim().split(/\s+/)
+												if (
+													words.length <= 100 ||
+													e.target.value.length < shortDescription.length
+												) {
+													setShortDescription(e.target.value)
+													createProjectStore.setShortDescription(e.target.value)
+												}
+											}}
+											placeholder="Brief overview of your project (100 words max)"
+											className="p-4 pr-12 font-comfortaa text-white rounded-lg glass-component-2 h-32 resize-none w-full"
+										/>
+										<Edit2
+											size={18}
+											className="absolute right-4 top-8 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+											title="Click to edit"
+										/>
+									</div>
 									<div className="text-xs text-gray-400 text-right font-comfortaa">
 										{
 											shortDescription.trim().split(/\s+/).filter(Boolean)
@@ -313,16 +395,23 @@ const CreateProject = () => {
 									>
 										Full Description
 									</label>
-									<textarea
-										id="longDescription"
-										value={longDescription}
-										onChange={(e) => {
-											createProjectStore.setLongDescription(e.target.value)
-											setLongDescription(e.target.value)
-										}}
-										placeholder="Detailed description of your project"
-										className="p-4 rounded-lg glass-component-2 text-white font-comfortaa h-56 resize-none w-full"
-									/>
+									<div className="relative w-full">
+										<textarea
+											id="longDescription"
+											value={longDescription}
+											onChange={(e) => {
+												createProjectStore.setLongDescription(e.target.value)
+												setLongDescription(e.target.value)
+											}}
+											placeholder="Detailed description of your project"
+											className="p-4 pr-12 rounded-lg glass-component-2 text-white font-comfortaa h-56 resize-none w-full"
+										/>
+										<Edit2
+											size={18}
+											className="absolute right-4 top-8 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+											title="Click to edit"
+										/>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -466,13 +555,23 @@ const CreateProject = () => {
 								>
 									Target Audience
 								</label>
-								<input
-									id="targetAudience"
-									value={targetAudience}
-									onChange={(e) => setTargetAudience(e.target.value)}
-									placeholder="Describe your target audience (e.g., DeFi users, NFT collectors, etc.)"
-									className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
-								/>
+								<div className="relative w-full">
+									<input
+										id="targetAudience"
+										value={targetAudience}
+										onChange={(e) => {
+											setTargetAudience(e.target.value)
+											createProjectStore.setTargetAudience(e.target.value)
+										}}
+										placeholder="Describe your target audience (e.g., DeFi users, NFT collectors, etc.)"
+										className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+									<Edit2
+										size={18}
+										className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+										title="Click to edit"
+									/>
+								</div>
 							</div>
 						</div>
 					</Step>
@@ -482,4 +581,4 @@ const CreateProject = () => {
 	)
 }
 
-export default CreateProject
+export default EditProject

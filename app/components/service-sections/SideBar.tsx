@@ -6,8 +6,11 @@ import DefrostLogo from '@/public/Logo.png'
 import SidebarLineChart from '../charts/SideBarLineChart'
 import { ChevronLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useHoverSideBarIndexStore } from '@/app/store/launchpool'
 
 const SideBar = () => {
+	const { hoveredData, setHoveredData } = useHoverSideBarIndexStore()
+
 	const availableNetworks = [
 		{
 			id: 1,
@@ -174,11 +177,13 @@ const SideBar = () => {
 						<div className="flex">
 							<div className="p-3 text-center w-1/2 text-white font-orbitron font-bold">
 								APR
-								<div className="mt-2 text-xl">10%</div>
+								<div className="mt-2 text-xl">{hoveredData}%</div>
 							</div>
 							<div className="w-1/2 p-2">
 								<SidebarLineChart
-									data={[10, 20, 30, 32, 35, 40, 50, 60, 70, 80]}
+									data={[
+										10, 20, 30, 24, 35, 40, 35, 60, 57, 80, 48, 67, 79, 95,
+									]}
 									height={60}
 									gradientFrom="#F05550"
 									gradientTo="#54A4F2"

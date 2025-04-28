@@ -5,10 +5,8 @@ import SplitText from '../components/UI/effect/SplitText'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import GlowingSearchBar from '../components/UI/shared/GlowingSearchBar'
 import ScrollFloat from '../components/UI/effect/ScrollFloat'
-import StatCard from '../components/UI/shared/StatCard'
 import SwitchTableOrCard from '../components/UI/button/SwitchTableOrCard'
 import { orbitron, comfortaa } from '../lib/font'
-import AllProjectCard from '../components/UI/shared/AllProjectCard'
 import SectionComponent from '../components/UI/effect/SectionComponent'
 import DataTable from '../components/UI/shared/DataTable'
 import { Column } from '../components/UI/shared/DataTable'
@@ -19,13 +17,21 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import { UnifiedPool } from '@/app/types/extended-models/unified-pool'
 import CarouselWithProgress from '../components/UI/carousel/Carousel'
+import AllProjectCard from '../components/UI/shared/AllProjectCard'
+import StatCard from '../components/UI/shared/StatCard'
 
 // Define stat card interface
-interface StatCardItem {
-	type: 'Total Project' | 'Total Staking' | 'Unique Participant'
+export interface StatCardItem {
+	type:
+		| 'Total Project'
+		| 'Total Staking'
+		| 'Unique Participant'
+		| 'Current number of investors'
+		| 'Current total staked'
+		| 'Highest Total Staked Amount'
 	count: number
 	label: string
-	icon: string // Using string for icon URL instead of StaticImageData
+	icon: string
 }
 
 const AllProject = () => {
@@ -97,9 +103,11 @@ const AllProject = () => {
 			accessor: (project) => (
 				<div className="flex items-center">
 					{project.logo ? (
-						<img
+						<Image
 							src={`data:image/png;base64,${project.logo}`}
 							alt={project.name || 'Project logo'}
+							width={32}
+							height={32}
 							className="w-8 h-8 mr-3 rounded-full"
 						/>
 					) : (

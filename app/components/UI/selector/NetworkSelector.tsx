@@ -15,6 +15,7 @@ interface NetworkSelectorProps {
 	onChange?: (option: NetworkOption) => void
 	defaultValue?: string
 	onModalStateChange?: (isOpen: boolean) => void
+	disabled?: boolean // Add disabled prop
 }
 
 const NetworkSelector = ({
@@ -23,17 +24,26 @@ const NetworkSelector = ({
 	onChange,
 	defaultValue = '',
 	onModalStateChange,
+	disabled = false, // Default to not disabled
 }: NetworkSelectorProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [selectedNetwork, setSelectedNetwork] = useState<NetworkOption | null>(
-		defaultValue
-			? options.find((option) => option.name === defaultValue) || null
-			: null
+		null
 	)
 	const modalRef = useRef<HTMLDivElement>(null)
 
 	// Animation state
 	const [modalAnimation, setModalAnimation] = useState('')
+
+	// Initialize selected network from defaultValue when component mounts or defaultValue changes
+	useEffect(() => {
+		if (defaultValue && options.length > 0) {
+			const network = options.find((option) => option.name === defaultValue)
+			if (network) {
+				setSelectedNetwork(network)
+			}
+		}
+	}, [defaultValue, options])
 
 	// Update parent component when modal state changes
 	useEffect(() => {
@@ -63,6 +73,8 @@ const NetworkSelector = ({
 
 	// Open modal with zoom-in animation
 	const openModalWithAnimation = () => {
+		if (disabled) return // Don't open modal if disabled
+
 		setModalAnimation('scale-0')
 		setIsModalOpen(true)
 		setTimeout(() => {
@@ -88,15 +100,21 @@ const NetworkSelector = ({
 		}
 	}
 
+	// Calculate button styles based on disabled status
+	const buttonStyles = `w-full px-4 py-4 text-center font-comfortaa border rounded-2xl focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white ${
+		!selectedNetwork ? 'text-gray-400' : ''
+	} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`
+
 	return (
 		<div className={`relative ${className}`}>
 			{/* Trigger Button */}
 			<button
-				className={`w-full px-4 py-4 text-center font-comfortaa border rounded-2xl focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white ${!selectedNetwork ? 'text-gray-400' : ''}`}
+				className={buttonStyles}
 				onClick={openModalWithAnimation}
 				type="button"
 				aria-haspopup="dialog"
 				aria-expanded={isModalOpen}
+				disabled={disabled}
 			>
 				{selectedNetwork ? (
 					<>

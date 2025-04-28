@@ -284,6 +284,8 @@ const CreatePool = () => {
 	/* ---------------------- Add pool ---------------------- */
 	const handleAddPool = () => {
 		addPool()
+		// console.log('After addPool - pool:', pool)
+		console.log('After addPool - poolData:', poolData)
 	}
 
 	/* ---------------------- Add phase ---------------------- */
@@ -295,6 +297,8 @@ const CreatePool = () => {
 			return
 		}
 		addPhase()
+		// console.log('After addPhase - phase:', phase)
+		console.log('After addPhase - phaseData:', phaseData)
 	}
 
 	useEffect(() => {
@@ -314,12 +318,85 @@ const CreatePool = () => {
 		setIsConfirming({ open: false, id: null, type: null })
 	}
 
+	/* ---------------------- Validate Pool Dates ---------------------- */
+	const validatePoolDates = (index: number, field: string, value: string) => {
+		const now = new Date()
+		const fromDate =
+			field === 'from' ? new Date(value) : new Date(poolData[index]?.from || '')
+		const toDate =
+			field === 'to' ? new Date(value) : new Date(poolData[index]?.to || '')
+
+		if (fromDate < now) {
+			toast.error('Start date cannot be in the past.')
+			return false
+		}
+
+		if (toDate <= fromDate) {
+			toast.error('End date must be after the start date.')
+			return false
+		}
+
+		return true
+	}
+
+	/* ---------------------- Validate Phase Dates ---------------------- */
+	const validatePhaseDates = (index: number, field: string, value: string) => {
+		const now = new Date()
+		const fromDate =
+			field === 'from'
+				? new Date(value)
+				: new Date(phaseData[index]?.from || '')
+		const toDate =
+			field === 'to' ? new Date(value) : new Date(phaseData[index]?.to || '')
+
+		// Convert pool's `from` date to a Date object for comparison
+		const poolFromDate = new Date(poolData[0]?.from || '')
+
+		// Check if the first phase's `from` matches the pool's `from`
+		if (
+			index === 0 &&
+			field === 'from' &&
+			fromDate.getTime() !== poolFromDate.getTime()
+		) {
+			toast.error('The first phase must start at the same time as the pool.')
+			return false
+		}
+
+		// Ensure no past dates
+		if (fromDate < now) {
+			toast.error('Start date cannot be in the past.')
+			return false
+		}
+
+		// Ensure `to` is after `from`
+		if (toDate <= fromDate) {
+			toast.error('End date must be after the start date.')
+			return false
+		}
+
+		// Ensure dates are contiguous
+		if (index > 0) {
+			const prevPhaseTo = new Date(phaseData[index - 1]?.to || '')
+			if (field === 'from' && fromDate.getTime() !== prevPhaseTo.getTime()) {
+				toast.error(
+					'Phase start date must be contiguous with the previous phase.'
+				)
+				return false
+			}
+		}
+
+		return true
+	}
+
 	/* ---------------------- Handle Change Pool ---------------------- */
 	const handleChangePool = (
 		index: number,
 		field: keyof (typeof poolData)[0],
 		value: string
 	) => {
+		if (field === 'from' || field === 'to') {
+			if (!validatePoolDates(index, field, value)) return
+		}
 		updatePoolItem(index, { [field]: value })
 	}
 
@@ -329,11 +406,13 @@ const CreatePool = () => {
 		field: keyof (typeof phaseData)[0],
 		value: string
 	) => {
-		console.log('emission rate set: ', value)
+		if (field === 'from' || field === 'to') {
+			if (!validatePhaseDates(index, field, value)) return
+		}
 		updatePhaseItem(index, { [field]: value })
 	}
 
-	/* ---------------------- Open and Close Confirm Model ---------------------- */
+	/* ---------------------- Open and Close Confirm Modal ---------------------- */
 	const handleOpenConfirmModal = (id: number, type: 'form' | 'phase') => {
 		setIsConfirming({ open: true, id, type })
 	}
@@ -342,10 +421,11 @@ const CreatePool = () => {
 		setIsConfirming({ open: false, id: null, type: null })
 	}
 
-	/* ---------------------- Open and Close popup EmissionRate ---------------------- */
+	/* ---------------------- Open and Close EmissionRate Modal ---------------------- */
 	const handleOpenEmissionRateModal = () => {
 		setIsOpenEmissionRate(true)
 	}
+
 	const handleCloseEmissionRateModal = () => {
 		setIsOpenEmissionRate(false)
 	}
@@ -438,6 +518,40 @@ const CreatePool = () => {
 				style: { backgroundColor: red[500], color: 'white' },
 			})
 		}
+	}
+
+	/* ---------------------- Debug: Log store when poolData or phaseData changes ---------------------- */
+	useEffect(() => {
+		// console.log('PoolData updated:', poolData)
+		// console.log('Pool ID updated:', pool)
+	}, [poolData, pool])
+
+	useEffect(() => {
+		// console.log('PhaseData updated:', phaseData)
+		// console.log('Phase ID updated:', phase)
+	}, [phaseData, phase])
+
+	/* ---------------------- Debug: Manually log the store ---------------------- */
+	// const handleLogStore = () => {
+	// 	console.log('Current Store:', {
+	// 		tokenAddress,
+	// 		pool,
+	// 		poolData,
+	// 		phase,
+	// 		phaseData,
+	// 		isConfirming,
+	// 		isOpenEmissionRate,
+	// 	})
+	// }
+	const formatDateTimeLocal = (dateString: string) => {
+		if (!dateString) return ''
+		const date = new Date(dateString)
+		const year = date.getFullYear()
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const day = String(date.getDate()).padStart(2, '0')
+		const hours = String(date.getHours()).padStart(2, '0')
+		const minutes = String(date.getMinutes()).padStart(2, '0')
+		return `${year}-${month}-${day}T${hours}:${minutes}`
 	}
 
 	return (
@@ -626,7 +740,7 @@ const CreatePool = () => {
 											<div className="flex gap-5">
 												<input
 													type="number"
-													value={poolData[index]?.tokenSupply || ''}
+													value={poolData[index]?.tokenSupply || 0}
 													onChange={(e) => {
 														const value = e.target.value
 														if (/^\d*$/.test(value)) {
@@ -687,7 +801,7 @@ const CreatePool = () => {
 											<span className="font-orbitron text-lg">From</span>
 											<input
 												type="datetime-local"
-												value={poolData[index]?.from || ''}
+												value={formatDateTimeLocal(poolData[index]?.from) || ''}
 												onChange={(e) =>
 													handleChangePool(index, 'from', e.target.value)
 												}
@@ -700,7 +814,7 @@ const CreatePool = () => {
 											<span className="font-orbitron text-lg">To</span>
 											<input
 												type="datetime-local"
-												value={poolData[index]?.to || ''}
+												value={formatDateTimeLocal(poolData[index]?.to) || ''}
 												onChange={(e) =>
 													handleChangePool(index, 'to', e.target.value)
 												}
@@ -1010,7 +1124,7 @@ const CreatePool = () => {
 					<div>
 						<SteplineChart />
 					</div>
-					<div className="flex flex-col gap-5">
+					<div className="flex flex-col gap-5 mt-5">
 						<Button
 							onClick={handleAddPhase}
 							className="h-16 w-16 rounded-full glass-component-3 flex items-center justify-center"
@@ -1080,7 +1194,7 @@ const CreatePool = () => {
 										<span className="font-orbitron text-lg">From</span>
 										<input
 											type="datetime-local"
-											value={phaseData[index]?.from || ''}
+											value={formatDateTimeLocal(phaseData[index]?.from) || ''}
 											onChange={(e) =>
 												handleChangeEmissionRate(index, 'from', e.target.value)
 											}
@@ -1093,7 +1207,7 @@ const CreatePool = () => {
 										<span className="font-orbitron text-lg">To</span>
 										<input
 											type="datetime-local"
-											value={phaseData[index]?.to || ''}
+											value={formatDateTimeLocal(phaseData[index]?.to) || ''}
 											onChange={(e) =>
 												handleChangeEmissionRate(index, 'to', e.target.value)
 											}

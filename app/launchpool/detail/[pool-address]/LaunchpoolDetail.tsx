@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import Logo from '@/public/Logo.png'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
-import ThumbNailCarousel from '@/app/components/UI/ThumbnailCarousel'
+import ThumbNailCarousel from '@/app/components/UI/carousel/ThumbnailCarousel'
 import ProjectProgress from '@/app/components/UI/project-progress/ProjectProgress'
-import StakeArea from '@/app/components/UI/StakeArea'
+import StakeArea from '@/app/components/UI/shared/StakeArea'
 import {
 	Modal,
 	ModalBody,
