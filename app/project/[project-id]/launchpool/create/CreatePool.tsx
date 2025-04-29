@@ -36,89 +36,56 @@ import { normalizeAddress, isValidAddressFormat } from '@/app/utils/address'
 import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 import { start } from 'repl'
 import { debounce } from '@/app/utils/timing'
+import { useProjectStore } from '@/app/store/project'
 
 export default function CreatePool() {
 	/* ---------------------- Project data states ---------------------- */
 	const projectID = useParams()['project-id'].toString().trim()
-	const [projectData, setProjectData] = useState<project | undefined>(undefined)
+	const { currentProject, fetchProject, fetchMockProject } = useProjectStore()
 
 	/* ---------------------- Wallet connection state ---------------------- */
 	const account = useAccount()
 	const [isProjectOwner, setIsProjectOwner] = useState(false)
 
-	/* ---------------------- Fetch project data on component mount ---------------------- */
-	const fetchProjectData = async () => {
-		if (process.env.NODE_ENV !== 'production') {
-			setProjectData({
-				id: projectID,
-				name: 'YapMaster Protocol',
-				token_address: '0x96b6D28DF53641A47be72F44BE8C626bf07365A8', // Mock Project Token deployed on Moonbase
-				token_symbol: 'PRO',
-				token_decimals: 18,
-				owner_id: account.address as string | null, // Use connected account's address
-				chain_id: 1287, // Moonbase Alpha
-				images: [],
-				logo: '',
-				short_description:
-					'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-				long_description:
-					'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum.',
-				created_at: new Date(Date.now() - 864000000), // 10 days ago in milisecs
-				tx_hash: '0x00',
-			})
-
-			return
-		}
-
-		try {
-			const response = await fetch(`/api/projects/${projectID}`)
-			const data = await response.json()
-			setProjectData(data)
-		} catch (err) {
-			console.error(`Error fetching project ${projectID}: `, err)
-			return
-		}
-	}
-
 	/* ---------------------- Access control for PO ---------------------- */
 	// Fetch project data when user connects wallet
-	useEffect(() => {
-		if (account.address) {
-			fetchProjectData()
-		}
-	}, [account.address])
+	// useEffect(() => {
+	// 	if (account.address) {
+	// 		fetchProjectData()
+	// 	}
+	// }, [account.address])
 
 	// When project data mounts, check if current user is PO
 	useEffect(() => {
-		if (!projectData) return
+		if (!currentProject) return
 
 		console.log('user address: ', account.address)
-		console.log('owner address: ', projectData?.owner_id)
+		console.log('owner address: ', currentProject?.owner_id)
 
 		if (
 			account.isConnected &&
 			normalizeAddress(account.address) ===
-				normalizeAddress(projectData?.owner_id || undefined)
+				normalizeAddress(currentProject?.owner_id || undefined)
 		) {
 			setIsProjectOwner(true)
 		}
-	}, [projectData])
+	}, [currentProject])
 
 	// Verify that the PO's wallet is connected to the same chain as their project
 	useEffect(() => {
-		if (!projectData || !account) {
+		if (!currentProject || !account) {
 			return
 		}
 
-		if (account?.chainId !== projectData?.chain_id) {
+		if (account?.chainId !== currentProject?.chain_id) {
 			toast.warning(
-				`Please switch to ${getChainName(projectData.chain_id)} network to create a launchpool for this project`,
+				`Please switch to ${getChainName(currentProject.chain_id)} network to create a launchpool for this project`,
 				{
 					style: { backgroundColor: amber[700], color: 'white' },
 				}
 			)
 		}
-	}, [projectData, account.chainId])
+	}, [currentProject, account.chainId])
 
 	/* ---------------------- Contract interaction: create launchpool ---------------------- */
 	const {
@@ -738,13 +705,13 @@ export default function CreatePool() {
 			<AnimatedBlobs count={4} />
 
 			{/* Project Header */}
-			{projectData && (
+			{currentProject && (
 				<div className="mb-8 glass-component-3 p-4 rounded-xl">
 					<div className="flex items-center gap-4">
-						{projectData.logo ? (
+						{currentProject.logo ? (
 							<img
-								src={`data:image/png;base64,${projectData.logo}`}
-								alt={projectData.name || 'project logo'}
+								src={`data:image/png;base64,${currentProject.logo}`}
+								alt={currentProject.name || 'project logo'}
 								className="w-16 h-16 rounded-full object-cover"
 							/>
 						) : (
@@ -752,11 +719,11 @@ export default function CreatePool() {
 						)}
 						<div>
 							<h2 className="text-2xl font-orbitron text-white">
-								{projectData.name}{' '}
+								{currentProject.name}{' '}
 								<span className="text-cyan-400">Launchpool</span>
 							</h2>
 							<p className="text-gray-300 text-sm">
-								{projectData.short_description}
+								{currentProject.short_description}
 							</p>
 						</div>
 					</div>
@@ -764,7 +731,7 @@ export default function CreatePool() {
 			)}
 
 			{/* Project breadcumb navigation */}
-			{projectData && (
+			{currentProject && (
 				<div className="flex items-center text-sm mb-6 text-gray-400">
 					<Link
 						href="/my-project"
@@ -777,7 +744,7 @@ export default function CreatePool() {
 						href={`/project/${projectID}`}
 						className="hover:text-cyan-400 transition-colors"
 					>
-						{projectData.name || 'Project'}
+						{currentProject.name || 'Project'}
 					</Link>
 					<span className="mx-2">›</span>
 					<span className="text-white">Create Launchpool</span>
@@ -941,9 +908,11 @@ export default function CreatePool() {
 											<div className="w-1/2 flex flex-col gap-3 relative">
 												<span className="font-orbitron text-lg">Chain</span>
 												<div className="p-3 rounded-xl font-comfortaa text-white glass-component-2 w-full text-sm">
-													{projectData ? (
+													{currentProject ? (
 														<div className="flex items-center gap-2">
-															<span>{getChainName(projectData.chain_id)}</span>
+															<span>
+																{getChainName(currentProject.chain_id)}
+															</span>
 															<span className="text-xs text-cyan-400">
 																(Same as project)
 															</span>
