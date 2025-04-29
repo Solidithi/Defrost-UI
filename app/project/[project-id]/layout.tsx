@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useProjectStore } from '@/app/store/project'
 import { useAccount } from 'wagmi'
+import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 
@@ -14,10 +15,9 @@ export default function ProjectLayout({
 }) {
 	const params = useParams()
 	const projectID = params['project-id'].toString()
-	const { chainId, isConnected, address } = useAccount()
+	const { chainId, address } = useAccount()
 
-	const { currentProject, isLoading, error, fetchProject, fetchMockProject } =
-		useProjectStore()
+	const { isLoading, error, fetchProject, fetchMockProject } = useProjectStore()
 
 	// Fetch project data on mount and when projectId changes or when user change wallet
 	useEffect(() => {
@@ -25,18 +25,22 @@ export default function ProjectLayout({
 			return
 		}
 
-		if (process.env.NODE_ENV === 'development') {
-			fetchMockProject(chainId, projectID, address)
+		if (false) {
+			// fetchMockProject(chainId, projectID, address)
 		} else {
-			fetchProject(projectID)
+			fetchProject(projectID, true)
 		}
 	}, [projectID, address])
 
 	// Show loading state
-	if (isLoading && !currentProject) {
+	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center h-[60vh]">
-				<Spinner heightWidth={12} className="border-blue-400" />
+				<LoadingModal
+					isOpen={isLoading}
+					message="Loading project"
+					subMessage="Please wait while we fetch the project data"
+				/>
 			</div>
 		)
 	}
@@ -44,7 +48,7 @@ export default function ProjectLayout({
 	// Show error state
 	if (error) {
 		return (
-			<div className="max-w-3xl mx-auto mt-12">
+			<div className="flex justify-center items-center h-[60vh]">
 				<AlertInfo accentColor="red">
 					<div>
 						<p className="font-semibold mb-2">Error loading project</p>
