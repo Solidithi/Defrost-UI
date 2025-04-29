@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { project } from "@prisma/client";
 import { useAccount } from "wagmi";
 
-interface ProjectState {
+interface ProjectStore {
 	// Project data
 	currentProject: project | null;
 	lastFetchedTime: number | null;
@@ -31,11 +31,11 @@ interface ProjectState {
 
 	// Page state actions
 	setPageLoading: (
-		page: keyof ProjectState["pageStates"],
+		page: keyof ProjectStore["pageStates"],
 		isLoading: boolean
 	) => void;
 	setPageError: (
-		page: keyof ProjectState["pageStates"],
+		page: keyof ProjectStore["pageStates"],
 		error: string | null
 	) => void;
 
@@ -44,7 +44,7 @@ interface ProjectState {
 	// Add more page-specific actions as needed
 }
 
-export const useProjectStore = create<ProjectState>()(
+export const useProjectStore = create<ProjectStore>()(
 	persist(
 		(set, get) => ({
 			currentProject: null,
