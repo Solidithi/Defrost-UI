@@ -30,6 +30,7 @@ interface ProjectStore {
 	clearProject: () => void;
 
 	// Page state actions
+	setIsLoading: (isLoading: boolean) => void;
 	setPageLoading: (
 		page: keyof ProjectStore["pageStates"],
 		isLoading: boolean
@@ -60,6 +61,10 @@ export const useProjectStore = create<ProjectStore>()(
 				analytics: { isLoading: false, error: null },
 			},
 
+			setIsLoading: (isLoading) => {
+				set({ isLoading });
+			},
+
 			fetchProject: async (projectId, forceRefresh = false) => {
 				const state = get();
 				const now = Date.now();
@@ -78,7 +83,11 @@ export const useProjectStore = create<ProjectStore>()(
 				set({ isLoading: true, error: null });
 
 				try {
-					const response = await fetch(`/api/projects/${projectId}`);
+					const response = await fetch(
+						`/api/project/?${new URLSearchParams({
+							"project-id": projectId,
+						}).toString()}`
+					);
 
 					if (!response.ok) {
 						throw new Error(
@@ -89,7 +98,7 @@ export const useProjectStore = create<ProjectStore>()(
 					const data = await response.json();
 
 					set({
-						currentProject: data,
+						currentProject: data.project,
 						lastFetchedTime: now,
 						isLoading: false,
 					});
@@ -109,7 +118,7 @@ export const useProjectStore = create<ProjectStore>()(
 				set({ isLoading: true, error: null });
 
 				// Simulate network delay
-				await new Promise((resolve) => setTimeout(resolve, 500));
+				await new Promise((resolve) => setTimeout(resolve, 5000));
 
 				const mockProject = {
 					id: projectID,
