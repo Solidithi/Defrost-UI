@@ -2,10 +2,11 @@ import React, {
 	useState,
 	Children,
 	useRef,
-	useLayoutEffect,
+	useEffect,
 	ReactNode,
 	FC,
 	ButtonHTMLAttributes,
+	useCallback,
 } from 'react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 
@@ -85,10 +86,11 @@ export default function Stepper({
 	const isCompleted = currentStep > totalSteps
 	const isLastStep = currentStep === totalSteps
 
-	const currentStepElement = stepsArray[
-		currentStep - 1
-	] as React.ReactElement<StepProps>
-	const canGoToNextStep = currentStepElement.props.canGoToNextStep !== false // Default to true if not specified
+	const currentStepElement =
+		isCompleted || currentStep <= 0 || currentStep > totalSteps
+			? undefined
+			: (stepsArray[currentStep - 1] as React.ReactElement<StepProps>)
+	const canGoToNextStep = currentStepElement?.props?.canGoToNextStep !== false // Default to true if not specified
 
 	const updateStep = (newStep: number) => {
 		setCurrentStep(newStep)
@@ -187,11 +189,12 @@ export default function Stepper({
 							<button
 								onClick={isLastStep ? handleComplete : handleNext}
 								disabled={!canGoToNextStep}
-								className={`min-w-[100px] flex items-center justify-center rounded-full bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] py-1.5 px-3.5 font-comfortaa font-medium tracking-tight text-white transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] hover:brightness-110 active:brightness-90 relative after:absolute after:inset-0 after:rounded-full after:opacity-0 after:bg-gradient-to-r after:from-[#F05550]/30 after:via-[#AD7386]/30 after:to-[#54A4F2]/30 after:blur-md hover:after:opacity-100 after:transition-opacity ${
-									!canGoToNextStep
-										? 'opacity-50 cursor-not-allowed hover:shadow-none hover:brightness-100 hover:after:opacity-0'
-										: ''
-								}`}
+								className={`min-w-[100px] flex items-center justify-center rounded-full 
+									bg-gradient-to-r from-[#3EB3D3] to-[#FF154C] py-1.5 px-3.5 
+									font-comfortaa font-bold tracking-tight text-white 
+									transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] 
+									hover:brightness-110 active:brightness-90 
+									${!canGoToNextStep ? 'opacity-50 cursor-not-allowed' : ''}`}
 								{...nextButtonProps}
 							>
 								{isLastStep ? 'Complete' : nextButtonText}
@@ -212,6 +215,30 @@ function StepContentWrapper({
 	className,
 }: StepContentWrapperProps) {
 	const [parentHeight, setParentHeight] = useState(0)
+	const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+	const updateHeight = useCallback(
+		(height: number) => {
+			if (updateTimeoutRef.current) {
+				clearTimeout(updateTimeoutRef.current)
+			}
+
+			if (Math.abs(height - parentHeight) > 2) {
+				updateTimeoutRef.current = setTimeout(() => {
+					setParentHeight(height)
+				}, 10)
+			}
+		},
+		[parentHeight]
+	)
+
+	useEffect(() => {
+		return () => {
+			if (updateTimeoutRef.current) {
+				clearTimeout(updateTimeoutRef.current)
+			}
+		}
+	}, [])
 
 	return (
 		<motion.div
@@ -225,7 +252,7 @@ function StepContentWrapper({
 					<SlideTransition
 						key={currentStep}
 						direction={direction}
-						onHeightReady={(h) => setParentHeight(h)}
+						onHeightReady={updateHeight}
 					>
 						{children}
 					</SlideTransition>
@@ -241,9 +268,21 @@ function SlideTransition({
 	onHeightReady,
 }: SlideTransitionProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
+	const prevHeightRef = useRef<number>(0)
 
-	useLayoutEffect(() => {
-		if (containerRef.current) onHeightReady(containerRef.current.offsetHeight)
+	useEffect(() => {
+		const rafId = requestAnimationFrame(() => {
+			if (containerRef.current) {
+				const height = containerRef.current.offsetHeight
+
+				if (Math.abs(height - prevHeightRef.current) > 2) {
+					prevHeightRef.current = height
+					onHeightReady(height)
+				}
+			}
+		})
+
+		return () => cancelAnimationFrame(rafId)
 	}, [children, onHeightReady])
 
 	return (
