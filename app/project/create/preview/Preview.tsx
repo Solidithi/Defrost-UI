@@ -31,8 +31,8 @@ import { useCreateProjectStore } from '@/app/store/create-project'
 import StakeArea from '@/app/components/UI/shared/StakeArea'
 import chains from '@/app/config/chains.json'
 import { useEffect, useState } from 'react'
-import { normalizeAddress } from '@/app/lib/utils'
-import { fileToBase64 } from '@/app/lib/utils'
+import { normalizeAddress } from '@/app/utils/address'
+import { fileToBase64 } from '@/app/utils/file'
 
 const Preview = () => {
 	const createProjectStore = useCreateProjectStore((state) => state)
