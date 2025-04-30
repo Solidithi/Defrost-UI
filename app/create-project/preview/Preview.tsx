@@ -5,6 +5,7 @@ import Logo from '@/public/Logo.png'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
 import ThumbNailCarousel from '@/app/components/UI/carousel/ThumbnailCarousel'
 import ProjectProgress from '@/app/components/UI/project-progress/ProjectProgress'
+
 import {
 	Modal,
 	ModalBody,
@@ -137,65 +138,6 @@ const Preview = () => {
 		await poll() // Start the first poll
 	}
 
-	// --- Function to Update Details via API ---
-	const updateProjectDetails = async (txHash: `0x${string}`) => {
-		setIsUpdatingDetails(true)
-		setFinalError(null)
-		console.log('Updating project details for txHash:', txHash)
-
-		// 1. Convert image files to base64
-		// This part needs implementation based on your storage solution
-		// let logoUrl = ''
-		let logoBase64 = await fileToBase64(createProjectStore.logo!)
-		let imagesBase64 = await Promise.all(
-			createProjectStore.images.map((imageFile) => fileToBase64(imageFile))
-		)
-		// let imageUrls: string[] = []
-		try {
-			// Example: Upload logo (replace with your actual upload logic)
-			// if (createProjectStore.logo) {
-			// 	// logoUrl = await uploadFile(createProjectStore.logo);
-			// 	// logoUrl = 'placeholder-logo-url' // Replace with actual URL after upload
-			// }
-			// // Example: Upload images
-			// if (createProjectStore.images.length > 0) {
-			// 	// imageUrls = await Promise.all(createProjectStore.images.map(uploadFile));
-			// 	// imageUrls = ['placeholder-img1-url', 'placeholder-img2-url'] // Replace
-			// }
-
-			// 2. Send data to your update API endpoint
-			const response = await fetch('/api/create-project/update-detail', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					txHash: txHash,
-					name: createProjectStore.name,
-					short_description: createProjectStore.shortDescription,
-					long_description: createProjectStore.longDescription,
-					logo: logoBase64,
-					images: imagesBase64,
-				}),
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}))
-				throw new Error(
-					errorData.message ||
-						`API request failed with status ${response.status}`
-				)
-			}
-
-			const result = await response.json()
-			console.log('Project details updated successfully:', result)
-			setIsProjectCreated(true) // Set final success state
-		} catch (error: any) {
-			console.error('Error updating project details:', error)
-			setFinalError(`Failed to save project details: ${error.message}`)
-		} finally {
-			setIsUpdatingDetails(false)
-		}
-	}
-
 	const handleCreateProject = () => {
 		console.log('handling create project')
 
@@ -244,12 +186,15 @@ const Preview = () => {
 
 	const buttonState = getButtonState()
 
+	// Replace the hardcoded projectDetail with data from the store
 	const projectDetail = {
 		id: 1,
-		name: 'Project Name',
+		name: createProjectStore.name || 'Project Name',
 		description:
-			'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-		image: Logo,
+			createProjectStore.shortDescription || 'No description available.',
+		image: createProjectStore.logo
+			? URL.createObjectURL(createProjectStore.logo)
+			: Logo,
 		status: 'Upcoming',
 		tokenPools: [
 			{
@@ -310,11 +255,14 @@ const Preview = () => {
 		],
 	}
 
+	// Update tabs to show the actual long description from the store
 	const tabs = [
 		{
 			title: 'Description',
 			value: 'description',
-			content: <DescriptionTab />,
+			content: (
+				<DescriptionTab description={createProjectStore.longDescription} />
+			),
 		},
 
 		{
@@ -346,34 +294,24 @@ const Preview = () => {
 				<div className="flex items-start justify-center gap-12 m-">
 					{/* Left Column */}
 					<div className="w-7/12">
-						<ThumbNailCarousel />
+						<ThumbNailCarousel
+							projectImages={
+								createProjectStore.images.length > 0
+									? createProjectStore.images.map((file, index) => ({
+											src: URL.createObjectURL(file),
+											alt: `Project Image ${index + 1}`,
+											description: `Project Image ${index + 1}`,
+										}))
+									: undefined
+							}
+						/>
 
-						{/* Long content to allow scrolling */}
-						{/* <div className="glass-component-1 text-white mt-10 p-6 rounded-lg">
-							<p>
-								{Array(20)
-									.fill(
-										'If you have funded this project, we will be in touch to let you know when the rewards have started distributing and when you can claim them.'
-									)
-									.join(' ')}
-							</p>
-						</div> */}
-
-						<div className="">
-							{/* <Tabs
-								tabs={tabs}
-								activeTabClassName="bg-white text-white dark:bg-zinc-800"
-								tabClassName="text-white hover:bg-gray-700 dark:hover:bg-zinc-800"
-								containerClassName=" mt-10"
-								contentClassName=""
-								// onTabClick={handleTabClick}
-							></Tabs> */}
+						<div className="mb-48">
 							<Tabs
 								tabs={tabs}
 								activeTabClassName="bg-white text-[#59A1EC] dark:bg-zinc-800"
 								tabClassName="text-gray-300 rounded-lg px-3 py-2 hover:bg-gray-700 dark:hover:bg-zinc-800"
 								containerClassName=" mt-10"
-								// contentClassName="bg-gray-800 dark:bg-zinc-800 rounded-lg p-6"
 							/>
 						</div>
 					</div>
@@ -381,7 +319,7 @@ const Preview = () => {
 					{/* Right Sticky Column */}
 					<div className="w-3/12 h-fit sticky top-12 flex flex-col">
 						<div className="">
-							<ProjectProgress />
+							<ProjectProgress socials={createProjectStore.socials} />
 						</div>
 						<div className="">
 							<StakeArea />
