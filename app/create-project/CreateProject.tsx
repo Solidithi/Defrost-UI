@@ -34,6 +34,13 @@ const CreateProject = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [targetAudience, setTargetAudience] = useState('')
 
+	// Social media state
+	const [twitter, setTwitter] = useState('')
+	const [telegram, setTelegram] = useState('')
+	const [discord, setDiscord] = useState('')
+	const [website, setWebsite] = useState('')
+	const [github, setGithub] = useState('')
+
 	// Use ImageItem[] instead of separate state variables for images and previews
 	const [projectImages, setProjectImages] = useState<ImageItem[]>([])
 	const [projectLogo, setProjectLogo] = useState<File | null>(null)
@@ -64,6 +71,15 @@ const CreateProject = () => {
 			}
 			if (!createProjectStore.name) {
 			}
+
+			// Save social media links to the store before navigating
+			createProjectStore.setSocials({
+				twitter,
+				telegram,
+				discord,
+				website,
+				github,
+			})
 
 			route.push('/create-project/preview')
 		} catch (error) {
@@ -473,6 +489,106 @@ const CreateProject = () => {
 									placeholder="Describe your target audience (e.g., DeFi users, NFT collectors, etc.)"
 									className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
 								/>
+							</div>
+						</div>
+					</Step>
+					<Step>
+						<div className="flex flex-col gap-5 items-center w-full">
+							<span className="text-3xl font-orbitron text-white mb-8 flex justify-center w-full">
+								Social Media & Community Links
+							</span>
+
+							<div className="w-full space-y-6">
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="website"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Website
+									</label>
+									<input
+										id="website"
+										value={website}
+										onChange={(e) => setWebsite(e.target.value)}
+										placeholder="https://yourproject.com"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="twitter"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Twitter/X
+									</label>
+									<input
+										id="twitter"
+										value={twitter}
+										onChange={(e) => setTwitter(e.target.value)}
+										placeholder="https://twitter.com/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="telegram"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Telegram
+									</label>
+									<input
+										id="telegram"
+										value={telegram}
+										onChange={(e) => setTelegram(e.target.value)}
+										placeholder="https://t.me/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="discord"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Discord
+									</label>
+									<input
+										id="discord"
+										value={discord}
+										onChange={(e) => setDiscord(e.target.value)}
+										placeholder="https://discord.gg/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="github"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										GitHub
+									</label>
+									<input
+										id="github"
+										value={github}
+										onChange={(e) => setGithub(e.target.value)}
+										placeholder="https://github.com/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+							</div>
+
+							<div className="mt-4 mb-2 rounded-lg bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 border-l-4 border-cyan-500 backdrop-blur-sm">
+								<p className="text-gray-300 text-center font-comfortaa max-w-3xl mx-auto leading-relaxed">
+									<span className="text-cyan-400 font-bold">
+										Connect your community
+									</span>{' '}
+									by adding links to your social media and community platforms.
+									Providing these links helps potential supporters find and
+									engage with your project.
+								</p>
 							</div>
 						</div>
 					</Step>
