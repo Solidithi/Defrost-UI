@@ -24,7 +24,6 @@ import { abi as projectHubABI } from '@/abi/ProjectHubUpgradeable.json'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { abi as ERC20MetadataABI } from '@/abi/IERC20Metadata.json'
 import { ProjectHubUpgradeable__factory } from '@/app/types/typechain'
-import { TransactionStatusModal } from '@/app/components/UI/shared/TransactionSTatusModal'
 import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
 import { useParams } from 'next/navigation'
 import Spinner from '../../../../components/UI/effect/Spinner'
@@ -37,6 +36,7 @@ import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 import { start } from 'repl'
 import { debounce } from '@/app/utils/timing'
 import { useProjectStore } from '@/app/store/project'
+import { TransactionStatusModal } from '@/app/components/UI/shared/TransactionStatusModal'
 
 export default function CreatePool() {
 	/* ---------------------- Project data states ---------------------- */
