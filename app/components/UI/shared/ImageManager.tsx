@@ -3,13 +3,13 @@ import { useState, useRef, useEffect } from 'react'
 
 interface ImageItem {
 	id: string
-	url: string
-	file: File
+	base64: string
+	name?: string // Optional name for display purposes
 }
 
 interface LogoItem {
-	url: string
-	file: File
+	base64: string
+	name?: string // Optional name for display purposes
 }
 
 interface ImageManagerProps {
@@ -183,7 +183,7 @@ const ImageManager = ({
 												>
 													<div className="w-full aspect-square overflow-hidden rounded-lg mb-2 relative">
 														<Image
-															src={image.url}
+															src={image.base64}
 															alt={`Image ${image.id}`}
 															width={800}
 															height={800}
@@ -213,7 +213,7 @@ const ImageManager = ({
 														</div>
 													</div>
 													<span className="text-xs text-gray-300 truncate w-full text-center">
-														{image.file.name}
+														{image.name || `Image ${image.id}`}
 													</span>
 												</div>
 											))}
@@ -232,7 +232,7 @@ const ImageManager = ({
 										<div className="flex flex-col items-center">
 											<div className="w-48 h-48 glass-component-3 rounded-xl p-2 mb-4 relative group">
 												<Image
-													src={logo.url}
+													src={logo.base64}
 													alt="Project Logo"
 													width={800}
 													height={800}
@@ -262,7 +262,7 @@ const ImageManager = ({
 												</div>
 											</div>
 											<span className="text-sm text-gray-300 mb-2">
-												{logo.file.name}
+												{logo.name || 'Project Logo'}
 											</span>
 											<p className="text-xs text-gray-400 text-center">
 												Your project logo should be 512×512px, PNG format

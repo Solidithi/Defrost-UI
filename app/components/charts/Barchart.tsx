@@ -2,8 +2,13 @@
 import React from 'react'
 import Chart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
-import { BarChartProps } from '@/app/types'
 import Image from 'next/image'
+
+export interface BarChartProps {
+	data: number[]
+	label: string[]
+}
+
 const BarChart: React.FC<BarChartProps> = ({ data, label }) => {
 	const series = [
 		{

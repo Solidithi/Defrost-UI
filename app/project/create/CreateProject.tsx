@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import SplitText from '@/app/components/UI/effect/SplitText'
 import Stepper, { Step } from '@/app/components/UI/project-progress/Stepper'
 import NetworkSelector from '@/app/components/UI/selector/NetworkSelector'
@@ -9,7 +8,7 @@ import Folder from '@/app/components/UI/selector/Folder'
 import ImageManager from '@/app/components/UI/shared/ImageManager'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useCreateProjectStore } from '../store/create-project'
+import { useCreateProjectStore } from '../../store/create-project'
 import chains from '@/app/config/chains.json'
 import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
 import {
@@ -19,18 +18,19 @@ import {
 	TooltipTrigger,
 } from '@/app/components/UI/shadcn/Tooltip'
 import { Info } from 'lucide-react'
+import { fileToBase64 } from '@/app/utils/file'
+import { resizeAndConvertToBase64 } from '@/app/utils/image'
+import { getChainName } from '@/app/utils/chain'
 
+// Define interface for ImageItem to match the new ImageManager component
 interface ImageItem {
 	id: string
-	url: string
-	file: File
+	base64: string
+	name?: string
 }
 
 const CreateProject = () => {
-	const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null)
-	const [name, setName] = useState('')
-	const [shortDescription, setShortDescription] = useState('')
-	const [longDescription, setLongDescription] = useState('')
+	// Minimal UI state that doesn't need to be in the store
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [targetAudience, setTargetAudience] = useState('')
 
@@ -49,11 +49,11 @@ const CreateProject = () => {
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
-	const createProjectStore = useCreateProjectStore((state) => state)
 
-	const route = useRouter()
+	// Use Zustand store for all project data
+	const createProjectStore = useCreateProjectStore()
+	const router = useRouter()
 
-	// const availableNetworks = Objec(chains as ChainConfig)
 	const availableNetworks = Object.entries(chains).map(([_, chain]) => ({
 		id: chain.chainID,
 		name: chain.chainName,
@@ -65,11 +65,14 @@ const CreateProject = () => {
 	const handleComplete = () => {
 		try {
 			// Check if all required fields are filled
-			if (!selectedNetwork) {
+			if (!createProjectStore.chainID) {
 				alert('Please select a blockchain network')
 				return
 			}
+
 			if (!createProjectStore.name) {
+				alert('Please enter a project name')
+				return
 			}
 
 			// Save social media links to the store before navigating
@@ -81,23 +84,23 @@ const CreateProject = () => {
 				github,
 			})
 
-			route.push('/create-project/preview')
+			router.push('/project/create/preview')
 		} catch (error) {
 			console.log('Error:', error)
 		}
 	}
 
-	// Render image previews for the folder component
+	// Render image previews for the folder component using images from the store
 	const renderImagePreviews = () => {
 		// Take only the first 3 images (or fewer if there aren't 3)
-		return projectImages.slice(0, 3).map((image, index) => (
+		return createProjectStore.images.slice(0, 3).map((base64, index) => (
 			<div
-				key={image.id}
+				key={index}
 				className="w-full h-full flex items-center justify-center"
 			>
 				<Image
-					src={image.url}
-					alt={`Preview ${index}`}
+					src={base64}
+					alt={`Image ${index + 1}`}
 					width={512}
 					height={512}
 					className="max-w-full max-h-full object-contain rounded"
@@ -107,47 +110,38 @@ const CreateProject = () => {
 	}
 
 	const handleNetworkChange = (option: any) => {
-		setSelectedNetwork(option.name)
-
-		// console.log(`Selected network: ${option.name}`)
+		createProjectStore.setChainID(option.id)
 	}
 
 	const handleModalStateChange = (isOpen: boolean) => {
 		setIsModalOpen(isOpen)
 	}
 
-	const handleProjectImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleProjectImageUpload = async (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
 		if (e.target.files && e.target.files.length > 0) {
 			const files = Array.from(e.target.files)
 
-			// Process each file
-			const imageFiles: File[] = []
+			// Process each file to base64 with resizing
+			const base64Images: string[] = await Promise.all(
+				files.map((file) => resizeAndConvertToBase64(file, false))
+			)
 
-			files.forEach((file) => {
-				const reader = new FileReader()
-				reader.onload = (event) => {
-					if (event.target?.result) {
-						const newImage: ImageItem = {
-							id: uuidv4(), // Generate a unique ID
-							url: event.target.result as string,
-							file: file,
-						}
+			// Update images in the store
+			createProjectStore.setImages([
+				...createProjectStore.images,
+				...base64Images,
+			])
 
-						imageFiles.push(newImage.file)
-						setProjectImages((prev) => [...prev, newImage])
-					}
-				}
-				reader.readAsDataURL(file)
-			})
-			// Add the new image to state
-			createProjectStore.setImages(imageFiles)
-
-			// Open the folder when files are selected
+			// Open the folder animation when files are selected
 			setImageUploadFolderOpen(true)
 		}
 	}
 
-	const handleProjectLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleProjectLogoUpload = async (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
 		if (e.target.files && e.target.files[0]) {
 			const file = e.target.files[0]
 
@@ -157,34 +151,33 @@ const CreateProject = () => {
 				return
 			}
 
-			setProjectLogo(file)
-			createProjectStore.setLogo(file)
+			// Convert to base64 with resizing (true for logo dimensions)
+			const base64Logo = await resizeAndConvertToBase64(file, true)
+			createProjectStore.setLogo(base64Logo)
 
-			// Open the folder when file is selected
+			// Open the folder animation when file is selected
 			setLogoUploadFolderOpen(true)
-
-			// Create image preview for the folder item
-			const reader = new FileReader()
-			reader.onload = (event) => {
-				setProjectLogoPreview(event.target?.result as string)
-			}
-			reader.readAsDataURL(file)
 		}
 	}
 
 	const handleLogoDelete = () => {
-		setProjectLogo(null)
-		setProjectLogoPreview(null)
-		createProjectStore.setLogo(null)
+		createProjectStore.setLogo(undefined)
 	}
 
-	const handleImageDelete = (imageId: string) => {
-		const updatedImages = projectImages.filter((image) => image.id !== imageId)
-		setProjectImages(updatedImages)
-
-		// Update the store with just the file objects
-		const imageFiles = updatedImages.map((img) => img.file)
-		createProjectStore.setImages(imageFiles)
+	const handleImageDelete = (id: string) => {
+		// Convert the ID string to number since our array is index-based
+		const index = parseInt(id)
+		if (
+			!isNaN(index) &&
+			index >= 0 &&
+			index < createProjectStore.images.length
+		) {
+			const updatedImages = [
+				...createProjectStore.images.slice(0, index),
+				...createProjectStore.images.slice(index + 1),
+			]
+			createProjectStore.setImages(updatedImages)
+		}
 	}
 
 	return (
@@ -242,6 +235,7 @@ const CreateProject = () => {
 									options={availableNetworks}
 									onChange={handleNetworkChange}
 									onModalStateChange={handleModalStateChange}
+									defaultValue={getChainName(createProjectStore.chainID || 0)}
 								/>
 							</div>
 							<div className=""></div>
@@ -280,9 +274,8 @@ const CreateProject = () => {
 									</label>
 									<input
 										id="projectName"
-										value={name}
+										value={createProjectStore.name}
 										onChange={(e) => {
-											setName(e.target.value)
 											createProjectStore.setName(e.target.value)
 										}}
 										placeholder="Enter your project name"
@@ -299,14 +292,14 @@ const CreateProject = () => {
 									</label>
 									<textarea
 										id="shortDescription"
-										value={shortDescription}
+										value={createProjectStore.shortDescription}
 										onChange={(e) => {
 											const words = e.target.value.trim().split(/\s+/)
 											if (
 												words.length <= 100 ||
-												e.target.value.length < shortDescription.length
+												e.target.value.length <
+													createProjectStore.shortDescription.length
 											) {
-												setShortDescription(e.target.value)
 												createProjectStore.setShortDescription(e.target.value)
 											}
 										}}
@@ -315,8 +308,10 @@ const CreateProject = () => {
 									/>
 									<div className="text-xs text-gray-400 text-right font-comfortaa">
 										{
-											shortDescription.trim().split(/\s+/).filter(Boolean)
-												.length
+											createProjectStore.shortDescription
+												.trim()
+												.split(/\s+/)
+												.filter(Boolean).length
 										}
 										/100 words
 									</div>
@@ -331,10 +326,9 @@ const CreateProject = () => {
 									</label>
 									<textarea
 										id="longDescription"
-										value={longDescription}
+										value={createProjectStore.longDescription}
 										onChange={(e) => {
 											createProjectStore.setLongDescription(e.target.value)
-											setLongDescription(e.target.value)
 										}}
 										placeholder="Detailed description of your project"
 										className="p-4 rounded-lg glass-component-2 text-white font-comfortaa h-56 resize-none w-full"
@@ -377,8 +371,8 @@ const CreateProject = () => {
 										</div>
 									</div>
 									<p className="text-gray-300 font-comfortaa text-center">
-										{projectImages.length > 0
-											? `${projectImages.length} image(s) selected. Click to add more.`
+										{createProjectStore.images.length > 0
+											? `${createProjectStore.images.length} image(s) selected. Click to add more.`
 											: 'Drag & drop your project images here\nor click to browse'}
 									</p>
 									<span className="text-cyan-400 font-bold mt-2 text-xs">
@@ -424,14 +418,14 @@ const CreateProject = () => {
 												autoClose={true}
 												autoCloseDelay={1500}
 												items={
-													projectLogoPreview
+													createProjectStore.logo
 														? [
 																<div
 																	key="logo"
 																	className="w-full h-full flex items-center justify-center"
 																>
 																	<Image
-																		src={projectLogoPreview}
+																		src={createProjectStore.logo}
 																		alt="Logo Preview"
 																		width={512}
 																		height={512}
@@ -445,7 +439,7 @@ const CreateProject = () => {
 										</div>
 									</div>
 									<p className="text-gray-300 font-comfortaa text-center">
-										{projectLogo
+										{createProjectStore.logo
 											? 'Logo selected. Click to change.'
 											: 'Drag & drop your project logo here\nor click to browse'}
 									</p>
@@ -455,13 +449,21 @@ const CreateProject = () => {
 								</div>
 							</div>
 
-							{(projectImages.length > 0 || projectLogo) && (
+							{(createProjectStore.images.length > 0 ||
+								createProjectStore.logo) && (
 								<div className="w-full mb-6">
 									<ImageManager
-										images={projectImages}
+										images={createProjectStore.images.map((base64, index) => ({
+											id: index.toString(),
+											base64,
+											name: `Image ${index + 1}`,
+										}))}
 										logo={
-											projectLogo
-												? { url: projectLogoPreview || '', file: projectLogo }
+											createProjectStore.logo
+												? {
+														base64: createProjectStore.logo,
+														name: 'Project Logo',
+													}
 												: null
 										}
 										onDeleteImage={handleImageDelete}
@@ -484,8 +486,10 @@ const CreateProject = () => {
 								</label>
 								<input
 									id="targetAudience"
-									value={targetAudience}
-									onChange={(e) => setTargetAudience(e.target.value)}
+									value={createProjectStore.targetAudience}
+									onChange={(e) =>
+										createProjectStore.setTargetAudience(e.target.value)
+									}
 									placeholder="Describe your target audience (e.g., DeFi users, NFT collectors, etc.)"
 									className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
 								/>

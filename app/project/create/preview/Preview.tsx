@@ -32,8 +32,8 @@ import { useCreateProjectStore } from '@/app/store/create-project'
 import StakeArea from '@/app/components/UI/shared/StakeArea'
 import chains from '@/app/config/chains.json'
 import { useEffect, useState } from 'react'
-import { normalizeAddress } from '@/app/lib/utils'
-import { fileToBase64 } from '@/app/lib/utils'
+import { normalizeAddress } from '@/app/utils/address'
+import { fileToBase64 } from '@/app/utils/file'
 
 const Preview = () => {
 	const createProjectStore = useCreateProjectStore((state) => state)
@@ -192,9 +192,8 @@ const Preview = () => {
 		name: createProjectStore.name || 'Project Name',
 		description:
 			createProjectStore.shortDescription || 'No description available.',
-		image: createProjectStore.logo
-			? URL.createObjectURL(createProjectStore.logo)
-			: Logo,
+		// Directly use the base64 string instead of creating an object URL
+		image: createProjectStore.logo || Logo,
 		status: 'Upcoming',
 		tokenPools: [
 			{
@@ -297,8 +296,8 @@ const Preview = () => {
 						<ThumbNailCarousel
 							projectImages={
 								createProjectStore.images.length > 0
-									? createProjectStore.images.map((file, index) => ({
-											src: URL.createObjectURL(file),
+									? createProjectStore.images.map((base64, index) => ({
+											src: base64, // Use the base64 string directly
 											alt: `Project Image ${index + 1}`,
 											description: `Project Image ${index + 1}`,
 										}))

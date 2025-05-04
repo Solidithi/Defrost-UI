@@ -2,10 +2,11 @@ import React, {
 	useState,
 	Children,
 	useRef,
-	useLayoutEffect,
+	useEffect,
 	ReactNode,
 	FC,
 	ButtonHTMLAttributes,
+	useCallback,
 } from 'react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 
@@ -36,6 +37,7 @@ interface StepContentWrapperProps {
 
 interface StepProps {
 	children: ReactNode
+	canGoToNextStep?: boolean
 }
 
 interface StepperProps {
@@ -84,6 +86,12 @@ export default function Stepper({
 	const isCompleted = currentStep > totalSteps
 	const isLastStep = currentStep === totalSteps
 
+	const currentStepElement =
+		isCompleted || currentStep <= 0 || currentStep > totalSteps
+			? undefined
+			: (stepsArray[currentStep - 1] as React.ReactElement<StepProps>)
+	const canGoToNextStep = currentStepElement?.props?.canGoToNextStep !== false // Default to true if not specified
+
 	const updateStep = (newStep: number) => {
 		setCurrentStep(newStep)
 		if (newStep > totalSteps) onFinalStepCompleted()
@@ -98,15 +106,19 @@ export default function Stepper({
 	}
 
 	const handleNext = () => {
-		if (!isLastStep) {
+		// Only proceed if the current step is valid
+		if (!isLastStep && canGoToNextStep) {
 			setDirection(-1)
 			updateStep(currentStep + 1)
 		}
 	}
 
 	const handleComplete = () => {
-		setDirection(1)
-		updateStep(totalSteps + 1)
+		// Only complete if the last step is valid
+		if (canGoToNextStep) {
+			setDirection(1)
+			updateStep(totalSteps + 1)
+		}
 	}
 
 	return (
@@ -168,11 +180,7 @@ export default function Stepper({
 							{currentStep !== 1 && (
 								<button
 									onClick={handleBack}
-									className={`duration-350 rounded-full px-3.5 py-1.5 transition bg-gray-400 hover:bg-gray-200 ${
-										currentStep === 1
-											? 'pointer-events-none opacity-50 text-white'
-											: 'text-white hover:text-neutral-700'
-									}`}
+									className="min-w-[100px] rounded-full px-4 py-1.5 font-comfortaa font-medium tracking-tight transition-all duration-300 bg-white/10 text-gray-200 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
 									{...backButtonProps}
 								>
 									{backButtonText}
@@ -180,7 +188,13 @@ export default function Stepper({
 							)}
 							<button
 								onClick={isLastStep ? handleComplete : handleNext}
-								className="duration-350 min-w-[100px] flex items-center justify-center rounded-full bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+								disabled={!canGoToNextStep}
+								className={`min-w-[100px] flex items-center justify-center rounded-full 
+									bg-gradient-to-r from-[#3EB3D3] to-[#FF154C] py-1.5 px-3.5 
+									font-comfortaa font-bold tracking-tight text-white 
+									transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] 
+									hover:brightness-110 active:brightness-90 
+									${!canGoToNextStep ? 'opacity-50 cursor-not-allowed' : ''}`}
 								{...nextButtonProps}
 							>
 								{isLastStep ? 'Complete' : nextButtonText}
@@ -201,6 +215,30 @@ function StepContentWrapper({
 	className,
 }: StepContentWrapperProps) {
 	const [parentHeight, setParentHeight] = useState(0)
+	const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+	const updateHeight = useCallback(
+		(height: number) => {
+			if (updateTimeoutRef.current) {
+				clearTimeout(updateTimeoutRef.current)
+			}
+
+			if (Math.abs(height - parentHeight) > 2) {
+				updateTimeoutRef.current = setTimeout(() => {
+					setParentHeight(height)
+				}, 10)
+			}
+		},
+		[parentHeight]
+	)
+
+	useEffect(() => {
+		return () => {
+			if (updateTimeoutRef.current) {
+				clearTimeout(updateTimeoutRef.current)
+			}
+		}
+	}, [])
 
 	return (
 		<motion.div
@@ -214,7 +252,7 @@ function StepContentWrapper({
 					<SlideTransition
 						key={currentStep}
 						direction={direction}
-						onHeightReady={(h) => setParentHeight(h)}
+						onHeightReady={updateHeight}
 					>
 						{children}
 					</SlideTransition>
@@ -230,9 +268,21 @@ function SlideTransition({
 	onHeightReady,
 }: SlideTransitionProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
+	const prevHeightRef = useRef<number>(0)
 
-	useLayoutEffect(() => {
-		if (containerRef.current) onHeightReady(containerRef.current.offsetHeight)
+	useEffect(() => {
+		const rafId = requestAnimationFrame(() => {
+			if (containerRef.current) {
+				const height = containerRef.current.offsetHeight
+
+				if (Math.abs(height - prevHeightRef.current) > 2) {
+					prevHeightRef.current = height
+					onHeightReady(height)
+				}
+			}
+		})
+
+		return () => cancelAnimationFrame(rafId)
 	}, [children, onHeightReady])
 
 	return (
@@ -266,7 +316,7 @@ const stepVariants: Variants = {
 	}),
 }
 
-export const Step: FC<StepProps> = ({ children }) => {
+export const Step: FC<StepProps> = ({ children, canGoToNextStep = true }) => {
 	return <div className="px-8">{children}</div>
 }
 

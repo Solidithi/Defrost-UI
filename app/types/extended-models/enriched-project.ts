@@ -27,8 +27,3 @@ export type ProjectDetail = {
 	status: string;
 	tokenPools: TokenPool[];
 };
-
-export interface BarChartProps {
-	data: number[];
-	label: string[];
-}
