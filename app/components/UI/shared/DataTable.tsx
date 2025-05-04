@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { shortenStr } from '@/app/lib/utils'
+import { shortenStr } from '@/app/utils/display'
 
 // Generic type for column definition
 export interface Column<T> {

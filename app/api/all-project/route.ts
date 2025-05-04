@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 
 		return NextResponse.json({ projects: enrichedProjects });
 	} catch (error) {
-		console.error('Error fetching projects:", error);');
+		console.error("Error fetching projects:", error);
 		return NextResponse.json(
 			{
 				error: "Failed to fetch projects",
