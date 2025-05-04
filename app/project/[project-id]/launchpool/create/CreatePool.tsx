@@ -734,7 +734,7 @@ export default function CreatePool() {
 			{currentProject && (
 				<div className="flex items-center text-sm mb-6 text-gray-400">
 					<Link
-						href="/my-project"
+						href="/project-detail" // add the correct path to when we got project detail page
 						className="hover:text-cyan-400 transition-colors"
 					>
 						My Projects

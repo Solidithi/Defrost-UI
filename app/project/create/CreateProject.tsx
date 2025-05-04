@@ -21,6 +21,7 @@ import { Info } from 'lucide-react'
 import { fileToBase64 } from '@/app/utils/file'
 import { resizeAndConvertToBase64 } from '@/app/utils/image'
 import { getChainName } from '@/app/utils/chain'
+import { ProjectCompletionModal } from '@/app/components/UI/modal/ProjectCompletionModal'
 
 // Define interface for ImageItem to match the new ImageManager component
 interface ImageItem {
@@ -49,6 +50,7 @@ const CreateProject = () => {
 	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
+	const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
 
 	// Use Zustand store for all project data
 	const createProjectStore = useCreateProjectStore()
@@ -62,51 +64,49 @@ const CreateProject = () => {
 		address: '',
 	}))
 
-	const handleComplete = () => {
+	const handleComplete = async () => {
 		try {
-			// Check if all required fields are filled
-			if (!createProjectStore.chainID) {
-				alert('Please select a blockchain network')
-				return
-			}
+			// Comment out actual API call for testing frontend
+			// const response = await fetch("/api/create-project", {
+			//   method: "POST",
+			//   headers: {
+			//     "Content-Type": "application/json",
+			//   },
+			//   body: JSON.stringify({
+			//     ...projectData
+			//   }),
+			// });
 
-			if (!createProjectStore.name) {
-				alert('Please enter a project name')
-				return
-			}
+			// if (!response.ok) {
+			//   throw new Error("Failed to create project");
+			// }
 
-			// Save social media links to the store before navigating
-			createProjectStore.setSocials({
-				twitter,
-				telegram,
-				discord,
-				website,
-				github,
-			})
+			// const data = await response.json();
+			// const newProjectId = data.projectId;
 
-			router.push('/project/create/preview')
+			// Temporarily set a mock project ID
+			// In production, this would come from the API response
+			createProjectStore.setIsComplete(true)
+
+			// Show completion modal
+			setIsCompletionModalOpen(true)
+
+			// Simulate successful creation for frontend testing
+			// router.push(`/project/${newProjectId}`);
 		} catch (error) {
-			console.log('Error:', error)
+			console.error('Error creating project:', error)
 		}
 	}
 
-	// Render image previews for the folder component using images from the store
-	const renderImagePreviews = () => {
-		// Take only the first 3 images (or fewer if there aren't 3)
-		return createProjectStore.images.slice(0, 3).map((base64, index) => (
-			<div
-				key={index}
-				className="w-full h-full flex items-center justify-center"
-			>
-				<Image
-					src={base64}
-					alt={`Image ${index + 1}`}
-					width={512}
-					height={512}
-					className="max-w-full max-h-full object-contain rounded"
-				/>
-			</div>
-		))
+	const handleViewProjectDetails = () => {
+		// In real implementation, we would have the project ID from the API response
+		// For now, we'll just navigate to the projects list
+		router.push('/project-details') // replace with the actual path when the page avaiable
+	}
+
+	const handleContinueEditing = () => {
+		// Close the modal and stay on the current page
+		setIsCompletionModalOpen(false)
 	}
 
 	const handleNetworkChange = (option: any) => {
@@ -178,6 +178,25 @@ const CreateProject = () => {
 			]
 			createProjectStore.setImages(updatedImages)
 		}
+	}
+
+	// Add the missing renderImagePreviews function
+	const renderImagePreviews = () => {
+		// Take only the first 3 images (or fewer if there aren't 3)
+		return createProjectStore.images.slice(0, 3).map((image, index) => (
+			<div
+				key={index}
+				className="w-full h-full flex items-center justify-center"
+			>
+				<Image
+					src={image}
+					alt={`Preview ${index}`}
+					width={512}
+					height={512}
+					className="max-w-full max-h-full object-contain rounded"
+				/>
+			</div>
+		))
 	}
 
 	return (
@@ -598,6 +617,13 @@ const CreateProject = () => {
 					</Step>
 				</Stepper>
 			</div>
+			{/* Project Completion Modal */}
+			<ProjectCompletionModal
+				isOpen={isCompletionModalOpen}
+				projectName={createProjectStore.name || 'New Project'}
+				onViewDetails={handleViewProjectDetails}
+				onContinueEditing={handleContinueEditing}
+			/>
 		</div>
 	)
 }
