@@ -3,8 +3,8 @@ import { create } from "zustand";
 export type CreateProjectStore = {
 	chainID: number | undefined;
 	name: string;
-	logo: string | undefined; // Changed to base64 string
-	images: string[]; // Changed to array of base64 strings
+	logo: string | undefined;
+	images: string[];
 	shortDescription: string;
 	longDescription: string;
 	socials: {
@@ -14,7 +14,8 @@ export type CreateProjectStore = {
 		website?: string;
 		github?: string;
 	};
-	isComplete: boolean; // Track if the store is fulfilled
+	isComplete: boolean;
+	targetAudience: string;
 
 	setChainID: (chainID: number) => void;
 	setName: (name: string) => void;
@@ -30,6 +31,7 @@ export type CreateProjectStore = {
 		github?: string;
 	}) => void;
 	setIsComplete: (isCompleted: boolean) => void; // Function to set isComplete to true
+	setTargetAudience: (targetAudience: string) => void;
 };
 
 export const useCreateProjectStore = create<CreateProjectStore>((set, get) => {
@@ -42,6 +44,7 @@ export const useCreateProjectStore = create<CreateProjectStore>((set, get) => {
 		longDescription: "",
 		socials: {},
 		isComplete: false,
+		targetAudience: "",
 
 		setChainID: (chainID: number) => set({ chainID }),
 		setName: (name: string) => {
@@ -69,6 +72,9 @@ export const useCreateProjectStore = create<CreateProjectStore>((set, get) => {
 		setSocials: (socials) => set({ socials }),
 		setIsComplete: (isCompleted: boolean) => {
 			set({ isComplete: isCompleted });
+		},
+		setTargetAudience: (targetAudience: string) => {
+			set({ targetAudience });
 		},
 	};
 });
