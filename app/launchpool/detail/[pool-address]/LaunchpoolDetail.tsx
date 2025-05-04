@@ -83,6 +83,13 @@ const ProjectDetail = () => {
 				percentage: 90,
 			},
 		],
+		socials: {
+			website: 'https://www.example.com',
+			twitter: 'https://twitter.com/example',
+			telegram: 'https://t.me/example',
+			discord: 'https://discord.gg/example',
+			github: 'https://github.com/example',
+		},
 	}
 
 	const tabs = [
@@ -144,7 +151,7 @@ const ProjectDetail = () => {
 							</p>
 						</div> */}
 
-						<div className="">
+						<div className="mb-28">
 							{/* <Tabs
 								tabs={tabs}
 								activeTabClassName="bg-white text-white dark:bg-zinc-800"
@@ -166,7 +173,7 @@ const ProjectDetail = () => {
 					{/* Right Sticky Column */}
 					<div className="w-3/12 h-fit sticky top-12 flex flex-col">
 						<div className="">
-							<ProjectProgress />
+							<ProjectProgress socials={projectDetail.socials} />
 						</div>
 						<div className="">
 							<StakeArea />

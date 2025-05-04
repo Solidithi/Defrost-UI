@@ -1,324 +1,27 @@
 'use client'
-import { motion } from 'framer-motion'
-import { toast, ToastContainer } from 'react-toastify'
-import { red, green, blue, amber } from 'tailwindcss/colors'
-import AnimatedBlobs from '../../../../components/UI/background/AnimatedBlobs'
-import Button from '../../../../components/UI/button/Button'
-import Modal from '../../../../components/UI/modal/Modal'
-import SplitText from '../../../../components/UI/effect/SplitText'
-import SteplineChart from '../../../../components/charts/SteplineChart'
-import Stepper, {
-	Step,
-} from '../../../../components/UI/project-progress/Stepper'
+
+import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
+import Button from '@/app/components/UI/button/Button'
+import SplitText from '@/app/components/UI/effect/SplitText'
+import Stepper, { Step } from '@/app/components/UI/project-progress/Stepper'
 import { usePoolStore } from '@/app/store/launchpool'
-import { useEffect, useState } from 'react'
-import {
-	useAccount,
-	useReadContract,
-	useWriteContract,
-	useWaitForTransactionReceipt,
-} from 'wagmi'
-import { ethers } from 'ethers'
-import { abi as launchpoolABI } from '@/abi/Launchpool.json'
-import { abi as projectHubABI } from '@/abi/ProjectHubUpgradeable.json'
-import { abi as ERC20ABI } from '@/abi/ERC20.json'
-import { abi as ERC20MetadataABI } from '@/abi/IERC20Metadata.json'
-import { ProjectHubUpgradeable__factory } from '@/app/types/typechain'
-import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
-import { useParams } from 'next/navigation'
-import Spinner from '../../../../components/UI/effect/Spinner'
-import chains from '@/app/config/chains.json'
-import { project } from '@prisma/client'
-import { getChainName } from '@/app/utils/chain'
-import Link from 'next/link'
-import { normalizeAddress, isValidAddressFormat } from '@/app/utils/address'
-import AlertInfo from '@/app/components/UI/shared/AlertInfo'
-import { start } from 'repl'
-import { debounce } from '@/app/utils/timing'
 import { useProjectStore } from '@/app/store/project'
+import { Edit2, Link } from 'lucide-react'
+import Image from 'next/image'
+import { useParams } from 'next/navigation'
+import { toast, ToastContainer } from 'react-toastify'
+import { motion } from 'framer-motion'
+import { red } from 'tailwindcss/colors'
+import { useState } from 'react'
+import SteplineChart from '@/app/components/charts/SteplineChart'
 import { TransactionStatusModal } from '@/app/components/UI/shared/TransactionStatusModal'
+import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
+import Modal from '@/app/components/UI/modal/Modal'
 
-export default function CreatePool() {
+const EditPool = () => {
 	/* ---------------------- Project data states ---------------------- */
-	const projectID = useParams()['project-id'].toString().trim()
-	const { currentProject, fetchProject, fetchMockProject } = useProjectStore()
-
-	/* ---------------------- Wallet connection state ---------------------- */
-	const account = useAccount()
-	const [isProjectOwner, setIsProjectOwner] = useState(false)
-
-	/* ---------------------- Access control for PO ---------------------- */
-	// Fetch project data when user connects wallet
-	// useEffect(() => {
-	// 	if (account.address) {
-	// 		fetchProjectData()
-	// 	}
-	// }, [account.address])
-
-	// When project data mounts, check if current user is PO
-	useEffect(() => {
-		if (!currentProject) return
-
-		console.log('user address: ', account.address)
-		console.log('owner address: ', currentProject?.owner_id)
-
-		if (
-			account.isConnected &&
-			normalizeAddress(account.address) ===
-				normalizeAddress(currentProject?.owner_id || undefined)
-		) {
-			setIsProjectOwner(true)
-		}
-	}, [currentProject])
-
-	// Verify that the PO's wallet is connected to the same chain as their project
-	useEffect(() => {
-		if (!currentProject || !account) {
-			return
-		}
-
-		if (account?.chainId !== currentProject?.chain_id) {
-			toast.warning(
-				`Please switch to ${getChainName(currentProject.chain_id)} network to create a launchpool for this project`,
-				{
-					style: { backgroundColor: amber[700], color: 'white' },
-				}
-			)
-		}
-	}, [currentProject, account.chainId])
-
-	/* ---------------------- Contract interaction: create launchpool ---------------------- */
-	const {
-		writeContractAsync: selfMultiCall,
-		data: selfMultiCallHash,
-		status: selfMultiCallStatus,
-	} = useWriteContract({})
-
-	const {
-		writeContractAsync: approveTokenAsync,
-		data: approveTokenHash,
-		status: approveTokenStatus,
-	} = useWriteContract({})
-
-	const chainIdStr = account?.chainId?.toString() || ''
-	const projectHubProxyAddress = chains[chainIdStr as keyof typeof chains]
-		?.deployedContracts.ProjectHubUpgradeableProxy as `0x${string}`
-
-	const { status: selfMultiCallReceiptStatus } = useWaitForTransactionReceipt({
-		hash: selfMultiCallHash,
-	})
-
-	const { data: approveTokenReceipt, status: approveTokenReceiptStatus } =
-		useWaitForTransactionReceipt({
-			hash: approveTokenHash,
-		})
-
-	// Project token constants
-	const projectToken =
-		'0x96b6D28DF53641A47be72F44BE8C626bf07365A8' as `0x${string}`
-	const projectTokenAmount = ethers.parseUnits('10', 18)
-
-	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
-	const [finalError, setFinalError] = useState<string | null>(null)
-	const [isTransactionStatusModalOpen, setIsTransactionStatusModalOpen] =
-		useState(false)
-
-	// Token approval state variables
-	const [isApprovalNeeded, setIsApprovalNeeded] = useState(false)
-	const [isApprovalComplete, setIsApprovalComplete] = useState(false)
-	const [approvalError, setApprovalError] = useState<string | null>(null)
-
-	/* ---------------------- Contract interaction: Project Token Approval ---------------------- */
-	const handleTokenApproval = async () => {
-		if (!account.isConnected) {
-			toast.warning('Connect your wallet first', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-			return
-		}
-
-		if (!projectToken || !projectHubProxyAddress) {
-			toast.error('Invalid token address or contract', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-			return
-		}
-
-		try {
-			setApprovalError(null)
-
-			await approveTokenAsync({
-				abi: ERC20ABI,
-				address: projectToken,
-				functionName: 'approve',
-				args: [projectHubProxyAddress, projectTokenAmount],
-			})
-
-			// Note: The success handling is done in the useEffect that monitors approveTokenReceiptStatus
-		} catch (error) {
-			console.error('Error approving token:', error)
-			setApprovalError('Failed to send approval transaction')
-			toast.error('Failed to approve token', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-		}
-	}
-
-	/* ---------------------- Transaction state management ---------------------- */
-	const getTransactionState = () => {
-		// Check approval states first
-		if (isApprovalNeeded && !isApprovalComplete) {
-			if (approveTokenStatus === 'pending') {
-				return {
-					status: 'approving',
-					buttonText: 'Approving Tokens...',
-					buttonDisabled: true,
-					showApprovalSection: true,
-					showApprovalButton: true,
-					approvalButtonText: 'Approving...',
-					approvalButtonDisabled: true,
-					showApprovalSpinner: true,
-				}
-			}
-			return {
-				status: 'needs-approval',
-				buttonText: 'Approve Tokens First',
-				buttonDisabled: true,
-				showApprovalSection: true,
-				showApprovalButton: true,
-				approvalButtonText: 'Approve Token Use',
-				approvalButtonDisabled: false,
-				showApprovalSpinner: false,
-			}
-		}
-
-		// Then check transaction states
-		if (selfMultiCallStatus === 'pending') {
-			return {
-				status: 'submitting',
-				buttonText: 'Submitting Transaction...',
-				buttonDisabled: true,
-				showApprovalSection: isApprovalComplete,
-				showApprovalButton: false,
-				approvalButtonText: 'Approved ✓',
-				approvalButtonDisabled: true,
-				showApprovalSpinner: false,
-			}
-		}
-
-		if (
-			selfMultiCallReceiptStatus === 'pending' &&
-			selfMultiCallStatus !== 'idle'
-		) {
-			return {
-				status: 'confirming',
-				buttonText: 'Confirming Transaction...',
-				buttonDisabled: true,
-				showApprovalSection: isApprovalComplete,
-				showApprovalButton: false,
-				approvalButtonText: 'Approved ✓',
-				approvalButtonDisabled: true,
-				showApprovalSpinner: false,
-			}
-		}
-
-		if (isWaitingForIndexer) {
-			return {
-				status: 'indexing',
-				buttonText: 'Syncing Data...',
-				buttonDisabled: true,
-				showApprovalSection: isApprovalComplete,
-				showApprovalButton: false,
-				approvalButtonText: 'Approved ✓',
-				approvalButtonDisabled: true,
-				showApprovalSpinner: false,
-			}
-		}
-
-		if (finalError) {
-			return {
-				status: 'error',
-				buttonText: 'Try Again',
-				buttonDisabled: false,
-				showApprovalSection: isApprovalNeeded,
-				showApprovalButton: !isApprovalComplete,
-				approvalButtonText: isApprovalComplete
-					? 'Approved ✓'
-					: 'Approve Token Use',
-				approvalButtonDisabled: isApprovalComplete,
-				showApprovalSpinner: false,
-			}
-		}
-
-		// Default state (idle/ready)
-		return {
-			status: 'ready',
-			buttonText: 'Create Launchpool',
-			buttonDisabled: !account.isConnected,
-			showApprovalSection: isApprovalNeeded,
-			showApprovalButton: isApprovalNeeded && !isApprovalComplete,
-			approvalButtonText: isApprovalComplete
-				? 'Approved ✓'
-				: 'Approve Token Use',
-			approvalButtonDisabled: isApprovalComplete,
-			showApprovalSpinner: false,
-		}
-	}
-
-	/* ---------------------- Transaction lifecycle management ---------------------- */
-	useEffect(() => {
-		// When transaction is signed (after user has signed with MetaMask)
-		if (selfMultiCallStatus === 'success' && selfMultiCallHash) {
-			console.log('Transaction submitted! Hash:', selfMultiCallHash)
-			setIsTransactionStatusModalOpen(true) // Only show modal after transaction is signed
-		}
-	}, [selfMultiCallStatus, selfMultiCallHash])
-
-	// Read the token allowance between user and project hub
-	const {
-		data: tokenAllowance,
-		status: tokenAllowanceStatus,
-		error: tokenAllowanceError,
-		refetch: refetchAllowance,
-	} = useReadContract({
-		abi: ERC20ABI,
-		functionName: 'allowance',
-		address: projectToken,
-		args: [account.address, projectHubProxyAddress],
-		query: { enabled: !!account.address && !!projectHubProxyAddress },
-	})
-
-	// Check if approval is needed when allowance data is loaded
-	useEffect(() => {
-		if (tokenAllowanceStatus === 'success' && tokenAllowance !== undefined) {
-			const currentAllowance = BigInt(tokenAllowance?.toString() ?? '0')
-			console.log('Current allowance:', currentAllowance.toString())
-			console.log('Required amount:', projectTokenAmount.toString())
-			setIsApprovalNeeded(currentAllowance < projectTokenAmount)
-		}
-	}, [tokenAllowanceStatus, tokenAllowance, projectTokenAmount])
-
-	// Handle approval confirmation
-	useEffect(() => {
-		if (approveTokenReceiptStatus === 'success' && approveTokenReceipt) {
-			console.log('Approval confirmed! Receipt:', approveTokenReceipt)
-			setIsApprovalComplete(true)
-
-			// Refetch allowance to confirm it's updated
-			refetchAllowance().then(() => {
-				toast.success('Token approval successful!', {
-					style: { backgroundColor: green[500], color: 'white' },
-				})
-			})
-		} else if (approveTokenReceiptStatus === 'error') {
-			console.error('Error confirming approval')
-			setApprovalError('Error confirming token approval. Please try again.')
-			toast.error('Token approval failed', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-		}
-	}, [approveTokenReceiptStatus, approveTokenReceipt, refetchAllowance])
-
+	// const projectID = useParams()['project-id'].toString().trim()
+	// const { currentProject, fetchProject, fetchMockProject } = useProjectStore()
 	/* ---------------------- Launchpool store ---------------------- */
 	const {
 		tokenAddress,
@@ -338,6 +41,18 @@ export default function CreatePool() {
 		isOpenEmissionRate,
 		setIsOpenEmissionRate,
 	} = usePoolStore()
+
+	/* ---------------------- Editable State ---------------------- */
+	const [editableFields, setEditableFields] = useState<{
+		[key: string]: boolean
+	}>({})
+
+	const toggleEditable = (fieldKey: string) => {
+		setEditableFields((prev) => ({
+			...prev,
+			[fieldKey]: !prev[fieldKey],
+		}))
+	}
 
 	/* ---------------------- Add pool ---------------------- */
 	const handleAddPool = () => {
@@ -488,207 +203,7 @@ export default function CreatePool() {
 		setIsOpenEmissionRate(false)
 	}
 
-	/* ---------------------- Handle stepper's step change ---------------------- */
-	const handleStepChange = (changeToStepNumber: number) => {
-		console.log('Step number: ', changeToStepNumber)
-		switch (changeToStepNumber) {
-			case 2:
-				if (!isValidAddressFormat(tokenAddress as `0x${string}`)) {
-					toast.error('Invalid token address format')
-				}
-				break
-		}
-	}
-
-	/* ---------------------- Final step: Handle Create Launchpool ---------------------- */
-	const handleCreateLaunchpool = async () => {
-		// Check wallet connection
-		if (!account || !account.isConnected) {
-			toast.warn('Connect your wallet first', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-			return
-		}
-
-		// Check if approval is needed
-		if (isApprovalNeeded) {
-			toast.info('Token approval required before creating launchpool', {
-				style: { backgroundColor: blue[500], color: 'white' },
-			})
-			// Handle the approval flow instead of proceeding with launchpool creation
-			await handleTokenApproval()
-			return
-		}
-
-		// Reset transaction states when initiating a new transaction
-		setIsWaitingForIndexer(false)
-		setFinalError(null)
-		setIsTransactionStatusModalOpen(false)
-
-		try {
-			const provider = new ethers.JsonRpcProvider(
-				'https://rpc.api.moonbase.moonbeam.network'
-			)
-			const startBlock = BigInt(await provider.getBlockNumber()) + BigInt(1000)
-
-			if (phaseData.length !== poolData.length) {
-				console.error('phaseData and poolData length mismatch')
-				return
-			}
-
-			// Create params object exactly matching Solidity struct
-			// const createLaunchpoolCalldataBatch = poolData.map((pool, index) => {
-			// 	console.log('Encoding calldata for pool: ', pool)
-			// 	const launchpoolParams = {
-			// 		projectId: BigInt(projectID),
-			// 		projectTokenAmount: ethers.parseUnits(pool.tokenSupply.toString() , 18),
-			// 		projectToken: pool.token,
-			// 		vAsset: '0xD02D73E05b002Cb8EB7BEf9DF8Ed68ed39752465', // TODO: add this field to store this field
-			// 		startBlock: pool.from, // TODO: convert datetime to block number
-			// 		endBlock: startBlock * BigInt(2), // TODO: convert datetime to block number
-			// 		// maxVTokensPerStaker: ethers.parseUnits('1000', 18),
-			// 		maxVTokensPerStaker: ethers.parseUnits(pool.maxStake.toString(), 18),
-			// 		// changeBlocks: [startBlock, startBlock + BigInt(100)],
-			// 		changeBlocks: pool.phaseData.emissionRate
-			// 		emissionRateChanges: [
-			// 			// ethers.parseUnits('1000', 18),
-			// 			// ethers.parseUnits('500', 18),
-			// 			phaseData[index].emissionRate,
-			// 			phaseData[index],
-			// 		],
-			// 	}
-
-			// 		const createLaunchpoolCalldata =
-			// 			ProjectHubUpgradeable__factory.createInterface().encodeFunctionData(
-			// 				'createLaunchpool',
-			// 				[launchpoolParams]
-			// 			)
-
-			// 		return createLaunchpoolCalldata
-			// 	})
-
-			// 	// 4. Call selfMultiCall (this matches your Foundry test)
-			// 	console.log('createLaunchpool payload: ', callPayloadBatch[0])
-
-			// 	await selfMultiCall({
-			// 		abi: projectHubABI,
-			// 		address: projectHubProxyAddress,
-			// 		functionName: 'selfMultiCall',
-			// 		args: [callPayloadBatch],
-			// 	})
-		} catch (error: any) {
-			console.error('Error starting transaction:', error)
-
-			// Enhanced error logging
-			if (error.reason) console.error('Reason:', error.reason)
-			if (error.code) console.error('Error code:', error.code)
-			if (error.data) console.error('Error data:', error.data)
-
-			toast.error('Transaction failed. See console for details.', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-		}
-	}
-
-	/* ---------------------- Token validation ---------------------- */
-	const [isTokenValid, setIsTokenValid] = useState<boolean | undefined>(
-		undefined
-	)
-	const [isValidatingToken, setIsValidatingToken] = useState(false)
-	const [tokenValidationMessage, setTokenValidationMessage] = useState('')
-
-	// Attempt to read token decimals (read from ZeroAddress if isValidatingToken is false)
-	const readTokenDecimals = useReadContract({
-		address: tokenAddress as `0x${string}`,
-		abi: ERC20MetadataABI,
-		functionName: 'decimals',
-	})
-
-	// Attempt to read token symbol as well (read from ZeroAddress if isValidatingToken is false)
-	const readTokenSymbol = useReadContract({
-		address: tokenAddress as `0x${string}`,
-		abi: ERC20MetadataABI,
-		functionName: 'symbol',
-	})
-
-	// 500ms debounce before calling startValidatingToken()
-	useEffect(() => {
-		startValidatingTokenDebounced()
-	}, [tokenAddress])
-
-	// This function decide to set `isValidatingToken` to true or not, which will trigger token validation side effects (see useEffect below
-	const startValidatingTokenDebounced = debounce(() => {
-		// Abort early if tokenAddress empty, or its format is invalid
-		if (!tokenAddress || !isValidAddressFormat(tokenAddress as `0x${string}`)) {
-			setIsTokenValid(undefined)
-			setIsValidatingToken(false)
-			setTokenValidationMessage('')
-			return
-		}
-
-		setIsValidatingToken(true)
-		setTokenValidationMessage('')
-	}, 500) // add 500ms debounce before executing
-
-	// Start validating token if done reading token decimals & symbol from contract, and isValidatingToken is set to true
-	useEffect(() => {
-		if (!isValidatingToken) {
-			return
-		}
-
-		if (readTokenDecimals.status === 'error') {
-			setTokenValidationMessage(
-				"Sorry, we tried our best to discover the decimals of your project's token without any luck"
-			)
-			console.log('read decimals error: ', readTokenDecimals.error)
-			setIsTokenValid(false)
-			setIsValidatingToken(false)
-			return
-		}
-
-		if (readTokenSymbol.status === 'error') {
-			setTokenValidationMessage(
-				"Sorry, we tried our best to discover the symbols of your project's token without any luck"
-			)
-			console.log('read symbol error: ', readTokenSymbol.error)
-			setIsTokenValid(false)
-			setIsValidatingToken(false)
-			return
-		}
-
-		if (
-			readTokenDecimals.status === 'success' &&
-			readTokenSymbol.status === 'success'
-		) {
-			setTokenValidationMessage(`Token validated successfully.`)
-			setIsTokenValid(true)
-			setIsValidatingToken(false)
-		}
-	}, [readTokenDecimals, readTokenSymbol, isValidatingToken])
-
-	/* ---------------------- Debug: Log store when poolData or phaseData changes ---------------------- */
-	// useEffect(() => {
-	// console.log('PoolData updated:', poolData)
-	// console.log('Pool ID updated:', pool)
-	// }, [poolData, pool])
-
-	useEffect(() => {
-		console.log('PhaseData updated:', phaseData)
-		console.log('Phase ID updated:', phase)
-	}, [phaseData, phase])
-
-	/* ---------------------- Debug: Manually log the store ---------------------- */
-	// const handleLogStore = () => {
-	// 	console.log('Current Store:', {
-	// 		tokenAddress,
-	// 		pool,
-	// 		poolData,
-	// 		phase,
-	// 		phaseData,
-	// 		isConfirming,
-	// 		isOpenEmissionRate,
-	// 	})
-	// }
+	/* ---------------------- Format DateTime for Input ---------------------- */
 	const formatDateTimeLocal = (dateString: string) => {
 		if (!dateString) return ''
 		const date = new Date(dateString)
@@ -699,17 +214,14 @@ export default function CreatePool() {
 		const minutes = String(date.getMinutes()).padStart(2, '0')
 		return `${year}-${month}-${day}T${hours}:${minutes}`
 	}
-
 	return (
 		<div className="relative page-container ">
 			<AnimatedBlobs count={4} />
-
-			{/* Project Header */}
-			{currentProject && (
+			{/* {currentProject && (
 				<div className="mb-8 glass-component-3 p-4 rounded-xl">
 					<div className="flex items-center gap-4">
 						{currentProject.logo ? (
-							<img
+							<Image
 								src={`data:image/png;base64,${currentProject.logo}`}
 								alt={currentProject.name || 'project logo'}
 								className="w-16 h-16 rounded-full object-cover"
@@ -730,11 +242,10 @@ export default function CreatePool() {
 				</div>
 			)}
 
-			{/* Project breadcumb navigation */}
 			{currentProject && (
 				<div className="flex items-center text-sm mb-6 text-gray-400">
 					<Link
-						href="/project-detail" // add the correct path to when we got project detail page
+						href="/my-project"
 						className="hover:text-cyan-400 transition-colors"
 					>
 						My Projects
@@ -749,9 +260,8 @@ export default function CreatePool() {
 					<span className="mx-2">›</span>
 					<span className="text-white">Create Launchpool</span>
 				</div>
-			)}
+			)} */}
 
-			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
 			<div className=" text-center z-20">
 				<SplitText
 					text="Unleash Your Web3-Native Launchpool"
@@ -783,14 +293,16 @@ export default function CreatePool() {
 				<Stepper
 					className="w-full"
 					initialStep={1}
-					onFinalStepCompleted={() => handleCreateLaunchpool()}
-					onStepChange={handleStepChange}
-					disableStepIndicators={!isTokenValid}
+					// onFinalStepCompleted={() => handleCreateLaunchpool()}
+					// onStepChange={handleStepChange}
+					// disableStepIndicators={!isTokenValid}
 					backButtonText="Previous"
 					nextButtonText="Next"
 				>
 					{/* --------------------------------------Token Input And Token Validation----------------------------------------------------- */}
-					<Step canGoToNextStep={isTokenValid === true}>
+					<Step
+					// canGoToNextStep={isTokenValid === true}
+					>
 						<div className="flex flex-col items-center justify-center w-full gap-5">
 							<span className="text-3xl font-orbitron text-white mb-4 flex justify-center w-full">
 								Token address
@@ -802,54 +314,55 @@ export default function CreatePool() {
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
 									className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
-									disabled={isValidatingToken}
+									// disabled={isValidatingToken}
 								/>
-								{isValidatingToken && (
-									<div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-										<Spinner heightWidth={5} className="border-blue-400" />
-									</div>
-								)}
+								{/* {isValidatingToken && (
+										<div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+											<Spinner heightWidth={5} className="border-blue-400" />
+										</div>
+									)} */}
 							</div>
 
-							{tokenValidationMessage && (
-								<AlertInfo accentColor={isTokenValid ? 'green' : 'red'}>
-									<div className="flex items-center">
-										{isTokenValid ? (
-											<div>
-												<p>{tokenValidationMessage}</p>
-												{!!readTokenSymbol.data && !!readTokenDecimals.data && (
+							{/* {tokenValidationMessage && (
+									<AlertInfo accentColor={isTokenValid ? 'green' : 'red'}>
+										<div className="flex items-center">
+											{isTokenValid ? (
+												<div>
+													<p>{tokenValidationMessage}</p>
+													{!!readTokenSymbol.data &&
+														!!readTokenDecimals.data && (
+															<p className="text-sm mt-1">
+																Token Symbol:{' '}
+																<span className="font-medium">
+																	{String(readTokenSymbol.data)}
+																</span>{' '}
+																| Decimals:{' '}
+																<span className="font-medium">
+																	{Number(readTokenDecimals.data)}
+																</span>
+															</p>
+														)}
+												</div>
+											) : (
+												<div>
+													<p>{tokenValidationMessage}</p>
 													<p className="text-sm mt-1">
-														Token Symbol:{' '}
-														<span className="font-medium">
-															{String(readTokenSymbol.data)}
-														</span>{' '}
-														| Decimals:{' '}
-														<span className="font-medium">
-															{Number(readTokenDecimals.data)}
-														</span>
+														Please check the address and ensure you&apos;re on
+														the correct network.
 													</p>
-												)}
-											</div>
-										) : (
-											<div>
-												<p>{tokenValidationMessage}</p>
-												<p className="text-sm mt-1">
-													Please check the address and ensure you&apos;re on the
-													correct network.
-												</p>
-											</div>
-										)}
-									</div>
-								</AlertInfo>
-							)}
+												</div>
+											)}
+										</div>
+									</AlertInfo>
+								)} */}
 
-							{isTokenValid == undefined &&
-								tokenAddress &&
-								!isValidatingToken && (
-									<div className="text-sm text-gray-400 italic">
-										Please enter a complete token address
-									</div>
-								)}
+							{/* {isTokenValid == undefined &&
+									tokenAddress &&
+									!isValidatingToken && (
+										<div className="text-sm text-gray-400 italic">
+											Please enter a complete token address
+										</div>
+									)} */}
 						</div>
 					</Step>
 
@@ -908,18 +421,18 @@ export default function CreatePool() {
 											<div className="w-1/2 flex flex-col gap-3 relative">
 												<span className="font-orbitron text-lg">Chain</span>
 												<div className="p-3 rounded-xl font-comfortaa text-white glass-component-2 w-full text-sm">
-													{currentProject ? (
-														<div className="flex items-center gap-2">
-															<span>
-																{getChainName(currentProject.chain_id)}
-															</span>
-															<span className="text-xs text-cyan-400">
-																(Same as project)
-															</span>
-														</div>
-													) : (
-														<span className="text-gray-400">Loading...</span>
-													)}
+													{/* {currentProject ? (
+															<div className="flex items-center gap-2">
+																<span>
+																	{getChainName(currentProject.chain_id)}
+																</span>
+																<span className="text-xs text-cyan-400">
+																	(Same as project)
+																</span>
+															</div>
+														) : (
+															<span className="text-gray-400">Loading...</span>
+														)} */}
 												</div>
 											</div>
 
@@ -965,7 +478,7 @@ export default function CreatePool() {
 											<span className="font-orbitron text-lg">
 												Project token supply
 											</span>
-											<div className="flex gap-5">
+											<div className="relative flex gap-5">
 												<input
 													type="number"
 													value={poolData[index]?.tokenSupply || ''}
@@ -988,6 +501,13 @@ export default function CreatePool() {
 													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     																[&::-webkit-inner-spin-button]:appearance-none 
     																[&::-webkit-outer-spin-button]:appearance-none"
+													disabled={!editableFields[`tokenSupply-${index}`]}
+												/>
+
+												<Edit2
+													size={18}
+													className="absolute right-28 top-5 transform -translate-y-[53px] text-cyan-400 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+													onClick={() => toggleEditable(`tokenSupply-${index}`)}
 												/>
 
 												<Button className="glass-component-3 rounded-xl">
@@ -996,7 +516,7 @@ export default function CreatePool() {
 											</div>
 										</div>
 
-										<div className="w-full flex flex-col gap-3 p-2">
+										<div className="relative w-full flex flex-col gap-3 p-2">
 											<span className="font-orbitron text-lg">
 												Max stake per investor
 											</span>
@@ -1022,10 +542,17 @@ export default function CreatePool() {
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
+												disabled={!editableFields[`maxStake-${index}`]}
+											/>
+
+											<Edit2
+												size={18}
+												className="absolute right-4 top-5 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+												onClick={() => toggleEditable(`maxStake-${index}`)}
 											/>
 										</div>
 
-										<div className="w-full flex flex-col gap-3 p-2">
+										<div className="relative w-full flex flex-col gap-3 p-2">
 											<span className="font-orbitron text-lg">From</span>
 											<input
 												type="datetime-local"
@@ -1035,10 +562,16 @@ export default function CreatePool() {
 												}
 												placeholder="Enter start date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												disabled={!editableFields[`from-${index}`]}
+											/>
+											<Edit2
+												size={18}
+												className="absolute right-4 top-5 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+												onClick={() => toggleEditable(`from-${index}`)}
 											/>
 										</div>
 
-										<div className="w-full flex flex-col gap-3 p-2">
+										<div className="relative w-full flex flex-col gap-3 p-2">
 											<span className="font-orbitron text-lg">To</span>
 											<input
 												type="datetime-local"
@@ -1048,6 +581,12 @@ export default function CreatePool() {
 												}
 												placeholder="Enter end date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												disabled={!editableFields[`to-${index}`]}
+											/>
+											<Edit2
+												size={18}
+												className="absolute right-4 top-5 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+												onClick={() => toggleEditable(`to-${index}`)}
 											/>
 										</div>
 
@@ -1142,197 +681,198 @@ export default function CreatePool() {
 										</div>
 
 										{/* Token Allowance Status */}
-										{tokenAllowanceStatus === 'success' && (
-											<div className="flex justify-between text-gray-300 mb-2">
-												<span>Token Allowance:</span>
-												{isApprovalNeeded ? (
-													<span className="text-red-400">
-														Approval required
-													</span>
-												) : (
-													<span className="text-green-400">Sufficient</span>
-												)}
-											</div>
-										)}
+										{/* {tokenAllowanceStatus === 'success' && (
+												<div className="flex justify-between text-gray-300 mb-2">
+													<span>Token Allowance:</span>
+													{isApprovalNeeded ? (
+														<span className="text-red-400">
+															Approval required
+														</span>
+													) : (
+														<span className="text-green-400">Sufficient</span>
+													)}
+												</div>
+											)} */}
 									</div>
 								</div>
 
 								{/* Get the current transaction state */}
 								{(() => {
-									const txState = getTransactionState()
+									// const txState = getTransactionState()
 
 									return (
 										<>
 											{/* Approval Status and Error Display */}
-											{txState.showApprovalSection && (
-												<div className="glass-component-2 p-4 rounded-xl mb-6">
-													<div className="text-white text-sm mb-3">
-														<p className="font-medium mb-2">
-															Token approval required before creating launchpool
-														</p>
-														<p className="text-gray-300 text-xs">
-															You need to approve the contract to use your
-															tokens first. This is a one-time transaction that
-															allows the contract to transfer tokens from your
-															wallet when creating the launchpool.
-														</p>
+											{/* {txState.showApprovalSection && (
+													<div className="glass-component-2 p-4 rounded-xl mb-6">
+														<div className="text-white text-sm mb-3">
+															<p className="font-medium mb-2">
+																Token approval required before creating
+																launchpool
+															</p>
+															<p className="text-gray-300 text-xs">
+																You need to approve the contract to use your
+																tokens first. This is a one-time transaction
+																that allows the contract to transfer tokens from
+																your wallet when creating the launchpool.
+															</p>
+														</div>
+
+														{approvalError && (
+															<div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-3 text-xs text-red-300">
+																{approvalError}
+															</div>
+														)}
+
+														{isApprovalComplete && (
+															<div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mb-3 text-xs text-green-300">
+																Approval successful! You can now create the
+																launchpool.
+															</div>
+														)}
+
+														{txState.showApprovalButton && (
+															<Button
+																onClick={handleTokenApproval}
+																disabled={txState.approvalButtonDisabled}
+																className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 mb-3"
+															>
+																<span className="font-bold flex items-center justify-center">
+																	{txState.approvalButtonText}
+																	{txState.showApprovalSpinner && (
+																		<Spinner heightWidth={5} className="ml-2" />
+																	)}
+																</span>
+															</Button>
+														)}
 													</div>
-
-													{approvalError && (
-														<div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-3 text-xs text-red-300">
-															{approvalError}
-														</div>
-													)}
-
-													{isApprovalComplete && (
-														<div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mb-3 text-xs text-green-300">
-															Approval successful! You can now create the
-															launchpool.
-														</div>
-													)}
-
-													{txState.showApprovalButton && (
-														<Button
-															onClick={handleTokenApproval}
-															disabled={txState.approvalButtonDisabled}
-															className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 mb-3"
-														>
-															<span className="font-bold flex items-center justify-center">
-																{txState.approvalButtonText}
-																{txState.showApprovalSpinner && (
-																	<Spinner heightWidth={5} className="ml-2" />
-																)}
-															</span>
-														</Button>
-													)}
-												</div>
-											)}
+												)} */}
 
 											{/* Main action button */}
 											<div className="w-full">
-												<div
-													className={`rounded-xl p-4 ${
-														txState.status === 'ready' ||
-														txState.status === 'needs-approval'
-															? 'bg-blue-900/20 border border-blue-800/40'
-															: txState.status === 'error'
-																? 'bg-red-900/20 border border-red-800/40'
-																: txState.status === 'success'
-																	? 'bg-green-900/20 border border-green-800/40'
-																	: 'bg-purple-900/20 border border-purple-800/40'
-													}`}
-												>
-													<div className="flex items-center">
-														{/* Status icon */}
-														{txState.status === 'submitting' ||
-														txState.status === 'confirming' ||
-														txState.status === 'indexing' ? (
-															<Spinner heightWidth={5} className="mr-3" />
-														) : txState.status === 'error' ? (
-															<svg
-																className="w-5 h-5 mr-3 text-red-400"
-																fill="none"
-																stroke="currentColor"
-																viewBox="0 0 24 24"
-															>
-																<path
-																	strokeLinecap="round"
-																	strokeLinejoin="round"
-																	strokeWidth="2"
-																	d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-																/>
-															</svg>
-														) : txState.status === 'success' ? (
-															<svg
-																className="w-5 h-5 mr-3 text-green-400"
-																fill="none"
-																stroke="currentColor"
-																viewBox="0 0 24 24"
-															>
-																<path
-																	strokeLinecap="round"
-																	strokeLinejoin="round"
-																	strokeWidth="2"
-																	d="M5 13l4 4L19 7"
-																/>
-															</svg>
-														) : (
-															<svg
-																className="w-5 h-5 mr-3 text-blue-400"
-																fill="none"
-																stroke="currentColor"
-																viewBox="0 0 24 24"
-															>
-																<path
-																	strokeLinecap="round"
-																	strokeLinejoin="round"
-																	strokeWidth={2}
-																	d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-																/>
-															</svg>
-														)}
-
-														{/* Status text */}
-														<span
-															className={`text-sm ${
-																txState.status === 'error'
-																	? 'text-red-300'
+												{/* <div
+														className={`rounded-xl p-4 ${
+															txState.status === 'ready' ||
+															txState.status === 'needs-approval'
+																? 'bg-blue-900/20 border border-blue-800/40'
+																: txState.status === 'error'
+																	? 'bg-red-900/20 border border-red-800/40'
 																	: txState.status === 'success'
-																		? 'text-green-300'
-																		: 'text-gray-300'
-															}`}
-														>
-															{((
-																status: string,
-																errorMessage: string | null
-															): string => {
-																switch (status) {
-																	case 'ready':
-																		return 'Ready to create launchpool'
-																	case 'needs-approval':
-																		return 'Token approval required before proceeding'
-																	case 'approving':
-																		return 'Approving token usage...'
-																	case 'submitting':
-																		return 'Submitting transaction...'
-																	case 'confirming':
-																		return 'Confirming transaction...'
-																	case 'indexing':
-																		return 'Indexing data...'
-																	case 'error':
-																		return errorMessage || 'Transaction failed'
-																	case 'success':
-																		return 'Launchpool created successfully'
-																	default:
-																		return 'Processing...'
-																}
-															})(txState.status, finalError)}
-														</span>
-													</div>
-												</div>
+																		? 'bg-green-900/20 border border-green-800/40'
+																		: 'bg-purple-900/20 border border-purple-800/40'
+														}`}
+													>
+														<div className="flex items-center">
+															{txState.status === 'submitting' ||
+															txState.status === 'confirming' ||
+															txState.status === 'indexing' ? (
+																<Spinner heightWidth={5} className="mr-3" />
+															) : txState.status === 'error' ? (
+																<svg
+																	className="w-5 h-5 mr-3 text-red-400"
+																	fill="none"
+																	stroke="currentColor"
+																	viewBox="0 0 24 24"
+																>
+																	<path
+																		strokeLinecap="round"
+																		strokeLinejoin="round"
+																		strokeWidth="2"
+																		d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+																	/>
+																</svg>
+															) : txState.status === 'success' ? (
+																<svg
+																	className="w-5 h-5 mr-3 text-green-400"
+																	fill="none"
+																	stroke="currentColor"
+																	viewBox="0 0 24 24"
+																>
+																	<path
+																		strokeLinecap="round"
+																		strokeLinejoin="round"
+																		strokeWidth="2"
+																		d="M5 13l4 4L19 7"
+																	/>
+																</svg>
+															) : (
+																<svg
+																	className="w-5 h-5 mr-3 text-blue-400"
+																	fill="none"
+																	stroke="currentColor"
+																	viewBox="0 0 24 24"
+																>
+																	<path
+																		strokeLinecap="round"
+																		strokeLinejoin="round"
+																		strokeWidth={2}
+																		d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+																	/>
+																</svg>
+															)}
+
+															<span
+																className={`text-sm ${
+																	txState.status === 'error'
+																		? 'text-red-300'
+																		: txState.status === 'success'
+																			? 'text-green-300'
+																			: 'text-gray-300'
+																}`}
+															>
+																{((
+																	status: string,
+																	errorMessage: string | null
+																): string => {
+																	switch (status) {
+																		case 'ready':
+																			return 'Ready to create launchpool'
+																		case 'needs-approval':
+																			return 'Token approval required before proceeding'
+																		case 'approving':
+																			return 'Approving token usage...'
+																		case 'submitting':
+																			return 'Submitting transaction...'
+																		case 'confirming':
+																			return 'Confirming transaction...'
+																		case 'indexing':
+																			return 'Indexing data...'
+																		case 'error':
+																			return (
+																				errorMessage || 'Transaction failed'
+																			)
+																		case 'success':
+																			return 'Launchpool created successfully'
+																		default:
+																			return 'Processing...'
+																	}
+																})(txState.status, finalError)}
+															</span>
+														</div>
+													</div> */}
 											</div>
 
 											{/* Status message based on current state */}
-											{['processing', 'indexing', 'confirming'].includes(
-												txState.status
-											) && (
-												<p className="text-gray-400 text-xs text-center mt-3">
-													Please wait while your transaction is being
-													processed...
-												</p>
-											)}
+											{/* {['processing', 'indexing', 'confirming'].includes(
+													txState.status
+												) && (
+													<p className="text-gray-400 text-xs text-center mt-3">
+														Please wait while your transaction is being
+														processed...
+													</p>
+												)}
 
-											{txState.status === 'success' && (
-												<p className="text-green-400 text-xs text-center mt-3">
-													Launchpool created successfully!
-												</p>
-											)}
+												{txState.status === 'success' && (
+													<p className="text-green-400 text-xs text-center mt-3">
+														Launchpool created successfully!
+													</p>
+												)}
 
-											{txState.status === 'error' && finalError && (
-												<p className="text-red-400 text-xs text-center mt-3">
-													{finalError}
-												</p>
-											)}
+												{txState.status === 'error' && finalError && (
+													<p className="text-red-400 text-xs text-center mt-3">
+														{finalError}
+													</p>
+												)} */}
 										</>
 									)
 								})()}
@@ -1480,7 +1020,7 @@ export default function CreatePool() {
 			</Modal>
 
 			{/* --------------------------------------Transaction Status Modal----------------------------------------------------- */}
-			<TransactionStatusModal
+			{/* <TransactionStatusModal
 				isOpen={isTransactionStatusModalOpen}
 				onClose={() => setIsTransactionStatusModalOpen(false)}
 				isTransactionPending={selfMultiCallReceiptStatus === 'pending'}
@@ -1488,10 +1028,10 @@ export default function CreatePool() {
 				isLaunchpoolCreated={selfMultiCallReceiptStatus === 'success'}
 				finalError={finalError}
 				txHash={selfMultiCallHash || ''}
-			/>
+			/> */}
 
 			{/* --------------------------------------Access Control Modal - Only PO is allowed to use this page----------------------------------------------------- */}
-			<AccessLockedModal
+			{/* <AccessLockedModal
 				isOpen={!account.isConnected || !isProjectOwner}
 				title={
 					!account.isConnected
@@ -1503,7 +1043,7 @@ export default function CreatePool() {
 						? 'Please connect your wallet using the wallet button in the navigation bar to create a launchpool. This allows us to verify your ownership of the project and handle token approvals.'
 						: 'You are not the owner of this project. Please connect to owner account to access create launchpool functionality.'
 				}
-			/>
+			/> */}
 
 			{/* --------------------------------------Toast----------------------------------------------------- */}
 			<ToastContainer
@@ -1514,3 +1054,5 @@ export default function CreatePool() {
 		</div>
 	)
 }
+
+export default EditPool

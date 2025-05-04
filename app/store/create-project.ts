@@ -3,12 +3,19 @@ import { create } from "zustand";
 export type CreateProjectStore = {
 	chainID: number | undefined;
 	name: string;
-	logo: string | undefined; // Changed to base64 string
-	images: string[]; // Changed to array of base64 strings
+	logo: string | undefined;
+	images: string[];
 	shortDescription: string;
 	longDescription: string;
+	socials: {
+		twitter?: string;
+		telegram?: string;
+		discord?: string;
+		website?: string;
+		github?: string;
+	};
+	isComplete: boolean;
 	targetAudience: string;
-	isComplete: boolean; // Track if the store is fulfilled
 
 	setChainID: (chainID: number) => void;
 	setName: (name: string) => void;
@@ -16,8 +23,15 @@ export type CreateProjectStore = {
 	setImages: (images: string[]) => void; // Updated to accept string array
 	setShortDescription: (shortDescription: string) => void;
 	setLongDescription: (longDescription: string) => void;
-	setTargetAudience: (targetAudience: string) => void;
+	setSocials: (socials: {
+		twitter?: string;
+		telegram?: string;
+		discord?: string;
+		website?: string;
+		github?: string;
+	}) => void;
 	setIsComplete: (isCompleted: boolean) => void; // Function to set isComplete to true
+	setTargetAudience: (targetAudience: string) => void;
 };
 
 export const useCreateProjectStore = create<CreateProjectStore>((set, get) => {
@@ -28,8 +42,9 @@ export const useCreateProjectStore = create<CreateProjectStore>((set, get) => {
 		images: [],
 		shortDescription: "",
 		longDescription: "",
-		targetAudience: "",
+		socials: {},
 		isComplete: false,
+		targetAudience: "",
 
 		setChainID: (chainID: number) => set({ chainID }),
 		setName: (name: string) => {
@@ -54,9 +69,12 @@ export const useCreateProjectStore = create<CreateProjectStore>((set, get) => {
 			set({ shortDescription }),
 		setLongDescription: (longDescription: string) =>
 			set({ longDescription }),
-		setTargetAudience: (targetAudience: string) => set({ targetAudience }),
+		setSocials: (socials) => set({ socials }),
 		setIsComplete: (isCompleted: boolean) => {
 			set({ isComplete: isCompleted });
+		},
+		setTargetAudience: (targetAudience: string) => {
+			set({ targetAudience });
 		},
 	};
 });

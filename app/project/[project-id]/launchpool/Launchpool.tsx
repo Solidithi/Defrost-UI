@@ -170,7 +170,7 @@ const Launchpool = () => {
 		<div className="mt-24 px-4">
 			<div className="flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
-					<SideBar />
+					<SideBar socials={projectDetail.socials} />
 				</div>
 				<div className="flex-1">
 					<Tabs

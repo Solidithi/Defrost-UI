@@ -45,7 +45,7 @@ const ImageBarCarousel = ({
 					{visibleThumbnails.map((img, index) => {
 						// Actual index in the full image list
 						const realIndex = image.indexOf(img)
-						console.log('Real index:', realIndex)
+						// console.log('Real index:', realIndex)
 
 						return (
 							<div

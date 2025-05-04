@@ -21,11 +21,25 @@ export type EditProjectStore = Omit<
 	logo: string | undefined;
 	images: string[];
 	isDirty: boolean;
+	socials: {
+		twitter?: string;
+		telegram?: string;
+		discord?: string;
+		website?: string;
+		github?: string;
+	};
 
 	setLogo: (logo: string | undefined) => void;
 	setImages: (images: string[]) => void;
 	markAsDirty: () => void;
 	resetDirtyState: () => void;
+	setSocials: (socials: {
+		twitter?: string;
+		telegram?: string;
+		discord?: string;
+		website?: string;
+		github?: string;
+	}) => void;
 
 	setCurrentProjectData: (currentProject: project) => void;
 	saveCurrentProjectData: () => Promise<void>; // Throws error if fail
@@ -42,6 +56,7 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 		longDescription: "",
 		targetAudience: "",
 		isDirty: false,
+		socials: {},
 
 		setLogo: (logo: string | undefined) => {
 			// Allow undefined to clear the logo, otherwise validate it's a string
@@ -68,6 +83,7 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 			set({ longDescription, isDirty: true }),
 		setTargetAudience: (targetAudience: string) =>
 			set({ targetAudience, isDirty: true }),
+		setSocials: (socials) => set({ socials, isDirty: true }),
 
 		// Specific to edit mode
 		markAsDirty: () => set({ isDirty: true }),
@@ -81,7 +97,15 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 				images: currentProject.images || [],
 				shortDescription: currentProject.short_description || "",
 				longDescription: currentProject.long_description || "",
-				targetAudience: "",
+				targetAudience: currentProject.target_audience || "",
+				socials: {
+					twitter: currentProject.twitter || "",
+					telegram: currentProject.telegram || "",
+					discord: currentProject.discord || "",
+					website: currentProject.website || "",
+					github: currentProject.github || "",
+				},
+				isDirty: false, // Reset dirty state when loading project data
 			});
 		},
 
@@ -91,25 +115,31 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 				name,
 				logo,
 				images,
-				isDirty,
 				shortDescription,
 				longDescription,
+				socials,
+				targetAudience,
 			} = get();
 
-			if (!isDirty) {
-				throw new Error("No changes to save");
+			if (!projectID) {
+				throw new Error("No project ID provided");
 			}
 
-			// Conditionally pick fields that are not empty
-			const updateData = <project>{
+			// Include all fields regardless of whether they're empty
+			// This ensures we can clear fields if needed
+			const updateData = {
 				id: projectID,
-				...(name && { name }),
-				...(logo && { logo }),
-				...(images?.length && { images }),
-				...(shortDescription && {
-					short_description: shortDescription,
-				}),
-				...(longDescription && { long_description: longDescription }),
+				name,
+				logo,
+				images,
+				short_description: shortDescription,
+				long_description: longDescription,
+				target_audience: targetAudience,
+				twitter: socials?.twitter || "",
+				telegram: socials?.telegram || "",
+				discord: socials?.discord || "",
+				website: socials?.website || "",
+				github: socials?.github || "",
 			};
 
 			// Call API to save project
@@ -123,10 +153,17 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 				});
 
 				if (!response.ok) {
-					throw new Error("Failed to save project");
+					const errorData = await response.json().catch(() => ({}));
+					throw new Error(
+						`Failed to save project: ${errorData.message || response.statusText}`
+					);
 				}
 
 				const data = await response.json();
+
+				// Reset dirty state after successful save
+				set({ isDirty: false });
+
 				return data;
 			} catch (error) {
 				console.error("Error saving project:", error);

@@ -24,6 +24,7 @@ import { fileToBase64 } from '@/app/utils/file'
 import { resizeAndConvertToBase64 } from '@/app/utils/image'
 import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
 import { toast, ToastContainer } from 'react-toastify'
+import { ProjectCompletionModal } from '@/app/components/UI/modal/ProjectCompletionModal'
 
 const EditProject = () => {
 	const router = useRouter()
@@ -37,8 +38,16 @@ const EditProject = () => {
 	>(undefined)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
+	const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
 
 	const [isSavingProject, setIsSavingProject] = useState(false)
+
+	// Add state variables for social media fields
+	const [twitter, setTwitter] = useState('')
+	const [telegram, setTelegram] = useState('')
+	const [discord, setDiscord] = useState('')
+	const [website, setWebsite] = useState('')
+	const [github, setGithub] = useState('')
 
 	// Transfer existing project data into editProjectStore on component mount
 	useEffect(() => {
@@ -48,6 +57,13 @@ const EditProject = () => {
 
 		editProjectStore.setCurrentProjectData(currentProject) // transfer data to edit store
 		setProjectLogoPreview(currentProject.logo || undefined) // set logo preview
+
+		// Initialize local social media state from the store
+		setTwitter(currentProject.twitter || '')
+		setTelegram(currentProject.telegram || '')
+		setDiscord(currentProject.discord || '')
+		setWebsite(currentProject.website || '')
+		setGithub(currentProject.github || '')
 	}, [currentProject])
 
 	const availableNetworks = Object.entries(chains).map(([_, chain]) => ({
@@ -61,15 +77,37 @@ const EditProject = () => {
 	const handleComplete = async () => {
 		try {
 			setIsSavingProject(true)
-			await editProjectStore.saveCurrentProjectData()
+
+			// Comment out actual API call for testing frontend UI
+			// await editProjectStore.saveCurrentProjectData()
+
+			// For frontend testing, simulate a successful save
+			await new Promise((resolve) => setTimeout(resolve, 1000))
+
+			setIsSavingProject(false)
 			toast.success('Project data saved successfully!')
-			// router.push('/create-project/preview')
+
+			// Show the completion modal
+			setIsCompletionModalOpen(true)
 		} catch (error) {
+			setIsSavingProject(false)
 			toast.error('Error saving project data. Please try again later.')
 			console.error('Error saving project data:', error)
-		} finally {
-			setIsSavingProject(false)
 		}
+	}
+
+	const handleViewProjectDetails = () => {
+		// Navigate to the project details page
+		if (editProjectStore.projectID) {
+			router.push(`/project/${editProjectStore.projectID}`)
+		} else {
+			router.push('/project-details') // replace with the actual path when the page available
+		}
+	}
+
+	const handleContinueEditing = () => {
+		// Close the modal and stay on the current page
+		setIsCompletionModalOpen(false)
 	}
 
 	// Render image previews for the folder component
@@ -501,6 +539,176 @@ const EditProject = () => {
 								</div>
 							</div>
 						</Step>
+						<Step>
+							<div className="flex flex-col gap-5 items-center w-full">
+								<span className="text-3xl font-orbitron text-white mb-8 flex justify-center w-full">
+									Social Media & Community Links
+								</span>
+
+								<div className="w-full space-y-6">
+									<div className="flex flex-col space-y-3 w-full">
+										<label
+											htmlFor="website"
+											className="text-gray-300 text-xl font-comfortaa"
+										>
+											Website
+										</label>
+										<div className="relative w-full">
+											<input
+												id="website"
+												value={website}
+												onChange={(e) => {
+													setWebsite(e.target.value)
+													editProjectStore.setSocials({
+														...editProjectStore.socials,
+														website: e.target.value,
+													})
+												}}
+												placeholder="https://yourproject.com"
+												className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+											/>
+											<span title="Click to edit">
+												<Edit2
+													size={18}
+													className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+												/>
+											</span>
+										</div>
+									</div>
+
+									<div className="flex flex-col space-y-3 w-full">
+										<label
+											htmlFor="twitter"
+											className="text-gray-300 text-xl font-comfortaa"
+										>
+											Twitter/X
+										</label>
+										<div className="relative w-full">
+											<input
+												id="twitter"
+												value={twitter}
+												onChange={(e) => {
+													setTwitter(e.target.value)
+													editProjectStore.setSocials({
+														...editProjectStore.socials,
+														twitter: e.target.value,
+													})
+												}}
+												placeholder="https://twitter.com/yourproject"
+												className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+											/>
+											<span title="Click to edit">
+												<Edit2
+													size={18}
+													className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+												/>
+											</span>
+										</div>
+									</div>
+
+									<div className="flex flex-col space-y-3 w-full">
+										<label
+											htmlFor="telegram"
+											className="text-gray-300 text-xl font-comfortaa"
+										>
+											Telegram
+										</label>
+										<div className="relative w-full">
+											<input
+												id="telegram"
+												value={telegram}
+												onChange={(e) => {
+													setTelegram(e.target.value)
+													editProjectStore.setSocials({
+														...editProjectStore.socials,
+														telegram: e.target.value,
+													})
+												}}
+												placeholder="https://t.me/yourproject"
+												className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+											/>
+											<span title="Click to edit">
+												<Edit2
+													size={18}
+													className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+												/>
+											</span>
+										</div>
+									</div>
+
+									<div className="flex flex-col space-y-3 w-full">
+										<label
+											htmlFor="discord"
+											className="text-gray-300 text-xl font-comfortaa"
+										>
+											Discord
+										</label>
+										<div className="relative w-full">
+											<input
+												id="discord"
+												value={discord}
+												onChange={(e) => {
+													setDiscord(e.target.value)
+													editProjectStore.setSocials({
+														...editProjectStore.socials,
+														discord: e.target.value,
+													})
+												}}
+												placeholder="https://discord.gg/yourproject"
+												className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+											/>
+											<span title="Click to edit">
+												<Edit2
+													size={18}
+													className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+												/>
+											</span>
+										</div>
+									</div>
+
+									<div className="flex flex-col space-y-3 w-full">
+										<label
+											htmlFor="github"
+											className="text-gray-300 text-xl font-comfortaa"
+										>
+											GitHub
+										</label>
+										<div className="relative w-full">
+											<input
+												id="github"
+												value={github}
+												onChange={(e) => {
+													setGithub(e.target.value)
+													editProjectStore.setSocials({
+														...editProjectStore.socials,
+														github: e.target.value,
+													})
+												}}
+												placeholder="https://github.com/yourproject"
+												className="p-4 pr-12 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+											/>
+											<span title="Click to edit">
+												<Edit2
+													size={18}
+													className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-400 opacity-70 hover:opacity-100 transition-opacity"
+												/>
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<div className="mt-4 mb-2 rounded-lg bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 border-l-4 border-cyan-500 backdrop-blur-sm">
+									<p className="text-gray-300 text-center font-comfortaa max-w-3xl mx-auto leading-relaxed">
+										<span className="text-cyan-400 font-bold">
+											Connect your community
+										</span>{' '}
+										by adding links to your social media and community
+										platforms. Providing these links helps potential supporters
+										find and engage with your project.
+									</p>
+								</div>
+							</div>
+						</Step>
 					</Stepper>
 				</div>
 			</div>
@@ -517,6 +725,15 @@ const EditProject = () => {
 				isOpen={isSavingProject}
 				message="Saving project information"
 				subMessage="Please wait while we save your project data"
+			/>
+
+			{/* --------------------------------------Project Completion Modal----------------------------------------------- */}
+			<ProjectCompletionModal
+				isOpen={isCompletionModalOpen}
+				projectId={editProjectStore.projectID}
+				projectName={editProjectStore.name || 'Your Project'}
+				onViewDetails={handleViewProjectDetails}
+				onContinueEditing={handleContinueEditing}
 			/>
 		</>
 	)

@@ -2,17 +2,25 @@ import { Key } from 'react'
 import SectionComponent from '../UI/effect/SectionComponent'
 import CardInModal from '../UI/modal/CardInModal'
 
-const DescriptionTab = () => {
+interface DescriptionTabProps {
+	description?: string
+}
+
+const DescriptionTab = ({ description }: DescriptionTabProps) => {
 	return (
 		<div className="">
 			<div className="glass-component-1 text-white mt-10 p-6 rounded-lg">
-				<p>
-					{Array(20)
-						.fill(
-							'If you have funded this project, we will be in touch to let you know when the rewards have started distributing and when you can claim them.'
-						)
-						.join(' ')}
-				</p>
+				{description ? (
+					<p className="whitespace-pre-wrap">{description}</p>
+				) : (
+					<p>
+						{Array(20)
+							.fill(
+								'If you have funded this project, we will be in touch to let you know when the rewards have started distributing and when you can claim them.'
+							)
+							.join(' ')}
+					</p>
+				)}
 			</div>
 		</div>
 	)

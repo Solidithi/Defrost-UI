@@ -21,6 +21,7 @@ import { Info } from 'lucide-react'
 import { fileToBase64 } from '@/app/utils/file'
 import { resizeAndConvertToBase64 } from '@/app/utils/image'
 import { getChainName } from '@/app/utils/chain'
+import { ProjectCompletionModal } from '@/app/components/UI/modal/ProjectCompletionModal'
 
 // Define interface for ImageItem to match the new ImageManager component
 interface ImageItem {
@@ -32,8 +33,24 @@ interface ImageItem {
 const CreateProject = () => {
 	// Minimal UI state that doesn't need to be in the store
 	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [targetAudience, setTargetAudience] = useState('')
+
+	// Social media state
+	const [twitter, setTwitter] = useState('')
+	const [telegram, setTelegram] = useState('')
+	const [discord, setDiscord] = useState('')
+	const [website, setWebsite] = useState('')
+	const [github, setGithub] = useState('')
+
+	// Use ImageItem[] instead of separate state variables for images and previews
+	const [projectImages, setProjectImages] = useState<ImageItem[]>([])
+	const [projectLogo, setProjectLogo] = useState<File | null>(null)
+	const [projectLogoPreview, setProjectLogoPreview] = useState<string | null>(
+		null
+	)
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
+	const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
 
 	// Use Zustand store for all project data
 	const createProjectStore = useCreateProjectStore()
@@ -47,43 +64,49 @@ const CreateProject = () => {
 		address: '',
 	}))
 
-	const handleComplete = () => {
+	const handleComplete = async () => {
 		try {
-			// Check if all required fields are filled
-			if (!createProjectStore.chainID) {
-				alert('Please select a blockchain network')
-				return
-			}
+			// Comment out actual API call for testing frontend
+			// const response = await fetch("/api/create-project", {
+			//   method: "POST",
+			//   headers: {
+			//     "Content-Type": "application/json",
+			//   },
+			//   body: JSON.stringify({
+			//     ...projectData
+			//   }),
+			// });
 
-			if (!createProjectStore.name) {
-				alert('Please enter a project name')
-				return
-			}
+			// if (!response.ok) {
+			//   throw new Error("Failed to create project");
+			// }
 
+			// const data = await response.json();
+			// const newProjectId = data.projectId;
+
+			// Temporarily set a mock project ID
+			// In production, this would come from the API response
 			createProjectStore.setIsComplete(true)
-			router.push('/project/create/preview')
+
+			// Show completion modal
+			setIsCompletionModalOpen(true)
+
+			// Simulate successful creation for frontend testing
+			// router.push(`/project/${newProjectId}`);
 		} catch (error) {
-			console.log('Error:', error)
+			console.error('Error creating project:', error)
 		}
 	}
 
-	// Render image previews for the folder component using images from the store
-	const renderImagePreviews = () => {
-		// Take only the first 3 images (or fewer if there aren't 3)
-		return createProjectStore.images.slice(0, 3).map((base64, index) => (
-			<div
-				key={index}
-				className="w-full h-full flex items-center justify-center"
-			>
-				<Image
-					src={base64}
-					alt={`Image ${index + 1}`}
-					width={512}
-					height={512}
-					className="max-w-full max-h-full object-contain rounded"
-				/>
-			</div>
-		))
+	const handleViewProjectDetails = () => {
+		// In real implementation, we would have the project ID from the API response
+		// For now, we'll just navigate to the projects list
+		router.push('/project-details') // replace with the actual path when the page avaiable
+	}
+
+	const handleContinueEditing = () => {
+		// Close the modal and stay on the current page
+		setIsCompletionModalOpen(false)
 	}
 
 	const handleNetworkChange = (option: any) => {
@@ -155,6 +178,25 @@ const CreateProject = () => {
 			]
 			createProjectStore.setImages(updatedImages)
 		}
+	}
+
+	// Add the missing renderImagePreviews function
+	const renderImagePreviews = () => {
+		// Take only the first 3 images (or fewer if there aren't 3)
+		return createProjectStore.images.slice(0, 3).map((image, index) => (
+			<div
+				key={index}
+				className="w-full h-full flex items-center justify-center"
+			>
+				<Image
+					src={image}
+					alt={`Preview ${index}`}
+					width={512}
+					height={512}
+					className="max-w-full max-h-full object-contain rounded"
+				/>
+			</div>
+		))
 	}
 
 	return (
@@ -473,8 +515,115 @@ const CreateProject = () => {
 							</div>
 						</div>
 					</Step>
+					<Step>
+						<div className="flex flex-col gap-5 items-center w-full">
+							<span className="text-3xl font-orbitron text-white mb-8 flex justify-center w-full">
+								Social Media & Community Links
+							</span>
+
+							<div className="w-full space-y-6">
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="website"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Website
+									</label>
+									<input
+										id="website"
+										value={website}
+										onChange={(e) => setWebsite(e.target.value)}
+										placeholder="https://yourproject.com"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="twitter"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Twitter/X
+									</label>
+									<input
+										id="twitter"
+										value={twitter}
+										onChange={(e) => setTwitter(e.target.value)}
+										placeholder="https://twitter.com/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="telegram"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Telegram
+									</label>
+									<input
+										id="telegram"
+										value={telegram}
+										onChange={(e) => setTelegram(e.target.value)}
+										placeholder="https://t.me/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="discord"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										Discord
+									</label>
+									<input
+										id="discord"
+										value={discord}
+										onChange={(e) => setDiscord(e.target.value)}
+										placeholder="https://discord.gg/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+
+								<div className="flex flex-col space-y-3 w-full">
+									<label
+										htmlFor="github"
+										className="text-gray-300 text-xl font-comfortaa"
+									>
+										GitHub
+									</label>
+									<input
+										id="github"
+										value={github}
+										onChange={(e) => setGithub(e.target.value)}
+										placeholder="https://github.com/yourproject"
+										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									/>
+								</div>
+							</div>
+
+							<div className="mt-4 mb-2 rounded-lg bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 border-l-4 border-cyan-500 backdrop-blur-sm">
+								<p className="text-gray-300 text-center font-comfortaa max-w-3xl mx-auto leading-relaxed">
+									<span className="text-cyan-400 font-bold">
+										Connect your community
+									</span>{' '}
+									by adding links to your social media and community platforms.
+									Providing these links helps potential supporters find and
+									engage with your project.
+								</p>
+							</div>
+						</div>
+					</Step>
 				</Stepper>
 			</div>
+			{/* Project Completion Modal */}
+			<ProjectCompletionModal
+				isOpen={isCompletionModalOpen}
+				projectName={createProjectStore.name || 'New Project'}
+				onViewDetails={handleViewProjectDetails}
+				onContinueEditing={handleContinueEditing}
+			/>
 		</div>
 	)
 }

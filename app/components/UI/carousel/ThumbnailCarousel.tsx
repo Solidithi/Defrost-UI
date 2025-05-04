@@ -12,11 +12,16 @@ interface Image {
 	description: string
 }
 
-const ImageCarousel: React.FC = () => {
+interface ImageCarouselProps {
+	projectImages?: Image[]
+}
+
+const ImageCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 	const [index, setIndex] = useState(0)
 	const ref = useRef<Splide>(null)
 
-	const images: Image[] = [
+	// Default images as fallback if no project images are provided
+	const defaultImages: Image[] = [
 		{
 			src: 'https://i.pinimg.com/736x/2e/3d/68/2e3d6845011de0d24c13dd1e1028a2ff.jpg',
 			alt: 'Beautiful Landscape 1',
@@ -32,13 +37,16 @@ const ImageCarousel: React.FC = () => {
 			alt: 'Beautiful Landscape 3',
 			description: 'Description 03',
 		},
-
 		{
 			src: 'https://i.pinimg.com/474x/f3/d7/c4/f3d7c40d3d574efc7f7a03db93a3c8a2.jpg',
 			alt: 'Something',
 			description: 'Something',
 		},
 	]
+
+	// Use provided project images or default to fallback images
+	const images =
+		projectImages && projectImages.length > 0 ? projectImages : defaultImages
 
 	useEffect(() => {
 		if (ref.current && ref.current.splide) {
@@ -71,7 +79,6 @@ const ImageCarousel: React.FC = () => {
 						onClick={() => ref.current?.splide?.go('<')}
 						className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full w-10 p-2 shadow-lg pr-1 "
 					>
-						{/* <span className="material-icons text-black">chevron_left</span> */}
 						<Image
 							src={Vector}
 							alt="Previous"
@@ -84,7 +91,6 @@ const ImageCarousel: React.FC = () => {
 						onClick={() => ref.current?.splide?.go('>')}
 						className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full w-10 p-2 shadow-lg pl-3"
 					>
-						{/* <span className="material-icons text-black">chevron_right</span> */}
 						<Image src={Vector} alt="Next" width={16} height={16} />
 					</button>
 
@@ -94,8 +100,8 @@ const ImageCarousel: React.FC = () => {
 							perPage: 1,
 							gap: '1rem',
 							heightRatio: 0.5,
-							arrows: false, // 🔥 Disable default arrows
-							pagination: false, // 🔥 Disable default pagination
+							arrows: false, // Disable default arrows
+							pagination: false, // Disable default pagination
 						}}
 						ref={ref}
 					>

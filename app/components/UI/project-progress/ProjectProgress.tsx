@@ -1,9 +1,17 @@
 import VerticalProgressBar from './VerticalProgressBar'
+import SocialLinks from '../shared/SocialLinks'
 
 interface ProjectProgressProps {
-	projectProgress: number
-	steps: number
-	currentStep: number
+	projectProgress?: number
+	steps?: number
+	currentStep?: number
+	socials?: {
+		website?: string
+		twitter?: string
+		telegram?: string
+		discord?: string
+		github?: string
+	}
 }
 
 interface ProgressBarProps {
@@ -11,9 +19,16 @@ interface ProgressBarProps {
 	currentStep: number
 }
 
-const ProjectProgress = () => {
+const ProjectProgress = ({ socials }: ProjectProgressProps) => {
 	const steps = [{ name: 'Upcoming' }, { name: 'Ongoing' }, { name: 'Ended' }]
 	const currentStep = 2
+
+	// Only show socials if they exist and aren't empty strings
+	const hasSocialLinks =
+		socials &&
+		Object.values(socials).some(
+			(link) => typeof link === 'string' && link.trim() !== ''
+		)
 
 	return (
 		<div className="border rounded-xl glass-component-3 text-white w-full h-full">
@@ -28,17 +43,12 @@ const ProjectProgress = () => {
 						them.
 					</p>
 
-					<p className="text-gray-400 text-sm">
-						Follow us on
-						<a href="#" className="text-blue-400 underline mx-1">
-							Twitter
-						</a>
-						or
-						<a href="#" className="text-blue-400 underline mx-1">
-							Telegram
-						</a>
-						to keep updated.
-					</p>
+					{hasSocialLinks && (
+						<div className="text-gray-300 text-sm">
+							<p className="mb-3 font-semibold">Follow us on:</p>
+							<SocialLinks socials={socials} iconSize="medium" align="start" />
+						</div>
+					)}
 				</div>
 				{/* <div className="border-l border-gray-400 self-stretch mx-8"></div> */}
 				<div className="px-8 pb-[92px]">
