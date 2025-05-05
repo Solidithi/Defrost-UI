@@ -10,7 +10,7 @@ import { EnrichedProject, UnifiedPool } from '@/app/types'
 import { useState } from 'react'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import { formatUnits } from 'ethers'
-import { PoolCard } from './PoolCard'
+import { PoolCard } from '@/app/components/UI/card/PoolCard'
 
 export const formatReadContract = (
 	data: string,
@@ -49,7 +49,7 @@ export function PoolSelector({
 	const [claimables, setClaimables] = useState<bigint | null>(BigInt(0))
 
 	const selectedPool = project.unifiedPools.find(
-		(pool) => pool.id === selectedPoolAddress
+		(pool) => pool.address === selectedPoolAddress
 	)
 
 	return (
@@ -68,10 +68,10 @@ export function PoolSelector({
 				</DialogHeader>
 				<div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
 					{project.unifiedPools.map((pool) => {
-						const isSelected = selectedPoolAddress === pool.id
+						const isSelected = selectedPoolAddress === pool.address
 						return (
 							<PoolCard
-								key={pool.id}
+								key={pool.address}
 								isSelected={isSelected}
 								pool={pool}
 								onClick={() => onPoolSelected(pool)}

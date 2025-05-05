@@ -17,8 +17,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import { UnifiedPool } from '@/app/types/extended-models/unified-pool'
 import CarouselWithProgress from '../components/UI/carousel/Carousel'
-import AllProjectCard from '../components/UI/shared/AllProjectCard'
-import StatCard from '../components/UI/shared/StatCard'
+import AllProjectCard from '../components/UI/card/AllProjectCard'
+import StatCard from '../components/UI/card/StatCard'
 
 // Define stat card interface
 export interface StatCardItem {
@@ -83,9 +83,9 @@ const AllProject = () => {
 	}, [])
 
 	const handlePoolSelected = (pool: UnifiedPool): void => {
-		console.log('New pool selected:', pool.id)
+		console.log('New pool selected:', pool.address)
 		setSelectedPool(pool)
-		console.log('Selected pool:', selectedPool?.id)
+		console.log('Selected pool:', selectedPool?.address)
 		if (selectedProject) {
 			renderExpandableRow(selectedProject)
 		}
@@ -143,7 +143,7 @@ const AllProject = () => {
 			case 'launchpool':
 				return (
 					<LaunchpoolTableRow
-						key={pool.id}
+						key={pool.address}
 						project={project}
 						pool={pool}
 						onPoolSelected={handlePoolSelected}
@@ -153,32 +153,36 @@ const AllProject = () => {
 				// Future implementation for FarmpoolTableRow
 				return (
 					<div
-						key={pool.id}
+						key={pool.address}
 						className="bg-black/20 p-4 rounded-xl border border-white/10"
 					>
 						<p className="text-white">
 							Farm pool component will be implemented soon.
 						</p>
-						<p className="text-gray-400 text-sm mt-2">Pool ID: {pool.id}</p>
+						<p className="text-gray-400 text-sm mt-2">
+							Pool ID: {pool.address}
+						</p>
 					</div>
 				)
 			case 'launchpad':
 				// Future implementation for LaunchpadTableRow
 				return (
 					<div
-						key={pool.id}
+						key={pool.address}
 						className="bg-black/20 p-4 rounded-xl border border-white/10"
 					>
 						<p className="text-white">
 							Launchpad component will be implemented soon.
 						</p>
-						<p className="text-gray-400 text-sm mt-2">Pool ID: {pool.id}</p>
+						<p className="text-gray-400 text-sm mt-2">
+							Pool ID: {pool.address}
+						</p>
 					</div>
 				)
 			default:
 				return (
 					<div
-						key={pool.id}
+						key={pool.address}
 						className="bg-black/20 p-4 rounded-xl border border-white/10"
 					>
 						<p className="text-white">Unknown pool type: {pool.type}</p>
@@ -219,7 +223,7 @@ const AllProject = () => {
 								.map((pool) => {
 									console.log(
 										'Rendering pool component for new pool: ',
-										pool.id
+										pool.address
 									)
 									if (!selectedPool) {
 										setSelectedPool(pool)

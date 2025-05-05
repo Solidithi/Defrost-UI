@@ -21,8 +21,8 @@ import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { parseUnits, formatUnits } from 'ethers'
 import AlertInfo from '../UI/shared/AlertInfo'
 import { UnifiedPool, EnrichedProject } from '@/app/types'
-import { PoolSelector } from './PoolSelector'
-import { PoolCard } from './PoolCard'
+import { PoolSelector } from '../UI/selector/PoolSelector'
+import { PoolCard } from '../UI/card/PoolCard'
 import ProgressBar from '../UI/project-progress/ProgressBar'
 
 export interface LaunchpoolTableRowProps {
@@ -47,7 +47,7 @@ export default function LaunchpoolTableRow({
 	const account = useAccount()
 	const [stakeAmount, setStakeAmount] = useState<string>('')
 	const [isStakeInteded, setIsStakeIntended] = useState(false)
-	const poolAddress = pool.id as `0x${string}`
+	const poolAddress = pool.address as `0x${string}`
 
 	// Contract read operations
 	const {
@@ -268,7 +268,7 @@ export default function LaunchpoolTableRow({
 									<PoolSelector
 										project={project}
 										onPoolSelected={onPoolSelected}
-										initialSelectedPoolAddress={pool.id}
+										initialSelectedPoolAddress={pool.address}
 									/>
 								</span>
 							</div>

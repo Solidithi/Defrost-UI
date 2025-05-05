@@ -9,7 +9,7 @@ import { AllPoolsTab } from '@/app/components/project-detail-sections/ContentTab
 import SideBar from '@/app/components/service-sections/SideBar'
 import PoolTab from '@/app/components/service/launchpool/ContentTabs'
 import Button from '@/app/components/UI/button/Button'
-import StatCard from '@/app/components/UI/shared/StatCard'
+import StatCard from '@/app/components/UI/card/StatCard'
 import Tabs from '@/app/components/UI/shared/Tabs'
 import { ProjectDetail } from '@/app/types'
 
