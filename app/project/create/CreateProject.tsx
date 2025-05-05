@@ -249,39 +249,66 @@ const CreateProject = () => {
 
 	const handleComplete = async () => {
 		try {
+			// Reset all states first
 			setIsSavingProject(true)
+			setIsWaitingForIndexer(false)
+			setIsUpdatingDetails(false)
+			setIsProjectCreated(false)
 			setFinalError(null)
 
-			// Ensure we have the contract address
-			if (!projectHubProxyAddress) {
-				setFinalError(
-					'Project Hub contract address not found. Please check your network connection.'
-				)
-				setIsSavingProject(false)
-				return
-			}
+			// // Ensure we have the contract address
+			// if (!projectHubProxyAddress) {
+			// 	setFinalError(
+			// 		'Project Hub contract address not found. Please check your network connection.'
+			// 	)
+			// 	setIsSavingProject(false)
+			// 	return
+			// }
 
-			// Ensure user wallet is connected
-			if (account.isDisconnected) {
-				setFinalError('Please connect your wallet to create a project.')
-				setIsSavingProject(false)
-				return
-			}
+			// // Ensure user wallet is connected
+			// if (account.isDisconnected) {
+			// 	setFinalError('Please connect your wallet to create a project.')
+			// 	setIsSavingProject(false)
+			// 	return
+			// }
 
-			// Initiate the blockchain transaction
-			console.log('Creating project with hub address:', projectHubProxyAddress)
-			createProject({
-				abi: ProjectHubABI,
-				address: projectHubProxyAddress,
-				functionName: 'createProject',
-			})
+			// // Initiate the blockchain transaction
+			// console.log('Creating project with hub address:', projectHubProxyAddress)
+			// createProject({
+			// 	abi: ProjectHubABI,
+			// 	address: projectHubProxyAddress,
+			// 	functionName: 'createProject',
+			// })
 
-			// The rest of the process (waiting for transaction confirmation, polling indexer)
-			// is handled by the useEffect hooks that monitor createProjectReceiptStatus
+			// For testing: simulate blockchain transaction
+			console.log('Starting simulated transaction flow for testing')
+
+			// Step 1: Simulate waiting for transaction confirmation (5 seconds)
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+
+			// Step 2: Simulate waiting for indexer (5 seconds)
+			setIsSavingProject(false)
+			setIsWaitingForIndexer(true)
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+
+			// Step 3: Simulate API updating details (3 seconds)
+			setIsWaitingForIndexer(false)
+			setIsUpdatingDetails(true)
+			await new Promise((resolve) => setTimeout(resolve, 3000))
+
+			// Step 4: Show success
+			setIsUpdatingDetails(false)
+			setIsProjectCreated(true)
+			setIsCompletionModalOpen(true)
+
+			// Store a dummy project ID for testing
+			createProjectStore.setProjectID('test-project-id-123')
 		} catch (error) {
-			console.error('Error creating project:', error)
+			console.error('Error in simulated transaction:', error)
 			setFinalError('Failed to create project. Please try again.')
 			setIsSavingProject(false)
+			setIsWaitingForIndexer(false)
+			setIsUpdatingDetails(false)
 		}
 	}
 
@@ -810,6 +837,27 @@ const CreateProject = () => {
 				projectName={createProjectStore.name || 'New Project'}
 				onViewDetails={handleViewProjectDetails}
 				onContinueEditing={handleContinueEditing}
+			/>
+
+			{/* Transaction Status Modal for Testing */}
+			<LoadingModal
+				isOpen={isSavingProject}
+				message="Creating project on blockchain"
+				subMessage="Please wait while your transaction is being processed"
+			/>
+
+			{/* Indexer Status Modal for Testing */}
+			<LoadingModal
+				isOpen={isWaitingForIndexer}
+				message="Waiting for indexer"
+				subMessage="Your transaction is confirmed. Waiting for the indexer to process the data"
+			/>
+
+			{/* Update Details Modal for Testing */}
+			<LoadingModal
+				isOpen={isUpdatingDetails}
+				message="Updating project details"
+				subMessage="Almost there! Adding your project information to our database"
 			/>
 		</div>
 	)
