@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SplitText from '@/app/components/UI/effect/SplitText'
 import Stepper, { Step } from '@/app/components/UI/project-progress/Stepper'
 import NetworkSelector from '@/app/components/UI/selector/NetworkSelector'
@@ -22,6 +22,20 @@ import { fileToBase64 } from '@/app/utils/file'
 import { resizeAndConvertToBase64 } from '@/app/utils/image'
 import { getChainName } from '@/app/utils/chain'
 import { ProjectCompletionModal } from '@/app/components/UI/modal/ProjectCompletionModal'
+import Button from '@/app/components/UI/button/Button'
+import Spinner from '@/app/components/UI/effect/Spinner'
+import {
+	useAccount,
+	useChainId,
+	useReadContract,
+	useWriteContract,
+	useWaitForTransactionReceipt,
+} from 'wagmi'
+import { abi as ProjectHubABI } from '@/abi/ProjectHubUpgradeable.json'
+import { normalizeAddress } from '@/app/utils/address'
+import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 // Define interface for ImageItem to match the new ImageManager component
 interface ImageItem {
@@ -42,6 +56,13 @@ const CreateProject = () => {
 	const [website, setWebsite] = useState('')
 	const [github, setGithub] = useState('')
 
+	// Transaction and blockchain states
+	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
+	const [isUpdatingDetails, setIsUpdatingDetails] = useState(false)
+	const [finalError, setFinalError] = useState<string | null>(null)
+	const [isProjectCreated, setIsProjectCreated] = useState(false)
+	const [isSavingProject, setIsSavingProject] = useState(false)
+
 	// Use ImageItem[] instead of separate state variables for images and previews
 	const [projectImages, setProjectImages] = useState<ImageItem[]>([])
 	const [projectLogo, setProjectLogo] = useState<File | null>(null)
@@ -56,6 +77,168 @@ const CreateProject = () => {
 	const createProjectStore = useCreateProjectStore()
 	const router = useRouter()
 
+	// Blockchain integration
+	const account = useAccount()
+	const chainIdStr = account?.chainId?.toString() || ''
+	const projectHubProxyAddress = chains[chainIdStr as keyof typeof chains]
+		?.deployedContracts?.ProjectHubUpgradeableProxy as `0x${string}`
+
+	const {
+		writeContract: createProject,
+		status: createProjectStatus,
+		data: createProjectHash,
+	} = useWriteContract()
+
+	const { status: createProjectReceiptStatus, data: createProjectReceipt } =
+		useWaitForTransactionReceipt({
+			hash: createProjectHash,
+		})
+
+	// Check when component mounts if all required fields are filled
+	useEffect(() => {
+		if (
+			createProjectStore.longDescription &&
+			createProjectStore.shortDescription &&
+			createProjectStore.images.length > 0 &&
+			createProjectStore.logo &&
+			createProjectStore.name
+		) {
+			console.log('Setting createProjectStore to complete')
+			createProjectStore.setIsComplete(true)
+		}
+	}, []) // Empty dependency array ensures this runs only once
+
+	// Handle transaction receipt state changes
+	useEffect(() => {
+		console.log('Receipt Status:', createProjectReceiptStatus)
+		console.log('Receipt Data:', createProjectReceipt)
+
+		if (createProjectReceiptStatus === 'success') {
+			console.log('Transaction confirmed! Receipt:', createProjectReceipt)
+			// --- START POLLING FOR INDEXER HERE ---
+			setIsWaitingForIndexer(true)
+			setFinalError(null) // Clear previous errors
+
+			const txHash = normalizeAddress(createProjectReceipt.transactionHash)
+			pollIndexerStatus(txHash)
+		} else if (createProjectReceiptStatus === 'error') {
+			console.error('Error waiting for transaction receipt')
+			setFinalError('Error confirming transaction on-chain.')
+			// Reset other statuses
+			setIsWaitingForIndexer(false)
+			setIsUpdatingDetails(false)
+			setIsSavingProject(false)
+		}
+	}, [createProjectReceiptStatus, createProjectReceipt])
+
+	// Update social links in the store when their state values change
+	useEffect(() => {
+		createProjectStore.setSocials({
+			website,
+			twitter,
+			telegram,
+			discord,
+			github,
+		})
+	}, [website, twitter, telegram, discord, github])
+
+	// Poll the indexer to confirm the project was indexed
+	const pollIndexerStatus = async (txHash: `0x${string}`) => {
+		const maxRetries = 20 // 20 retries * 3 seconds = 1 minute timeout
+		const interval = 3000 // 3 seconds
+		let retries = 0
+
+		const poll = async () => {
+			if (retries >= maxRetries) {
+				console.error('Polling timed out waiting for indexer.')
+				setFinalError('Indexer did not process the transaction in time.')
+				setIsWaitingForIndexer(false)
+				return
+			}
+
+			try {
+				console.log(`Polling indexer... Attempt ${retries + 1}`)
+				const response = await fetch(
+					`/api/create-project/is-indexed?txHash=${txHash}`
+				)
+				if (!response.ok) {
+					throw new Error(`API request failed with status ${response.status}`)
+				}
+				const { isIndexed, projectId } = await response.json()
+
+				if (isIndexed) {
+					console.log('Indexer confirmed record exists!')
+					setIsWaitingForIndexer(false)
+					await updateProjectDetails(txHash, projectId)
+				} else {
+					retries++
+					setTimeout(poll, interval)
+				}
+			} catch (error) {
+				console.error('Polling error:', error)
+				setFinalError('Error checking indexer status.')
+				setIsWaitingForIndexer(false)
+			}
+		}
+
+		await poll() // Start the first poll
+	}
+
+	// Update project details in the database after the transaction is confirmed
+	const updateProjectDetails = async (
+		txHash: `0x${string}`,
+		projectId?: string
+	) => {
+		try {
+			setIsUpdatingDetails(true)
+			setFinalError(null)
+
+			// Prepare data for API
+			const updateData = {
+				txHash,
+				projectId,
+				name: createProjectStore.name,
+				logo: createProjectStore.logo,
+				images: createProjectStore.images,
+				short_description: createProjectStore.shortDescription,
+				long_description: createProjectStore.longDescription,
+				target_audience: createProjectStore.targetAudience,
+				twitter,
+				telegram,
+				discord,
+				website,
+				github,
+			}
+
+			// Call API to update project details
+			const response = await fetch('/api/create-project/update-detail', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(updateData),
+			})
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}))
+				throw new Error(
+					`Failed to update project: ${errorData.message || response.statusText}`
+				)
+			}
+
+			const data = await response.json()
+			setIsUpdatingDetails(false)
+			setIsProjectCreated(true)
+
+			// Show completion modal with the new project ID
+			setIsCompletionModalOpen(true)
+		} catch (error) {
+			console.error('Error updating project details:', error)
+			setFinalError('Error saving project details. Please try again.')
+			setIsUpdatingDetails(false)
+		}
+	}
+
 	const availableNetworks = Object.entries(chains).map(([_, chain]) => ({
 		id: chain.chainID,
 		name: chain.chainName,
@@ -66,35 +249,39 @@ const CreateProject = () => {
 
 	const handleComplete = async () => {
 		try {
-			// Comment out actual API call for testing frontend
-			// const response = await fetch("/api/create-project", {
-			//   method: "POST",
-			//   headers: {
-			//     "Content-Type": "application/json",
-			//   },
-			//   body: JSON.stringify({
-			//     ...projectData
-			//   }),
-			// });
+			setIsSavingProject(true)
+			setFinalError(null)
 
-			// if (!response.ok) {
-			//   throw new Error("Failed to create project");
-			// }
+			// Ensure we have the contract address
+			if (!projectHubProxyAddress) {
+				setFinalError(
+					'Project Hub contract address not found. Please check your network connection.'
+				)
+				setIsSavingProject(false)
+				return
+			}
 
-			// const data = await response.json();
-			// const newProjectId = data.projectId;
+			// Ensure user wallet is connected
+			if (account.isDisconnected) {
+				setFinalError('Please connect your wallet to create a project.')
+				setIsSavingProject(false)
+				return
+			}
 
-			// Temporarily set a mock project ID
-			// In production, this would come from the API response
-			createProjectStore.setIsComplete(true)
+			// Initiate the blockchain transaction
+			console.log('Creating project with hub address:', projectHubProxyAddress)
+			createProject({
+				abi: ProjectHubABI,
+				address: projectHubProxyAddress,
+				functionName: 'createProject',
+			})
 
-			// Show completion modal
-			setIsCompletionModalOpen(true)
-
-			// Simulate successful creation for frontend testing
-			// router.push(`/project/${newProjectId}`);
+			// The rest of the process (waiting for transaction confirmation, polling indexer)
+			// is handled by the useEffect hooks that monitor createProjectReceiptStatus
 		} catch (error) {
 			console.error('Error creating project:', error)
+			setFinalError('Failed to create project. Please try again.')
+			setIsSavingProject(false)
 		}
 	}
 
