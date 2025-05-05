@@ -1,128 +1,118 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { Search, Zap, BarChart3, Clock, Award } from 'lucide-react'
-import { StakingCard } from './staking-card'
-import { StakingStats } from './staking-stats'
-import { StakingFilters } from './staking-filters'
-import { StakingPoolDetails } from './staking-pool-details'
-import { cn } from '@/lib/utils'
+import { LaunchpoolStakingCard } from '@/app/components/UI/card/LaunchPoolStakingCard'
+import { StakingStatsCard } from '@/app/components/UI/card/StakingStatsCard'
+import { StakingFilters } from '@/app/components/UI/filter/StakingFilter'
+import { LaunchpoolStakingDetailsModal } from '@/app/components/UI/modal/LaunchpoolStakingDetailsModal'
+import { cn } from '@/app/lib/utils'
+import {
+	useStakingStore,
+	useFilteredPools,
+	useSelectedPool,
+	useSelectedPoolTokensInfo,
+} from '@/app/store/my-staking'
+import { useAccount, useReadContract } from 'wagmi'
+import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 
 export function MyStakingPage() {
-	const [activeTab, setActiveTab] = useState('all')
-	const [selectedPool, setSelectedPool] = useState<string | null>(null)
-	const [showDetails, setShowDetails] = useState(false)
+	const {
+		activeTab,
+		setActiveTab,
+		activeFilters,
+		setActiveFilters,
+		showDetailsModal,
+		closeDetailsModal,
+		selectPool,
+		fetchPools,
+		isLoading,
+	} = useStakingStore()
 
-	// Mock data for demonstration
-	const stakingPools = [
-		{
-			id: '1',
-			type: 'launchpool',
-			name: 'vDOT Flexible Staking',
-			description: 'Liquid staking for Polkadot with flexible redemption',
-			image: '/placeholder.svg?height=200&width=200',
-			apy: '245837.23%',
-			duration: '69445 days',
-			acceptedTokens: ['vDOT'],
-			yourStake: '1069.0',
-			poolTotal: '1069000.0',
-			yourShare: '0.1%',
-			status: 'active',
-		},
-		{
-			id: '2',
-			type: 'launchpool',
-			name: 'vKSM Flexible Staking',
-			description: 'Liquid staking for Kusama with flexible redemption',
-			image: '/placeholder.svg?height=200&width=200',
-			apy: '187432.56%',
-			duration: '69445 days',
-			acceptedTokens: ['vKSM'],
-			yourStake: '532.5',
-			poolTotal: '890000.0',
-			yourShare: '0.06%',
-			status: 'active',
-		},
-		{
-			id: '3',
-			type: 'launchpool',
-			name: 'vBNC Flexible Staking',
-			description: 'Liquid staking for Bifrost with flexible redemption',
-			image: '/placeholder.svg?height=200&width=200',
-			apy: '98765.43%',
-			duration: '69445 days',
-			acceptedTokens: ['vBNC'],
-			yourStake: '2500.0',
-			poolTotal: '5000000.0',
-			yourShare: '0.05%',
-			status: 'active',
-		},
-		{
-			id: '4',
-			type: 'launchpool',
-			name: 'vGLMR Flexible Staking',
-			description: 'Liquid staking for Moonbeam with flexible redemption',
-			image: '/placeholder.svg?height=200&width=200',
-			apy: '76543.21%',
-			duration: '69445 days',
-			acceptedTokens: ['vGLMR'],
-			yourStake: '0.0',
-			poolTotal: '3000000.0',
-			yourShare: '0%',
-			status: 'active',
-		},
-		{
-			id: '5',
-			type: 'launchpool',
-			name: 'vMOVR Flexible Staking',
-			description: 'Liquid staking for Moonriver with flexible redemption',
-			image: '/placeholder.svg?height=200&width=200',
-			apy: '54321.98%',
-			duration: '69445 days',
-			acceptedTokens: ['vMOVR'],
-			yourStake: '0.0',
-			poolTotal: '2000000.0',
-			yourShare: '0%',
-			status: 'ended',
-		},
-		{
-			id: '6',
-			type: 'launchpool',
-			name: 'vASTR Flexible Staking',
-			description: 'Liquid staking for Astar with flexible redemption',
-			image: '/placeholder.svg?height=200&width=200',
-			apy: '43210.87%',
-			duration: '69445 days',
-			acceptedTokens: ['vASTR'],
-			yourStake: '0.0',
-			poolTotal: '1500000.0',
-			yourShare: '0%',
-			status: 'ended',
-		},
-	]
+	const filteredPools = useFilteredPools()
+	const selectedPool = useSelectedPool()
+	const selectedTokensInfo = useSelectedPoolTokensInfo()
+	const account = useAccount()
 
-	const filteredPools = stakingPools.filter((pool) => {
-		if (activeTab === 'all') return true
-		if (activeTab === 'active') return pool.status === 'active'
-		if (activeTab === 'ended') return pool.status === 'ended'
-		return true
-	})
+	// Fetch pools when component mounts or when account changes
+	useEffect(() => {
+		fetchPools()
+	}, [fetchPools, account.address])
 
-	const handlePoolSelect = (id: string) => {
-		setSelectedPool(id)
-		setShowDetails(true)
-	}
+	// Read staking data for selected pool
+	const { data: yourNativeStake, status: readStakerNativeAmountStatus } =
+		useReadContract({
+			abi: launchpoolABI,
+			address: selectedPool?.id as `0x${string}` | undefined,
+			functionName: 'getStakerNativeAmount',
+			args: [account.address],
+			query: {
+				enabled: !!account.address && !!selectedPool?.id,
+			},
+		})
 
-	const totalStaked = stakingPools.reduce(
-		(acc, pool) => acc + Number.parseFloat(pool.yourStake),
+	const { data: totalVTokensStake, status: readTotalStakedVTokensStatus } =
+		useReadContract({
+			abi: launchpoolABI,
+			address: selectedPool?.id as `0x${string}` | undefined,
+			functionName: 'getTotalStakedVTokens',
+			query: {
+				enabled: !!account.address && !!selectedPool?.id,
+			},
+		})
+
+	const { data: withdrawableVTokens, status: readWithdrawableVTokensStatus } =
+		useReadContract({
+			abi: launchpoolABI,
+			address: selectedPool?.id as `0x${string}` | undefined,
+			functionName: 'getWithdrawableVTokens',
+			args: [BigInt((yourNativeStake as string) || 0)],
+			query: {
+				enabled: !!account.address && !!selectedPool?.id && !!yourNativeStake,
+			},
+		})
+
+	const { data: totalNativeStake, status: readTotalNativeStakeStatus } =
+		useReadContract({
+			abi: launchpoolABI,
+			address: selectedPool?.id as `0x${string}` | undefined,
+			functionName: 'totalNativeStake',
+			query: {
+				enabled: !!selectedPool?.id,
+			},
+		})
+
+	// Calculate user's pool share percentage
+	const yourPoolSharePercent =
+		!totalNativeStake ||
+		!yourNativeStake ||
+		BigInt((totalNativeStake as string) || '0') === BigInt(0)
+			? 0
+			: Number(
+					(BigInt(yourNativeStake.toString()) * BigInt(10000)) /
+						BigInt(totalNativeStake.toString())
+				) / 100
+
+	// Calculate total staked value across all pools
+	const totalStaked = filteredPools.launchpools.reduce(
+		(acc, pool) => acc + Number(pool.yourStake || 0),
 		0
 	)
-	const activePoolsCount = stakingPools.filter(
+
+	// Calculate total active and ended pools
+	const activePoolsCount = filteredPools.launchpools.filter(
 		(pool) => pool.status === 'active'
 	).length
-	const endedPoolsCount = stakingPools.filter(
+
+	const endedPoolsCount = filteredPools.launchpools.filter(
 		(pool) => pool.status === 'ended'
 	).length
+
+	// Calculate total filtered pools count for pagination
+	const filteredPoolsCount = Object.values(filteredPools).reduce(
+		(acc, pools) => acc + pools.length,
+		0
+	)
 
 	return (
 		<div className="min-h-screen bg-black text-white overflow-hidden relative">
@@ -166,7 +156,9 @@ export function MyStakingPage() {
 					</div>
 					<div className="flex items-center space-x-4">
 						<button className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-medium hover:opacity-90 transition shadow-lg shadow-purple-500/30">
-							Connect Wallet
+							{account.isConnected
+								? `${account.address?.slice(0, 6)}...${account.address?.slice(-4)}`
+								: 'Connect Wallet'}
 						</button>
 					</div>
 				</div>
@@ -201,22 +193,22 @@ export function MyStakingPage() {
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
-							<StakingStats
+							<StakingStatsCard
 								title="Total Staked Value"
 								value={`${totalStaked.toLocaleString()} Tokens`}
 								icon={<BarChart3 className="text-blue-400" />}
 							/>
-							<StakingStats
+							<StakingStatsCard
 								title="Active Pools"
 								value={activePoolsCount.toString()}
 								icon={<Zap className="text-pink-400" />}
 							/>
-							<StakingStats
+							<StakingStatsCard
 								title="Total Rewards"
 								value="Coming Soon"
 								icon={<Award className="text-purple-400" />}
 							/>
-							<StakingStats
+							<StakingStatsCard
 								title="Ended Pools"
 								value={endedPoolsCount.toString()}
 								icon={<Clock className="text-gray-400" />}
@@ -239,7 +231,10 @@ export function MyStakingPage() {
 						/>
 					</div>
 
-					<StakingFilters />
+					<StakingFilters
+						activeFilters={activeFilters}
+						onFilterChange={setActiveFilters}
+					/>
 				</div>
 
 				{/* Tabs */}
@@ -288,32 +283,61 @@ export function MyStakingPage() {
 					</button>
 				</div>
 
-				{/* Staking Pools Grid */}
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{filteredPools.map((pool) => (
-						<StakingCard
-							key={pool.id}
-							pool={pool}
-							onSelect={() => handlePoolSelect(pool.id)}
-						/>
-					))}
-				</div>
-
-				{/* Show More Button */}
-				{filteredPools.length > 6 && (
-					<div className="mt-8 flex justify-center">
-						<button className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-xl border border-white/20 text-white font-medium hover:from-blue-500/40 hover:via-purple-500/40 hover:to-pink-500/40 transition">
-							Show More
-						</button>
+				{/* Loading State */}
+				{isLoading ? (
+					<div className="flex justify-center items-center py-20">
+						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
 					</div>
+				) : (
+					<>
+						{/* Staking Pools Grid */}
+						{filteredPools.launchpools.length > 0 ? (
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+								{filteredPools.launchpools.map((pool) => (
+									<LaunchpoolStakingCard
+										key={pool.id}
+										pool={pool}
+										onSelect={() => selectPool(pool.id, 'launchpool')}
+									/>
+								))}
+							</div>
+						) : (
+							<div className="text-center py-16">
+								<p className="text-white/80 mb-4">
+									No pools found matching your criteria
+								</p>
+								<button
+									onClick={() => {
+										setActiveTab('all')
+										setActiveFilters({
+											activePoolTypes: ['launchpool'],
+											activeSortOrder: 'Highest APY',
+										})
+									}}
+									className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-xl border border-white/20 text-white hover:from-blue-500/40 hover:via-purple-500/40 hover:to-pink-500/40 transition"
+								>
+									Reset Filters
+								</button>
+							</div>
+						)}
+
+						{/* Show More Button */}
+						{filteredPoolsCount > 6 && (
+							<div className="mt-8 flex justify-center">
+								<button className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-xl border border-white/20 text-white font-medium hover:from-blue-500/40 hover:via-purple-500/40 hover:to-pink-500/40 transition">
+									Show More
+								</button>
+							</div>
+						)}
+					</>
 				)}
 
 				{/* Pool Details Modal */}
-				{showDetails && selectedPool && (
+				{showDetailsModal && selectedPool && (
 					<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
 						<div className="relative w-full max-w-4xl max-h-[90vh] overflow-auto rounded-2xl glossy-card p-6 shadow-xl shadow-purple-500/20">
 							<button
-								onClick={() => setShowDetails(false)}
+								onClick={closeDetailsModal}
 								className="absolute top-4 right-4 p-2 rounded-full bg-white/15 hover:bg-white/25 transition"
 							>
 								<svg
@@ -332,11 +356,15 @@ export function MyStakingPage() {
 									<path d="m6 6 12 12" />
 								</svg>
 							</button>
-
-							<StakingPoolDetails
-								pool={stakingPools.find((p) => p.id === selectedPool)!}
-								onClose={() => setShowDetails(false)}
-							/>
+							{selectedPool.type === 'launchpool' && (
+								<LaunchpoolStakingDetailsModal
+									pool={selectedPool}
+									yourStakePercent={yourPoolSharePercent}
+									withdrawableVTokens={withdrawableVTokens}
+									totalStakedVTokens={totalVTokensStake}
+									onClose={closeDetailsModal}
+								/>
+							)}
 						</div>
 					</div>
 				)}
