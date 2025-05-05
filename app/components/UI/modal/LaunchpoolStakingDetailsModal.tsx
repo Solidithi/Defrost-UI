@@ -17,8 +17,8 @@ import {
 } from '@/app/store/my-staking'
 import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { abi as erc20ABI } from '@/abi/ERC20.json'
-import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { Launchpool__factory } from '@/app/types/typechain'
+import { formatTokenAmount, formatUsdValue } from '@/app/utils/display'
 import { Interface } from 'ethers'
 
 const launchpoolIface = new Interface(Launchpool__factory.abi)
@@ -92,7 +92,7 @@ export function LaunchpoolStakingDetailsModal({
 		abi: JSON.parse(
 			launchpoolIface.getFunction('getClaimableProjectToken')!.format('json')
 		),
-		functionName: 'getClaimableProjectToken',
+		functionName: 'getPendingRewards',
 		args: [account.address!],
 		query: {
 			enabled: !!account.address && !!pool.id && hasStake,
@@ -127,17 +127,18 @@ export function LaunchpoolStakingDetailsModal({
 		}
 	}
 
-	// Format USD value for display
-	const formatUsdValue = (amount: string, rate = 1) => {
-		if (!amount || isNaN(parseFloat(amount))) return '$0.00'
-		return `$${(parseFloat(amount) * rate).toFixed(2)}`
-	}
-
-	// Format pending rewards
+	// Format pending rewards with proper decimals and abbreviation
 	const formattedPendingRewards = pendingRewards
-		? formatUnits(
-				BigInt(pendingRewards.toString()),
-				safeTokensInfo.projectTokenInfo.decimals
+		? formatTokenAmount(
+				formatUnits(
+					BigInt(pendingRewards.toString()),
+					safeTokensInfo.projectTokenInfo.decimals
+				),
+				{
+					symbol: '',
+					maxDecimals: 6,
+					maxChars: 10,
+				}
 			)
 		: '0.00'
 
@@ -277,11 +278,16 @@ export function LaunchpoolStakingDetailsModal({
 									<div className="flex justify-between items-center">
 										<span className="text-white/80">Available To Unstake</span>
 										<span className="text-xl font-bold">
-											{formatUnits(
-												BigInt(withdrawableVTokens || '0'),
-												safeTokensInfo.vTokenInfo.decimals
-											)}{' '}
-											{safeTokensInfo.vTokenInfo.symbol}
+											{formatTokenAmount(
+												formatUnits(
+													BigInt(withdrawableVTokens || '0'),
+													safeTokensInfo.vTokenInfo.decimals
+												),
+												{
+													symbol: safeTokensInfo.vTokenInfo.symbol,
+													maxDecimals: 4,
+												}
+											)}
 										</span>
 									</div>
 									<div className="w-full h-2 bg-white/15 rounded-full overflow-hidden">
@@ -295,9 +301,14 @@ export function LaunchpoolStakingDetailsModal({
 									<div className="flex justify-between text-sm">
 										<span className="text-white/60">
 											Pool Total:{' '}
-											{formatUnits(
-												BigInt(totalStakedVTokens || '0'),
-												safeTokensInfo.vTokenInfo.decimals
+											{formatTokenAmount(
+												formatUnits(
+													BigInt(totalStakedVTokens || '0'),
+													safeTokensInfo.vTokenInfo.decimals
+												),
+												{
+													maxDecimals: 2,
+												}
 											)}
 										</span>
 										<span className="text-white/60">
@@ -406,12 +417,14 @@ export function LaunchpoolStakingDetailsModal({
 										<span className="text-white/60">
 											Balance:{' '}
 											{vTokenBalance
-												? formatUnits(
-														vTokenBalance.value,
-														vTokenBalance.decimals
+												? formatTokenAmount(
+														formatUnits(
+															vTokenBalance.value,
+															vTokenBalance.decimals
+														),
+														{ symbol: safeTokensInfo.vTokenInfo.symbol }
 													)
-												: '0.00'}{' '}
-											{safeTokensInfo.vTokenInfo.symbol}
+												: `0.00 ${safeTokensInfo.vTokenInfo.symbol}`}
 										</span>
 										<span className="text-white/60">
 											≈{' '}
@@ -438,10 +451,13 @@ export function LaunchpoolStakingDetailsModal({
 										<span className="text-white/80">You Will Receive</span>
 										<span className="font-medium">
 											{stakeAmount
-												? calculateRewards(
-														stakeAmount,
-														pool.staker_apy.toNumber(),
-														365
+												? formatTokenAmount(
+														calculateRewards(
+															stakeAmount,
+															pool.staker_apy.toNumber(),
+															365
+														),
+														{ maxDecimals: 6 }
 													)
 												: '0.00'}{' '}
 											{safeTokensInfo.projectTokenInfo.symbol}/day
@@ -515,45 +531,65 @@ export function LaunchpoolStakingDetailsModal({
 									<div className="flex justify-between">
 										<span className="text-white/80">Daily</span>
 										<span>
-											{calculateRewards(
-												stakeAmount,
-												pool.staker_apy.toNumber(),
-												365
-											)}{' '}
-											{safeTokensInfo.projectTokenInfo.symbol}
+											{formatTokenAmount(
+												calculateRewards(
+													stakeAmount,
+													pool.staker_apy.toNumber(),
+													365
+												),
+												{
+													symbol: safeTokensInfo.projectTokenInfo.symbol,
+													maxDecimals: 6,
+												}
+											)}
 										</span>
 									</div>
 									<div className="flex justify-between">
 										<span className="text-white/80">Weekly</span>
 										<span>
-											{calculateRewards(
-												stakeAmount,
-												pool.staker_apy.toNumber(),
-												52
-											)}{' '}
-											{safeTokensInfo.projectTokenInfo.symbol}
+											{formatTokenAmount(
+												calculateRewards(
+													stakeAmount,
+													pool.staker_apy.toNumber(),
+													52
+												),
+												{
+													symbol: safeTokensInfo.projectTokenInfo.symbol,
+													maxDecimals: 6,
+												}
+											)}
 										</span>
 									</div>
 									<div className="flex justify-between">
 										<span className="text-white/80">Monthly</span>
 										<span>
-											{calculateRewards(
-												stakeAmount,
-												pool.staker_apy.toNumber(),
-												12
-											)}{' '}
-											{safeTokensInfo.projectTokenInfo.symbol}
+											{formatTokenAmount(
+												calculateRewards(
+													stakeAmount,
+													pool.staker_apy.toNumber(),
+													12
+												),
+												{
+													symbol: safeTokensInfo.projectTokenInfo.symbol,
+													maxDecimals: 6,
+												}
+											)}
 										</span>
 									</div>
 									<div className="flex justify-between">
 										<span className="text-white/80">Yearly</span>
 										<span>
-											{calculateRewards(
-												stakeAmount,
-												pool.staker_apy.toNumber(),
-												1
-											)}{' '}
-											{safeTokensInfo.projectTokenInfo.symbol}
+											{formatTokenAmount(
+												calculateRewards(
+													stakeAmount,
+													pool.staker_apy.toNumber(),
+													1
+												),
+												{
+													symbol: safeTokensInfo.projectTokenInfo.symbol,
+													maxDecimals: 6,
+												}
+											)}
 										</span>
 									</div>
 								</div>
@@ -595,11 +631,13 @@ export function LaunchpoolStakingDetailsModal({
 										<div className="flex justify-between mt-2 text-sm">
 											<span className="text-white/60">
 												Staked:{' '}
-												{formatUnits(
-													BigInt(withdrawableVTokens || '0'),
-													safeTokensInfo.vTokenInfo.decimals
-												)}{' '}
-												{safeTokensInfo.vTokenInfo.symbol}
+												{formatTokenAmount(
+													formatUnits(
+														BigInt(withdrawableVTokens || '0'),
+														safeTokensInfo.vTokenInfo.decimals
+													),
+													{ symbol: safeTokensInfo.vTokenInfo.symbol }
+												)}
 											</span>
 											<span className="text-white/60">
 												≈{' '}
@@ -623,8 +661,11 @@ export function LaunchpoolStakingDetailsModal({
 										<div className="flex justify-between">
 											<span className="text-white/80">You Will Receive</span>
 											<span className="font-medium">
-												{stakeAmount || '0.00'}{' '}
-												{safeTokensInfo.vTokenInfo.symbol}
+												{stakeAmount
+													? formatTokenAmount(stakeAmount, {
+															symbol: safeTokensInfo.vTokenInfo.symbol,
+														})
+													: `0.00 ${safeTokensInfo.vTokenInfo.symbol}`}
 											</span>
 										</div>
 									</div>
