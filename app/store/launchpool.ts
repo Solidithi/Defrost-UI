@@ -502,19 +502,19 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 			phases: [
 				{
 					id: 1,
-					emissionRate: 20,
+					emissionRate: 200000,
 					from: "2025-01-01T00:00:00Z",
 					to: "2025-06-30T23:59:59Z",
 				},
 				{
 					id: 2,
-					emissionRate: 30,
+					emissionRate: 300000,
 					from: "2025-06-30T23:59:59Z",
 					to: "2025-09-30T23:59:59Z",
 				},
 				{
 					id: 3,
-					emissionRate: 40,
+					emissionRate: 400000,
 					from: "2025-09-30T23:59:59Z",
 					to: "2025-11-30T23:59:59Z",
 				},
@@ -530,13 +530,13 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 			phases: [
 				{
 					id: 1,
-					emissionRate: 15,
+					emissionRate: 100000,
 					from: "2025-02-01T00:00:00Z",
 					to: "2025-06-30T23:59:59Z",
 				},
 				{
 					id: 2,
-					emissionRate: 25,
+					emissionRate: 200000,
 					from: "2025-06-30T23:59:59Z",
 					to: "2025-10-31T23:59:59Z",
 				},
