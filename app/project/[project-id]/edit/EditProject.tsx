@@ -144,9 +144,22 @@ const EditProject = () => {
 		if (e.target.files && e.target.files.length > 0) {
 			const files = Array.from(e.target.files)
 
+			// Check if adding these images would exceed the 3-image limit
+			const remainingSlots = 3 - editProjectStore.images.length
+
+			if (remainingSlots <= 0) {
+				toast.warning(
+					'Maximum of 3 images allowed. Please delete some images before adding more.'
+				)
+				return
+			}
+
+			// Limit the number of files to process based on remaining slots
+			const filesToProcess = files.slice(0, remainingSlots)
+
 			// Process each file to get base64 strings with resizing
 			const base64Images = await Promise.all(
-				files.map((file) => resizeAndConvertToBase64(file, false))
+				filesToProcess.map((file) => resizeAndConvertToBase64(file, false))
 			)
 
 			// Add the new images to state
@@ -154,6 +167,13 @@ const EditProject = () => {
 
 			// Open the folder when files are selected
 			setImageUploadFolderOpen(true)
+
+			// Show notification if some files were skipped due to the limit
+			if (files.length > remainingSlots) {
+				toast.info(
+					`Only added ${remainingSlots} image(s). Maximum of 3 images allowed.`
+				)
+			}
 		}
 	}
 
@@ -405,7 +425,9 @@ const EditProject = () => {
 										</div>
 										<p className="text-gray-300 font-comfortaa text-center">
 											{editProjectStore.images.length > 0
-												? `${editProjectStore.images.length} image(s) selected. Click to add more.`
+												? editProjectStore.images.length >= 3
+													? 'Maximum images reached. Click manage uploaded images to change.'
+													: `${editProjectStore.images.length} image(s) selected. Click to add more.`
 												: 'Drag & drop your project images here\nor click to browse'}
 										</p>
 										<span className="text-cyan-400 font-bold mt-2 text-xs">
