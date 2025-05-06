@@ -367,8 +367,9 @@ export function MyStakingPage() {
 								<LaunchpoolStakingDetailsModal
 									pool={selectedPool}
 									yourStakePercent={yourPoolSharePercent}
-									withdrawableVTokens={withdrawableVTokens as string}
-									totalStakedVTokens={totalVTokensStake as string}
+									yourNativeStake={yourNativeStake as bigint}
+									withdrawableVTokens={withdrawableVTokens as bigint}
+									totalStakedVTokens={totalVTokensStake as bigint}
 									onClose={closeDetailsModal}
 								/>
 							)}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import {
 	Tabs,
@@ -10,7 +10,7 @@ import {
 } from '@/app/components/UI/shadcn/Tabs'
 import { Info, Zap, Award, ArrowRight } from 'lucide-react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
-import { formatUnits } from 'ethers'
+import { parseUnits, formatUnits } from 'ethers'
 import {
 	useSelectedPoolTokensInfo,
 	useStakingStore,
@@ -19,26 +19,40 @@ import { useAccount, useBalance, useReadContract } from 'wagmi'
 import { abi as erc20ABI } from '@/abi/ERC20.json'
 import { Launchpool__factory } from '@/app/types/typechain'
 import { formatTokenAmount, formatUsdValue } from '@/app/utils/display'
+import { cn } from '@/app/lib/utils'
 import { Interface } from 'ethers'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@/app/components/UI/shadcn/Tooltip'
+import { useApproveAndeDepositToken } from '@/app/hooks/useApproveAndSendToken'
+import Spinner from '../effect/Spinner'
 
 const launchpoolIface = new Interface(Launchpool__factory.abi)
+
+function getFunctionAbiFromIface(iface: Interface, functionName: string) {
+	return [Launchpool__factory.abi.find((f: any) => f.name === functionName)]
+}
 
 interface LaunchppolStakingDetailsModalProps {
 	pool: EnrichedLaunchpool
 	yourStakePercent?: number
-	withdrawableVTokens?: string
-	totalStakedVTokens?: string
+	withdrawableVTokens?: bigint
+	yourNativeStake?: bigint
+	totalStakedVTokens?: bigint
 	onClose: () => void
 }
 
 export function LaunchpoolStakingDetailsModal({
 	pool,
 	yourStakePercent = 0,
-	withdrawableVTokens = '0',
-	totalStakedVTokens = '0',
+	yourNativeStake = BigInt(0),
+	withdrawableVTokens = BigInt(0),
+	totalStakedVTokens = BigInt(0),
 	onClose,
 }: LaunchppolStakingDetailsModalProps) {
-	const [stakeAmount, setStakeAmount] = useState('')
 	const [activeTab, setActiveTab] = useState('overview')
 	const account = useAccount()
 
@@ -124,6 +138,44 @@ export function LaunchpoolStakingDetailsModal({
 					safeTokensInfo.vTokenInfo.decimals
 				)
 			)
+		}
+	}
+
+	/* ---------------------- Handle stake amount change ---------------------- */
+	const [stakeAmount, setStakeAmount] = useState('')
+	const handleStakeAmountChange = (value: string) => {
+		// Allow only numbers and decimal point
+		const regex = /^[0-9]*\.?[0-9]*$/
+		if (regex.test(value) || value === '') {
+			setStakeAmount(value)
+		}
+	}
+
+	/* ---------------------- Handle stake ---------------------- */
+	const parsedStakeAmount = useMemo(() => {
+		if (!stakeAmount) return BigInt(0)
+
+		return parseUnits(stakeAmount, safeTokensInfo.vTokenInfo.decimals)
+	}, [stakeAmount])
+
+	const { deposit, approval } = useApproveAndeDepositToken({
+		depositFunctionABI: getFunctionAbiFromIface(launchpoolIface, 'stake'),
+		depositFunctionName: 'stake',
+		depositFunctionArgs: [parsedStakeAmount],
+		amount: parsedStakeAmount,
+		recipientAddress: pool.id as `0x${string}`,
+		tokenAddress: pool.v_asset_address as `0x${string}`,
+	})
+
+	const handleStake = async () => {
+		if (!stakeAmount || parseFloat(stakeAmount) <= 0) return
+
+		try {
+			// Start the deposit process
+			await deposit.deposit()
+			setStakeAmount('')
+		} catch (error) {
+			console.error('Error staking:', error)
 		}
 	}
 
@@ -242,19 +294,24 @@ export function LaunchpoolStakingDetailsModal({
 									<div className="flex gap-3">
 										<Info size={18} className="text-blue-400 shrink-0 mt-0.5" />
 										<p className="text-white/80">
-											Your staked amount is shown in{' '}
+											Your stake is tracked in{' '}
 											<span className="font-medium text-white">
-												native tokens
+												{safeTokensInfo.nativeTokenInfo.symbol}
 											</span>{' '}
-											(not vTokens).
+											(native tokens), ensuring your share and rewards remain
+											consistent regardless of vToken changes.
 										</p>
 									</div>
 									<div className="flex gap-3">
 										<Info size={18} className="text-pink-400 shrink-0 mt-0.5" />
 										<p className="text-white/80">
-											vTokens are yield-bearing, the amount of vTokens needed to
-											represent the same native token value decreases over time
-											as the exchange rate changes.
+											<span className="font-medium text-white">
+												{safeTokensInfo.vTokenInfo.symbol}
+											</span>{' '}
+											are yield-bearing tokens - as they gain value over time,
+											the withdrawable {safeTokensInfo.vTokenInfo.symbol} amount
+											will decrease while representing the same{' '}
+											{safeTokensInfo.nativeTokenInfo.symbol} value.
 										</p>
 									</div>
 									<div className="flex gap-3">
@@ -263,8 +320,10 @@ export function LaunchpoolStakingDetailsModal({
 											className="text-purple-400 shrink-0 mt-0.5"
 										/>
 										<p className="text-white/80">
-											This is normal and does not mean your stake is lost or
-											reduced.
+											Your rewards are calculated based on your{' '}
+											{safeTokensInfo.nativeTokenInfo.symbol} value, not the
+											changing {safeTokensInfo.vTokenInfo.symbol} amount,
+											ensuring fair and consistent returns.
 										</p>
 									</div>
 								</div>
@@ -275,21 +334,74 @@ export function LaunchpoolStakingDetailsModal({
 							<div className="rounded-xl glossy-card p-6">
 								<h3 className="text-lg font-medium mb-4">Your Position</h3>
 								<div className="space-y-4">
-									<div className="flex justify-between items-center">
-										<span className="text-white/80">Available To Unstake</span>
-										<span className="text-xl font-bold">
-											{formatTokenAmount(
-												formatUnits(
-													BigInt(withdrawableVTokens || '0'),
-													safeTokensInfo.vTokenInfo.decimals
-												),
-												{
-													symbol: safeTokensInfo.vTokenInfo.symbol,
-													maxDecimals: 4,
-												}
-											)}
-										</span>
+									<div className="grid grid-cols-2 gap-4 mb-2">
+										<div>
+											<div className="text-white/80 text-sm mb-1">
+												Original Native Stake
+											</div>
+											<div className="font-bold">
+												{formatTokenAmount(
+													formatUnits(
+														yourNativeStake,
+														safeTokensInfo.nativeTokenInfo.decimals
+													),
+													{
+														symbol: safeTokensInfo.nativeTokenInfo.symbol,
+														maxDecimals: 4,
+													}
+												)}
+											</div>
+										</div>
+										<div>
+											<div className="text-white/80 text-sm mb-1 flex gap-1 justify-end">
+												<div className="group relative inline-block">
+													<TooltipProvider>
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<div className="inline-flex cursor-help">
+																	<Info size={14} className="text-white/60" />
+																</div>
+															</TooltipTrigger>
+															<TooltipContent
+																side="top"
+																className="bg-black/90 border border-white/20 text-white max-w-[250px]"
+															>
+																This amount decreases over time as each vToken
+																becomes worthy of more native tokens
+															</TooltipContent>
+														</Tooltip>
+													</TooltipProvider>
+												</div>
+												Withdrawable vTokens
+											</div>
+											<div className="font-bold text-right">
+												{formatTokenAmount(
+													formatUnits(
+														BigInt(withdrawableVTokens || '0'),
+														safeTokensInfo.vTokenInfo.decimals
+													),
+													{
+														symbol: safeTokensInfo.vTokenInfo.symbol,
+														maxDecimals: 4,
+													}
+												)}
+											</div>
+										</div>
 									</div>
+
+									<div className="px-4 py-3 bg-white/5 rounded-lg border border-white/10 mb-2">
+										<div className="flex justify-between text-sm">
+											<span>Exchange Rate:</span>
+											<span>
+												1 {safeTokensInfo.vTokenInfo.symbol} ={' '}
+												{formatTokenAmount(withdrawableVTokens, {
+													symbol: safeTokensInfo.nativeTokenInfo.symbol,
+													maxDecimals: 4,
+												})}
+											</span>
+										</div>
+									</div>
+
 									<div className="w-full h-2 bg-white/15 rounded-full overflow-hidden">
 										<div
 											className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
@@ -315,51 +427,6 @@ export function LaunchpoolStakingDetailsModal({
 											Your Share: {yourStakePercent.toFixed(2)}%
 										</span>
 									</div>
-
-									<div className="pt-4 border-t border-white/20 mt-4">
-										<div className="flex justify-between mb-2">
-											<span className="text-white/80">Estimated Rewards</span>
-											<span className="font-medium">
-												{formattedPendingRewards}{' '}
-												{safeTokensInfo.projectTokenInfo.symbol}
-											</span>
-										</div>
-										<div className="flex justify-between">
-											<span className="text-white/80">Claimable Rewards</span>
-											<span className="font-medium">
-												{formattedPendingRewards}{' '}
-												{safeTokensInfo.projectTokenInfo.symbol}
-											</span>
-										</div>
-									</div>
-								</div>
-
-								<div className="mt-6 flex gap-3">
-									<button
-										className={`flex-1 px-4 py-3 rounded-xl ${
-											pendingRewards && BigInt(pendingRewards.toString()) > 0
-												? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
-												: 'bg-white/15 border border-white/20 text-white/60'
-										} font-medium hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md shadow-purple-500/30`}
-										disabled={
-											!pendingRewards ||
-											BigInt(pendingRewards.toString()) === BigInt(0)
-										}
-									>
-										<Award size={18} />
-										Claim Rewards
-									</button>
-									<button
-										className={`flex-1 px-4 py-3 rounded-xl ${
-											hasStake
-												? 'backdrop-blur-xl bg-white/15 border border-white/20 text-white hover:bg-white/20'
-												: 'bg-white/15 border border-white/20 text-white/60'
-										} font-medium transition flex items-center justify-center gap-2`}
-										disabled={!hasStake}
-									>
-										<ArrowRight size={18} />
-										Unstake
-									</button>
 								</div>
 							</div>
 
@@ -397,7 +464,7 @@ export function LaunchpoolStakingDetailsModal({
 										<input
 											type="text"
 											value={stakeAmount}
-											onChange={(e) => setStakeAmount(e.target.value)}
+											onChange={(e) => handleStakeAmountChange(e.target.value)}
 											placeholder="0.00"
 											className="w-full px-4 py-3 pr-20 rounded-xl glossy-input text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
 										/>
@@ -466,17 +533,21 @@ export function LaunchpoolStakingDetailsModal({
 								</div>
 
 								<button
-									className={`w-full mt-4 px-4 py-3 rounded-xl ${
+									className={cn(
+										'w-full mt-4 px-4 py-3 rounded-xl font-medium transition shadow-md shadow-purple-500/30',
 										stakeAmount &&
-										parseFloat(stakeAmount) > 0 &&
-										vTokenBalance &&
-										parseFloat(stakeAmount) <=
-											parseFloat(
-												formatUnits(vTokenBalance.value, vTokenBalance.decimals)
-											)
-											? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
+											parseFloat(stakeAmount) > 0 &&
+											vTokenBalance &&
+											parseFloat(stakeAmount) <=
+												parseFloat(
+													formatUnits(
+														vTokenBalance.value,
+														vTokenBalance.decimals
+													)
+												)
+											? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
 											: 'bg-white/15 border border-white/20 text-white/60'
-									} font-medium hover:opacity-90 transition shadow-md shadow-purple-500/30`}
+									)}
 									disabled={
 										!stakeAmount ||
 										parseFloat(stakeAmount) <= 0 ||
@@ -486,8 +557,29 @@ export function LaunchpoolStakingDetailsModal({
 												formatUnits(vTokenBalance.value, vTokenBalance.decimals)
 											)
 									}
+									onClick={handleStake}
 								>
-									Stake Now
+									<span className="flex items-center justify-center">
+										{approval.approveStatus === 'pending' ? (
+											<>
+												Waiting for approval...&emsp;
+												<Spinner heightWidth={4} />
+											</>
+										) : approval.isConfirmingApproval ? (
+											<>
+												Confirming Approval...&emsp;
+												<Spinner />
+											</>
+										) : deposit.depositStatus === 'pending' &&
+										  deposit.isDepositStarted ? (
+											<>
+												Staking...&emsp;
+												<Spinner heightWidth={4} />
+											</>
+										) : (
+											<>Stake Now</>
+										)}
+									</span>
 								</button>
 							</div>
 						</div>
@@ -630,7 +722,7 @@ export function LaunchpoolStakingDetailsModal({
 										</div>
 										<div className="flex justify-between mt-2 text-sm">
 											<span className="text-white/60">
-												Staked:{' '}
+												Max:{' '}
 												{formatTokenAmount(
 													formatUnits(
 														BigInt(withdrawableVTokens || '0'),
