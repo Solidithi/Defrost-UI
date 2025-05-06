@@ -9,6 +9,7 @@ import { comfortaa, orbitron, permanentMarker } from '@/app/lib/font'
 import { cn } from '@/app/lib/utils'
 import ConnectButton from '../UI/button/ConnectButton'
 import Button from '@/app/components/UI/button/Button'
+import { useNavBarControl } from '@/app/provider/navbar-control'
 
 const Navbar = ({
 	navItems,
@@ -25,7 +26,7 @@ const Navbar = ({
 	const toggleNavbar = () => setToggle(!toggle)
 
 	// const { scrollY } = useScroll()
-	const [visible, setVisible] = useState(true)
+	const { isNavbarShown, setIsNavbarShown } = useNavBarControl()
 
 	useEffect(() => {
 		let lastScrollY = window.scrollY
@@ -34,11 +35,11 @@ const Navbar = ({
 			const currentScrollY = window.scrollY
 
 			if (currentScrollY < 50) {
-				setVisible(true)
+				setIsNavbarShown(true)
 			} else if (currentScrollY > lastScrollY) {
-				setVisible(false)
+				setIsNavbarShown(false)
 			} else {
-				setVisible(true)
+				setIsNavbarShown(true)
 			}
 
 			lastScrollY = currentScrollY
@@ -52,7 +53,10 @@ const Navbar = ({
 		<AnimatePresence>
 			<motion.div
 				initial={{ opacity: 1, y: 0 }}
-				animate={{ y: visible ? 0 : -100, opacity: visible ? 1 : 0 }}
+				animate={{
+					y: isNavbarShown ? 0 : -100,
+					opacity: isNavbarShown ? 1 : 0,
+				}}
 				transition={{ duration: 0.2 }}
 				style={{ fontFamily: orbitron.style.fontFamily }}
 				className={cn(

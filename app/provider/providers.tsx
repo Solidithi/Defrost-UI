@@ -11,6 +11,7 @@ import {
 } from '@reown/appkit/networks'
 import React, { type ReactNode } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
+import { NavBarControlProvider } from './navbar-control'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -56,7 +57,9 @@ export function Providers({
 			config={wagmiAdapter.wagmiConfig as Config}
 			initialState={initialState}
 		>
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+			<QueryClientProvider client={queryClient}>
+				<NavBarControlProvider>{children}</NavBarControlProvider>
+			</QueryClientProvider>
 		</WagmiProvider>
 	)
 }
