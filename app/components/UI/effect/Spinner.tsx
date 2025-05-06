@@ -7,7 +7,7 @@ export default function BlueSpinner({
 }) {
 	return (
 		<div
-			className={`animate-spin rounded-full h-${heightWidth} w-${heightWidth} border-t-2 border-b-2 ${className}`}
+			className={`select-none animate-spin rounded-full h-${heightWidth} w-${heightWidth} border-t-2 border-b-2 ${className}`}
 		></div>
 	)
 }
