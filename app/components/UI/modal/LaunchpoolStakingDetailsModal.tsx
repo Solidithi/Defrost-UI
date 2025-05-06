@@ -139,6 +139,50 @@ export function LaunchpoolStakingDetailsModal({
 		return periodicReturn.toFixed(6)
 	}
 
+	/* ---------------------- Handle claim rewards ---------------------- */
+	const {
+		writeContract: claimRewards,
+		status: claimRewardsStatus,
+		data: claimRewardsTxHash,
+	} = useWriteContract()
+
+	const { status: claimRewardsConfirmStatus } = useWaitForTransactionReceipt({
+		hash: claimRewardsTxHash,
+	})
+
+	const handleClaimRewards = () => {
+		claimRewards({
+			abi: getFunctionAbiFromIface(Launchpool__factory, 'claimProjectTokens'),
+			address: pool.id as `0x${string}`,
+			functionName: 'claimProjectTokens',
+			args: [],
+		})
+	}
+
+	useEffect(() => {
+		if (claimRewardsConfirmStatus === 'success') {
+			toast.success('Claiming rewards successful!', {
+				position: 'top-right',
+				autoClose: 5000,
+			})
+		} else if (claimRewardsConfirmStatus === 'error') {
+			toast.error('Claiming rewards failed!', {
+				position: 'top-right',
+				autoClose: 5000,
+			})
+		}
+	}, [claimRewardsConfirmStatus])
+
+	const isClaimButtonDisabled = useMemo(() => {
+		return (
+			!pendingRewards ||
+			BigInt(pendingRewards.toString()) === BigInt(0) ||
+			claimRewardsStatus === 'pending' ||
+			(claimRewardsStatus === 'success' &&
+				claimRewardsConfirmStatus === 'pending')
+		)
+	}, [pendingRewards, claimRewardsStatus, claimRewardsConfirmStatus])
+
 	/* ---------------------- Handle stake amount change ---------------------- */
 	const [stakeAmount, setStakeAmount] = useState('')
 
@@ -969,18 +1013,35 @@ export function LaunchpoolStakingDetailsModal({
 									</div>
 
 									<button
-										className={`w-full px-4 py-3 rounded-xl ${
-											pendingRewards && BigInt(pendingRewards.toString()) > 0
-												? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
-												: 'bg-white/15 border border-white/20 text-white/60'
-										} font-medium hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md shadow-purple-500/30`}
-										disabled={
-											!pendingRewards ||
-											BigInt(pendingRewards.toString()) === BigInt(0)
-										}
+										className={cn(
+											'w-full px-4 py-3 rounded-xl',
+											isClaimButtonDisabled
+												? 'bg-white/15 border border-white/20 text-white/60'
+												: 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white',
+											'font-medium hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md shadow-purple-500/30'
+										)}
+										disabled={isClaimButtonDisabled}
+										onClick={handleClaimRewards}
 									>
-										<Award size={18} />
-										Claim Rewards
+										<span className="flex items-center justify-center">
+											{claimRewardsStatus === 'pending' ? (
+												<>
+													Claiming rewards...&emsp;
+													<Spinner heightWidth={4} />
+												</>
+											) : claimRewardsStatus == 'success' &&
+											  claimRewardsConfirmStatus === 'pending' ? (
+												<>
+													Confirming transaction...&emsp;
+													<Spinner heightWidth={4} />
+												</>
+											) : (
+												<>
+													<Award size={18} />
+													Claim Rewards
+												</>
+											)}
+										</span>
 									</button>
 								</div>
 							) : (
