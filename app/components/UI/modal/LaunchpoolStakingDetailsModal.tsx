@@ -11,16 +11,18 @@ import {
 import { Info, Zap, Award, ArrowRight } from 'lucide-react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { parseUnits, formatUnits } from 'ethers'
+import { useSelectedPoolTokensInfo } from '@/app/store/my-staking'
 import {
-	useSelectedPoolTokensInfo,
-	useStakingStore,
-} from '@/app/store/my-staking'
-import { useAccount, useBalance, useReadContract } from 'wagmi'
+	useAccount,
+	useBalance,
+	useReadContract,
+	useWaitForTransactionReceipt,
+	useWriteContract,
+} from 'wagmi'
 import { abi as erc20ABI } from '@/abi/ERC20.json'
 import { Launchpool__factory } from '@/app/types/typechain'
 import { formatTokenAmount, formatUsdValue } from '@/app/utils/display'
 import { cn } from '@/app/lib/utils'
-import { Interface } from 'ethers'
 import {
 	Tooltip,
 	TooltipContent,
@@ -29,11 +31,10 @@ import {
 } from '@/app/components/UI/shadcn/Tooltip'
 import { useApproveAndeDepositToken } from '@/app/hooks/useApproveAndSendToken'
 import Spinner from '../effect/Spinner'
+import { toast, ToastContainer } from 'react-toastify'
 
-const launchpoolIface = new Interface(Launchpool__factory.abi)
-
-function getFunctionAbiFromIface(iface: Interface, functionName: string) {
-	return [Launchpool__factory.abi.find((f: any) => f.name === functionName)]
+function getFunctionAbiFromIface(factory: any, functionName: string): any {
+	return [factory.abi.find((f: any) => f.name === functionName)]
 }
 
 interface LaunchppolStakingDetailsModalProps {
@@ -100,18 +101,34 @@ export function LaunchpoolStakingDetailsModal({
 		},
 	})
 
-	// Get pending rewards
+	/* ---------------------- Handle pending rewards ---------------------- */
 	const { data: pendingRewards } = useReadContract({
 		address: pool.id as `0x${string}`,
-		abi: JSON.parse(
-			launchpoolIface.getFunction('getClaimableProjectToken')!.format('json')
+		abi: getFunctionAbiFromIface(
+			Launchpool__factory,
+			'getClaimableProjectToken'
 		),
-		functionName: 'getPendingRewards',
+		functionName: 'getClaimableProjectToken',
 		args: [account.address!],
 		query: {
 			enabled: !!account.address && !!pool.id && hasStake,
 		},
 	})
+
+	// Format pending rewards with proper decimals and abbreviation
+	const formattedPendingRewards = pendingRewards
+		? formatTokenAmount(
+				formatUnits(
+					pendingRewards as bigint,
+					safeTokensInfo.projectTokenInfo.decimals
+				),
+				{
+					symbol: safeTokensInfo.projectTokenInfo.symbol,
+					maxDecimals: 6,
+					maxChars: 10,
+				}
+			)
+		: '0.00'
 
 	// Calculate estimated rewards based on APY and stake amount
 	const calculateRewards = (amount: string, apy: number, period: number) => {
@@ -122,27 +139,9 @@ export function LaunchpoolStakingDetailsModal({
 		return periodicReturn.toFixed(6)
 	}
 
-	// Set max amount handler
-	const handleSetMaxAmount = () => {
-		if (vTokenBalance) {
-			setStakeAmount(formatUnits(vTokenBalance.value, vTokenBalance.decimals))
-		}
-	}
-
-	// Set max unstake amount handler
-	const handleSetMaxUnstake = () => {
-		if (withdrawableVTokens) {
-			setStakeAmount(
-				formatUnits(
-					BigInt(withdrawableVTokens),
-					safeTokensInfo.vTokenInfo.decimals
-				)
-			)
-		}
-	}
-
 	/* ---------------------- Handle stake amount change ---------------------- */
 	const [stakeAmount, setStakeAmount] = useState('')
+
 	const handleStakeAmountChange = (value: string) => {
 		// Allow only numbers and decimal point
 		const regex = /^[0-9]*\.?[0-9]*$/
@@ -151,15 +150,22 @@ export function LaunchpoolStakingDetailsModal({
 		}
 	}
 
-	/* ---------------------- Handle stake ---------------------- */
+	// Set max amount handler
+	const handleSetMaxStake = () => {
+		if (vTokenBalance) {
+			setStakeAmount(formatUnits(vTokenBalance.value, vTokenBalance.decimals))
+		}
+	}
+
 	const parsedStakeAmount = useMemo(() => {
 		if (!stakeAmount) return BigInt(0)
 
 		return parseUnits(stakeAmount, safeTokensInfo.vTokenInfo.decimals)
 	}, [stakeAmount])
 
+	/* ---------------------- Handle stake ---------------------- */
 	const { deposit, approval } = useApproveAndeDepositToken({
-		depositFunctionABI: getFunctionAbiFromIface(launchpoolIface, 'stake'),
+		depositFunctionABI: getFunctionAbiFromIface(Launchpool__factory, 'stake'),
 		depositFunctionName: 'stake',
 		depositFunctionArgs: [parsedStakeAmount],
 		amount: parsedStakeAmount,
@@ -179,21 +185,95 @@ export function LaunchpoolStakingDetailsModal({
 		}
 	}
 
-	// Format pending rewards with proper decimals and abbreviation
-	const formattedPendingRewards = pendingRewards
-		? formatTokenAmount(
-				formatUnits(
-					BigInt(pendingRewards.toString()),
-					safeTokensInfo.projectTokenInfo.decimals
-				),
-				{
-					symbol: '',
-					maxDecimals: 6,
-					maxChars: 10,
-				}
-			)
-		: '0.00'
+	useEffect(() => {
+		if (deposit.depositConfirmStatus === 'success') {
+			toast.success('Staking successful!', {
+				position: 'top-right',
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			})
+		} else if (deposit.depositConfirmStatus === 'error') {
+			toast.error('Staking failed!', {
+				position: 'top-right',
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			})
+		}
+	}, [deposit.depositConfirmStatus])
 
+	/* ---------------------- Handle unstake amount change ---------------------- */
+	const [unstakeAmount, setUnstakeAmount] = useState('')
+
+	// Set max unstake amount handler
+	const handleSetMaxUnstake = () => {
+		if (withdrawableVTokens) {
+			setUnstakeAmount(
+				formatUnits(
+					BigInt(withdrawableVTokens),
+					safeTokensInfo.vTokenInfo.decimals
+				)
+			)
+		}
+	}
+
+	const parsedUnstakeAmount = useMemo(() => {
+		if (!unstakeAmount) return BigInt(0)
+
+		return parseUnits(unstakeAmount, safeTokensInfo.vTokenInfo.decimals)
+	}, [unstakeAmount])
+
+	/* ---------------------- Handle unstake ---------------------- */
+	const {
+		writeContractAsync: unstake,
+		data: unstakeTxHash,
+		status: unstakeStatus,
+		error: unstakeError,
+	} = useWriteContract({})
+
+	const { status: unstakeConfirmStatus } = useWaitForTransactionReceipt({
+		hash: unstakeTxHash,
+	})
+
+	const handleUnstake = async () => {
+		if (!unstakeAmount || parseFloat(unstakeAmount) <= 0) return
+
+		unstake({
+			abi: getFunctionAbiFromIface(Launchpool__factory, 'unstake'),
+			address: pool.id as `0x${string}`,
+			functionName: 'unstake',
+			args: [parsedUnstakeAmount],
+		})
+	}
+
+	useEffect(() => {
+		if (unstakeConfirmStatus === 'success') {
+			toast.success('Unstaking successful!', {
+				position: 'top-right',
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			})
+		} else if (unstakeConfirmStatus === 'error') {
+			toast.error('Unstaking failed!', {
+				position: 'top-right',
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			})
+		}
+	}, [unstakeConfirmStatus])
+
+	/* ---------------------- User interface ---------------------- */
 	return (
 		<div className="text-white">
 			<div className="flex items-center gap-4 mb-6">
@@ -470,7 +550,7 @@ export function LaunchpoolStakingDetailsModal({
 										/>
 										<div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
 											<button
-												onClick={handleSetMaxAmount}
+												onClick={handleSetMaxStake}
 												className="text-xs text-pink-400 hover:text-pink-300"
 											>
 												MAX
@@ -567,13 +647,19 @@ export function LaunchpoolStakingDetailsModal({
 											</>
 										) : approval.isConfirmingApproval ? (
 											<>
-												Confirming Approval...&emsp;
-												<Spinner />
+												Confirming approval...&emsp;
+												<Spinner heightWidth={4} />
 											</>
 										) : deposit.depositStatus === 'pending' &&
 										  deposit.isDepositStarted ? (
 											<>
 												Staking...&emsp;
+												<Spinner heightWidth={4} />
+											</>
+										) : deposit.depositStatus === 'success' &&
+										  deposit.depositConfirmStatus === 'pending' ? (
+											<>
+												Confirming transaction...&emsp;
 												<Spinner heightWidth={4} />
 											</>
 										) : (
@@ -690,6 +776,7 @@ export function LaunchpoolStakingDetailsModal({
 					</div>
 				</TabsContent>
 
+				{/* Unstake tab */}
 				<TabsContent value="unstake" className="mt-6">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="rounded-xl glossy-card p-6">
@@ -703,8 +790,8 @@ export function LaunchpoolStakingDetailsModal({
 										<div className="relative">
 											<input
 												type="text"
-												value={stakeAmount}
-												onChange={(e) => setStakeAmount(e.target.value)}
+												value={unstakeAmount}
+												onChange={(e) => setUnstakeAmount(e.target.value)}
 												placeholder="0.00"
 												className="w-full px-4 py-3 pr-20 rounded-xl glossy-input text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
 											/>
@@ -753,10 +840,8 @@ export function LaunchpoolStakingDetailsModal({
 										<div className="flex justify-between">
 											<span className="text-white/80">You Will Receive</span>
 											<span className="font-medium">
-												{stakeAmount
-													? formatTokenAmount(stakeAmount, {
-															symbol: safeTokensInfo.vTokenInfo.symbol,
-														})
+												{unstakeAmount
+													? formattedPendingRewards
 													: `0.00 ${safeTokensInfo.vTokenInfo.symbol}`}
 											</span>
 										</div>
@@ -764,9 +849,9 @@ export function LaunchpoolStakingDetailsModal({
 
 									<button
 										className={`w-full mt-4 px-4 py-3 rounded-xl ${
-											stakeAmount &&
-											parseFloat(stakeAmount) > 0 &&
-											parseFloat(stakeAmount) <=
+											unstakeAmount &&
+											parseFloat(unstakeAmount) > 0 &&
+											parseFloat(unstakeAmount) <=
 												parseFloat(
 													formatUnits(
 														BigInt(withdrawableVTokens || '0'),
@@ -777,18 +862,34 @@ export function LaunchpoolStakingDetailsModal({
 												: 'bg-white/15 border border-white/20 text-white/60'
 										} font-medium transition`}
 										disabled={
-											!stakeAmount ||
-											parseFloat(stakeAmount) <= 0 ||
-											parseFloat(stakeAmount) >
+											!unstakeAmount ||
+											parseFloat(unstakeAmount) <= 0 ||
+											parseFloat(unstakeAmount) >
 												parseFloat(
 													formatUnits(
-														BigInt(withdrawableVTokens || '0'),
+														BigInt(withdrawableVTokens),
 														safeTokensInfo.vTokenInfo.decimals
 													)
 												)
 										}
+										onClick={handleUnstake}
 									>
-										Unstake Now
+										<span className="flex items-center justify-center">
+											{unstakeStatus === 'pending' ? (
+												<>
+													Unstaking...&emsp;
+													<Spinner heightWidth={4} />
+												</>
+											) : unstakeStatus == 'success' &&
+											  unstakeConfirmStatus === 'pending' ? (
+												<>
+													Confirming transaction...&emsp;
+													<Spinner heightWidth={4} />
+												</>
+											) : (
+												<>Unstake Now</>
+											)}
+										</span>
 									</button>
 								</div>
 							) : (
@@ -906,6 +1007,9 @@ export function LaunchpoolStakingDetailsModal({
 					</div>
 				</TabsContent>
 			</Tabs>
+
+			{/* Toast */}
+			<ToastContainer />
 		</div>
 	)
 }

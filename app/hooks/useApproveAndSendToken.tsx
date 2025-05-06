@@ -64,16 +64,18 @@ export function useApproveAndeDepositToken({
 
 	// Effect to check if approval is needed
 	useEffect(() => {
+		if (allowance == undefined) return
+
 		console.log('Allowance:', allowance)
 		console.log('Requested amount:', amount)
 		if (readAllowanceStatus === 'success' && allowance) {
-			if (allowance && (allowance as bigint) < amount) {
+			if ((allowance as bigint) < amount) {
 				setIsApprovalNeeded(true)
 			} else {
 				setIsApprovalNeeded(false)
 			}
 		}
-	}, [readAllowanceStatus, allowance, amount])
+	}, [readAllowanceStatus, allowance, amount, userAddress])
 
 	// Define write contract actions
 	const {
@@ -91,6 +93,9 @@ export function useApproveAndeDepositToken({
 		error: depositError,
 		data: depositTxHash,
 	} = useWriteContract({})
+	const { status: depositConfirmStatus } = useWaitForTransactionReceipt({
+		hash: depositTxHash,
+	})
 
 	const approve = async () => {
 		await callApprove({
@@ -176,6 +181,7 @@ export function useApproveAndeDepositToken({
 			depositError,
 			depositTxHash,
 			isDepositStarted,
+			depositConfirmStatus,
 		},
 	}
 }
