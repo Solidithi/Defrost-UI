@@ -14,7 +14,8 @@ import {
 	useSelectedPoolTokensInfo,
 } from '@/app/store/my-staking'
 import { useAccount, useReadContract } from 'wagmi'
-import { abi as launchpoolABI } from '@/abi/Launchpool.json'
+import { abi as launchpoolABI } from '@/abi/Launchpool.json' // @TODO: optimize this later
+import { useNavBarControl } from '../provider/navbar-control'
 
 export function MyStakingPage() {
 	const {
@@ -113,6 +114,11 @@ export function MyStakingPage() {
 		(acc, pools) => acc + pools.length,
 		0
 	)
+
+	const { setIsNavbarShown } = useNavBarControl()
+	useEffect(() => {
+		setIsNavbarShown(!showDetailsModal)
+	}, [showDetailsModal])
 
 	return (
 		<div className="min-h-screen bg-black text-white overflow-hidden relative">
@@ -232,7 +238,8 @@ export function MyStakingPage() {
 					</div>
 
 					<StakingFilters
-						activeFilters={activeFilters}
+						initialPoolTypes={activeFilters.activePoolTypes}
+						initialSortOrder={activeFilters.activeSortOrder}
 						onFilterChange={setActiveFilters}
 					/>
 				</div>
@@ -360,8 +367,8 @@ export function MyStakingPage() {
 								<LaunchpoolStakingDetailsModal
 									pool={selectedPool}
 									yourStakePercent={yourPoolSharePercent}
-									withdrawableVTokens={withdrawableVTokens}
-									totalStakedVTokens={totalVTokensStake}
+									withdrawableVTokens={withdrawableVTokens as string}
+									totalStakedVTokens={totalVTokensStake as string}
 									onClose={closeDetailsModal}
 								/>
 							)}
