@@ -328,61 +328,75 @@ export default function CreatePool() {
 		addPool,
 		removePool,
 		updatePoolItem,
-		phase,
-		phaseData,
 		addPhase,
 		removePhase,
-		updatePhaseItem,
+		updatePhase,
 		isConfirming,
 		setIsConfirming,
 		isOpenEmissionRate,
 		setIsOpenEmissionRate,
 	} = usePoolStore()
 
+	// Current selected pool for emission rate modal
+	const [selectedPoolId, setSelectedPoolId] = useState(null)
+
+	/* ---------------------- Editable State ---------------------- */
+	const [editableFields, setEditableFields] = useState<Record<string, boolean>>(
+		{}
+	)
+	const toggleEditable = (fieldKey: string) => {
+		setEditableFields((prev) => ({
+			...prev,
+			[fieldKey]: !prev[fieldKey],
+		}))
+	}
+
 	/* ---------------------- Add pool ---------------------- */
 	const handleAddPool = () => {
 		addPool()
-		// console.log('After addPool - pool:', pool)
 		console.log('After addPool - poolData:', poolData)
 	}
 
 	/* ---------------------- Add phase ---------------------- */
-	const handleAddPhase = () => {
-		if (phase.length >= 3) {
-			toast.warning('You must add only 3 phases.', {
+	const handleAddPhase = (poolId: number) => {
+		if (!poolId) return
+
+		// Get current phases for this pool
+		const currentPhases = poolData[poolId]?.phases || []
+		if (currentPhases.length >= 3) {
+			toast.warning('You can add only 3 phases.', {
 				style: { backgroundColor: red[500], color: 'white' },
 			})
 			return
 		}
-		addPhase()
-		// console.log('After addPhase - phase:', phase)
-		console.log('After addPhase - phaseData:', phaseData)
-	}
 
-	// useEffect(() => {
-	// 	console.log('pool data: ', poolData)
-	// 	console.log('pool: ', pool)
-	// })
+		addPhase(poolId)
+		console.log('After addPhase - poolData:', poolData)
+	}
 
 	/* ---------------------- Handle delete pool/phase ---------------------- */
 	const handleConfirmRemove = () => {
 		if (isConfirming.id !== null) {
-			if (isConfirming.type === 'form') {
+			if (isConfirming.type === 'pool') {
 				removePool(isConfirming.id)
 			} else if (isConfirming.type === 'phase') {
-				removePhase(isConfirming.id)
+				if (selectedPoolId) {
+					removePhase(selectedPoolId, isConfirming.id)
+				}
 			}
 		}
 		setIsConfirming({ open: false, id: null, type: null })
 	}
 
 	/* ---------------------- Validate Pool Dates ---------------------- */
-	const validatePoolDates = (index: number, field: string, value: string) => {
+	const validatePoolDates = (poolId: number, field: string, value: string) => {
 		const now = new Date()
 		const fromDate =
-			field === 'from' ? new Date(value) : new Date(poolData[index]?.from || '')
+			field === 'from'
+				? new Date(value)
+				: new Date(poolData[poolId]?.from || '')
 		const toDate =
-			field === 'to' ? new Date(value) : new Date(poolData[index]?.to || '')
+			field === 'to' ? new Date(value) : new Date(poolData[poolId]?.to || '')
 
 		if (fromDate < now) {
 			toast.error('Start date cannot be in the past.')
@@ -398,21 +412,32 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Validate Phase Dates ---------------------- */
-	const validatePhaseDates = (index: number, field: string, value: string) => {
+	const validatePhaseDates = (
+		poolId: number,
+		phaseId: number,
+		field: string,
+		value: string
+	) => {
 		const now = new Date()
+		const phases = poolData[poolId]?.phases || []
+		const phaseIndex = phases.findIndex((p) => p.id === phaseId)
+
+		if (phaseIndex === -1) return false
+
 		const fromDate =
 			field === 'from'
 				? new Date(value)
-				: new Date(phaseData[index]?.from || '')
+				: new Date(phases[phaseIndex]?.from || '')
+
 		const toDate =
-			field === 'to' ? new Date(value) : new Date(phaseData[index]?.to || '')
+			field === 'to' ? new Date(value) : new Date(phases[phaseIndex]?.to || '')
 
 		// Convert pool's `from` date to a Date object for comparison
-		const poolFromDate = new Date(poolData[0]?.from || '')
+		const poolFromDate = new Date(poolData[poolId]?.from || '')
 
 		// Check if the first phase's `from` matches the pool's `from`
 		if (
-			index === 0 &&
+			phaseIndex === 0 &&
 			field === 'from' &&
 			fromDate.getTime() !== poolFromDate.getTime()
 		) {
@@ -433,8 +458,8 @@ export default function CreatePool() {
 		}
 
 		// Ensure dates are contiguous
-		if (index > 0) {
-			const prevPhaseTo = new Date(phaseData[index - 1]?.to || '')
+		if (phaseIndex > 0) {
+			const prevPhaseTo = new Date(phases[phaseIndex - 1]?.to || '')
 			if (field === 'from' && fromDate.getTime() !== prevPhaseTo.getTime()) {
 				toast.error(
 					'Phase start date must be contiguous with the previous phase.'
@@ -447,31 +472,28 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Handle Change Pool ---------------------- */
-	const handleChangePool = (
-		index: number,
-		field: keyof (typeof poolData)[0],
-		value: string
-	) => {
+	const handleChangePool = (poolId: number, field: string, value: string) => {
 		if (field === 'from' || field === 'to') {
-			if (!validatePoolDates(index, field, value)) return
+			if (!validatePoolDates(poolId, field, value)) return
 		}
-		updatePoolItem(index, { [field]: value })
+		updatePoolItem(poolId, { [field]: value })
 	}
 
 	/* ---------------------- Handle Change EmissionRate ---------------------- */
 	const handleChangeEmissionRate = (
-		index: number,
-		field: keyof (typeof phaseData)[0],
+		poolId: number,
+		phaseId: number,
+		field: string,
 		value: string
 	) => {
 		if (field === 'from' || field === 'to') {
-			if (!validatePhaseDates(index, field, value)) return
+			if (!validatePhaseDates(poolId, phaseId, field, value)) return
 		}
-		updatePhaseItem(index, { [field]: value })
+		updatePhase(poolId, phaseId, { [field]: value })
 	}
 
 	/* ---------------------- Open and Close Confirm Modal ---------------------- */
-	const handleOpenConfirmModal = (id: number, type: 'form' | 'phase') => {
+	const handleOpenConfirmModal = (id: number, type: 'pool' | 'phase') => {
 		setIsConfirming({ open: true, id, type })
 	}
 
@@ -480,12 +502,26 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Open and Close EmissionRate Modal ---------------------- */
-	const handleOpenEmissionRateModal = () => {
+	const handleOpenEmissionRateModal = (poolId: any) => {
+		setSelectedPoolId(poolId)
 		setIsOpenEmissionRate(true)
 	}
 
 	const handleCloseEmissionRateModal = () => {
 		setIsOpenEmissionRate(false)
+		setSelectedPoolId(null)
+	}
+
+	/* ---------------------- Format DateTime for Input ---------------------- */
+	const formatDateTimeLocal = (dateString: string) => {
+		if (!dateString) return ''
+		const date = new Date(dateString)
+		const year = date.getFullYear()
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const day = String(date.getDate()).padStart(2, '0')
+		const hours = String(date.getHours()).padStart(2, '0')
+		const minutes = String(date.getMinutes()).padStart(2, '0')
+		return `${year}-${month}-${day}T${hours}:${minutes}`
 	}
 
 	/* ---------------------- Handle stepper's step change ---------------------- */
@@ -531,7 +567,12 @@ export default function CreatePool() {
 			)
 			const startBlock = BigInt(await provider.getBlockNumber()) + BigInt(1000)
 
-			if (phaseData.length !== poolData.length) {
+			if (
+				Object.values(poolData).reduce(
+					(acc, pool) => acc + (pool.phases?.length || 0),
+					0
+				) !== Object.keys(poolData).length
+			) {
 				console.error('phaseData and poolData length mismatch')
 				return
 			}
@@ -672,11 +713,6 @@ export default function CreatePool() {
 	// console.log('Pool ID updated:', pool)
 	// }, [poolData, pool])
 
-	useEffect(() => {
-		console.log('PhaseData updated:', phaseData)
-		console.log('Phase ID updated:', phase)
-	}, [phaseData, phase])
-
 	/* ---------------------- Debug: Manually log the store ---------------------- */
 	// const handleLogStore = () => {
 	// 	console.log('Current Store:', {
@@ -689,16 +725,6 @@ export default function CreatePool() {
 	// 		isOpenEmissionRate,
 	// 	})
 	// }
-	const formatDateTimeLocal = (dateString: string) => {
-		if (!dateString) return ''
-		const date = new Date(dateString)
-		const year = date.getFullYear()
-		const month = String(date.getMonth() + 1).padStart(2, '0')
-		const day = String(date.getDate()).padStart(2, '0')
-		const hours = String(date.getHours()).padStart(2, '0')
-		const minutes = String(date.getMinutes()).padStart(2, '0')
-		return `${year}-${month}-${day}T${hours}:${minutes}`
-	}
 
 	return (
 		<div className="relative page-container ">
@@ -887,17 +913,17 @@ export default function CreatePool() {
 							</Button>
 
 							<div className="flex flex-wrap gap-3 w-full">
-								{pool.map((formId, index) => (
+								{pool.map((poolId, index) => (
 									<motion.div
-										key={formId}
+										key={poolId}
 										initial={{ opacity: 0, y: 50 }}
 										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: index * 0.2, duration: 0.5 }}
+										transition={{ duration: 0.5 }}
 										className="glass-component-3 h-auto p-4 pt-10 rounded-xl flex items-center justify-center flex-col gap-5"
 										style={{ width: 'calc(50% - 0.375rem)' }}
 									>
 										<Button
-											onClick={() => handleOpenConfirmModal(formId, 'form')}
+											onClick={() => handleOpenConfirmModal(poolId, 'pool')}
 											className="absolute top-5 right-5 glass-component-3 px-3 py-1"
 										>
 											X
@@ -1079,7 +1105,7 @@ export default function CreatePool() {
 											</span>
 
 											<Button
-												onClick={() => handleOpenEmissionRateModal()}
+												onClick={() => handleOpenEmissionRateModal(poolId)}
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm flex justify-center items-center"
 											>
 												<svg
@@ -1138,7 +1164,12 @@ export default function CreatePool() {
 										</div>
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Emission Phases:</span>
-											<span>{phase.length}</span>
+											<span>
+												{Object.values(poolData).reduce(
+													(total, pool) => total + (pool.phases?.length || 0),
+													0
+												)}
+											</span>
 										</div>
 
 										{/* Token Allowance Status */}
@@ -1344,18 +1375,17 @@ export default function CreatePool() {
 
 			{/* --------------------------------------Emission Rate Modal----------------------------------------------------- */}
 			<Modal
-				className="w-full max-w-[1000px] sm-max-w-[700px]  px-4 sm:px-6 mx-5 "
+				className="w-full max-w-[1200px] sm:max-w-[1000px] px-4 sm:px-6 mx-5"
 				open={isOpenEmissionRate}
 				onClose={handleCloseEmissionRateModal}
 			>
-				<div className="h-full w-full p-3 sm:p-5 text-white overflow-y-auto max-h-[80vh] ">
-					{' '}
+				<div className="h-full w-full p-3 sm:p-5 text-white overflow-y-auto max-h-[80vh]">
 					<div>
-						<SteplineChart />
+						{selectedPoolId && <SteplineChart poolId={selectedPoolId} />}
 					</div>
-					<div className="flex flex-col gap-3 sm:gap-5 mt-3 sm:mt-5 ">
+					<div className="flex flex-col gap-3 sm:gap-5 mt-3 sm:mt-5">
 						<Button
-							onClick={handleAddPhase}
+							onClick={() => selectedPoolId && handleAddPhase(selectedPoolId)}
 							className="h-12 w-12 sm:h-16 sm:w-16 rounded-full glass-component-3 flex items-center justify-center mx-auto sm:mx-0"
 						>
 							<svg
@@ -1381,73 +1411,92 @@ export default function CreatePool() {
 							</svg>
 						</Button>
 						<div className="flex flex-wrap gap-2 sm:gap-3 w-full">
-							{phase.map((phaseId, index) => (
-								<motion.div
-									key={phaseId}
-									initial={{ opacity: 0, y: 50 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.5 }}
-									className="glass-component-3 h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
-								>
-									<Button
-										onClick={() => handleOpenConfirmModal(phaseId, 'phase')}
-										className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-component-3 px-2 sm:px-3 py-1 text-sm sm:text-base"
+							{selectedPoolId && poolData[selectedPoolId]?.phases ? (
+								poolData[selectedPoolId].phases.map((phase, index) => (
+									<motion.div
+										key={phase.id}
+										initial={{ opacity: 0, y: 50 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ duration: 0.5 }}
+										className="glass-component-3 h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
 									>
-										X
-									</Button>
-									<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
-										<span className="font-orbitron text-base sm:text-lg">
-											Emission Rate
-										</span>
-										<div className="relative w-full">
+										<Button
+											onClick={() => handleOpenConfirmModal(phase.id, 'phase')}
+											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-component-3 px-2 sm:px-3 py-1 text-sm sm:text-base"
+										>
+											X
+										</Button>
+										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
+											<span className="font-orbitron text-base sm:text-lg">
+												Emission Rate
+											</span>
+											<div className="relative w-full">
+												<input
+													type="number"
+													value={phase.emissionRate || ''}
+													onChange={(e) =>
+														handleChangeEmissionRate(
+															selectedPoolId,
+															phase.id,
+															'emissionRate',
+															e.target.value
+														)
+													}
+													placeholder="Enter emission rate"
+													className="p-2 sm:p-3   rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+												/>
+												{/* <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-xs sm:text-sm">
+													%
+												</span> */}
+											</div>
+										</div>
+										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
+											<span className="font-orbitron text-base sm:text-lg">
+												From
+											</span>
 											<input
-												type="number"
-												value={phaseData[index]?.emissionRate || ''}
+												type="datetime-local"
+												value={formatDateTimeLocal(phase.from) || ''}
 												onChange={(e) =>
 													handleChangeEmissionRate(
-														index,
-														'emissionRate',
+														selectedPoolId,
+														phase.id,
+														'from',
 														e.target.value
 													)
 												}
-												placeholder="Enter emission rate"
-												className="p-2 sm:p-3 pr-8 sm:pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+												placeholder="Enter start date"
+												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
 											/>
-											<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-xs sm:text-sm">
-												%
-											</span>
 										</div>
-									</div>
-									<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
-										<span className="font-orbitron text-base sm:text-lg">
-											From
-										</span>
-										<input
-											type="datetime-local"
-											value={formatDateTimeLocal(phaseData[index]?.from) || ''}
-											onChange={(e) =>
-												handleChangeEmissionRate(index, 'from', e.target.value)
-											}
-											placeholder="Enter start date"
-											className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
-										/>
-									</div>
-									<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
-										<span className="font-orbitron text-base sm:text-lg">
-											To
-										</span>
-										<input
-											type="datetime-local"
-											value={formatDateTimeLocal(phaseData[index]?.to) || ''}
-											onChange={(e) =>
-												handleChangeEmissionRate(index, 'to', e.target.value)
-											}
-											placeholder="Enter end date"
-											className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
-										/>
-									</div>
-								</motion.div>
-							))}
+										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
+											<span className="font-orbitron text-base sm:text-lg">
+												To
+											</span>
+											<input
+												type="datetime-local"
+												value={formatDateTimeLocal(phase.to) || ''}
+												onChange={(e) =>
+													handleChangeEmissionRate(
+														selectedPoolId,
+														phase.id,
+														'to',
+														e.target.value
+													)
+												}
+												placeholder="Enter end date"
+												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+											/>
+										</div>
+									</motion.div>
+								))
+							) : (
+								<div className="w-full text-center py-6">
+									<p className="font-comfortaa text-white opacity-70">
+										No phases created yet. Click the plus button to add a phase.
+									</p>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
@@ -1461,7 +1510,8 @@ export default function CreatePool() {
 				onClose={handleCloseConfirmModal}
 			>
 				<h3 className="text-lg font-semibold text-white">
-					Do you want to delete this form?
+					Do you want to delete this{' '}
+					{isConfirming.type === 'pool' ? 'pool' : 'phase'}?
 				</h3>
 				<div className="flex justify-between mt-4">
 					<Button

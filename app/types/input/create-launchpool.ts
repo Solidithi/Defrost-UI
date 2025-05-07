@@ -2,7 +2,7 @@
 export interface ConfirmState {
 	open: boolean;
 	id: number | null;
-	type: "form" | "phase" | null;
+	type: "pool" | "phase" | null;
 }
 
 export interface FormDataType {
