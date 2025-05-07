@@ -65,7 +65,10 @@ leverage vAsset LST technology from Bifrost omnichain
 
 ## Demo Video
 
-[VIDEO PLACEHOLDER - Add demo video link and screenshot here]
+[![Defrost Platform Overview](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID)
+
+Watch our comprehensive platform walkthrough demonstrating key features
+including project creation, launchpool setup, and staking workflows.
 
 ## Screenshots
 
@@ -77,7 +80,6 @@ leverage vAsset LST technology from Bifrost omnichain
 ### Project Management
 
 ![image](https://github.com/user-attachments/assets/72da2baa-55ce-4690-a76d-8193cf7ea25b)
-
 
 ### Project Details View
 
@@ -186,8 +188,6 @@ const {
 } = useWriteContract();
 ```
 
-[PLACEHOLDER - Add some main contracts information that deploy to WESTEND here]
-
 ### How interest accrues in our no-loss launchpool
 
 - Exchange Rate System: Rather than directly distributing tokens, the contract
@@ -262,6 +262,9 @@ const {
 - **Real-time Notifications**: Toast notifications for user actions and
   transaction status updates
 
-## Contributing
+## Contributing 🎮
 
-### Team Core 🎮
+1. **[notlongfen](https://github.com/notlongfen)**
+2. **[ducmint864](https://github.com/ducmint864)**
+3. **[nguyenkhanh0209](https://github.com/nguyenkhanh0209)**
+4. **[Trong-tra](https://github.com/Trong-tra)**
