@@ -71,11 +71,13 @@ leverage vAsset LST technology from Bifrost omnichain
 
 ### Project Creation
 
-[IMAGE PLACEHOLDER - Add project creation screenshot here]
+![image](https://github.com/user-attachments/assets/ba4f5799-57b8-4dc2-bbed-58715619bae5)
+![image](https://github.com/user-attachments/assets/a0af01a0-1d55-46cf-b25e-658b4533463c)
 
 ### Project Management
 
-[IMAGE PLACEHOLDER - Add project management screenshot here]
+![image](https://github.com/user-attachments/assets/72da2baa-55ce-4690-a76d-8193cf7ea25b)
+
 
 ### Project Details View
 
@@ -186,7 +188,7 @@ const {
 
 [PLACEHOLDER - Add some main contracts information that deploy to WESTEND here]
 
-### How interest get calculate in our no lose launchpool
+### How interest accrues in our no-loss launchpool
 
 - Exchange Rate System: Rather than directly distributing tokens, the contract
   maintains cumulativeExchangeRate that increases over time according to
