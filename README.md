@@ -65,7 +65,9 @@ leverage vAsset LST technology from Bifrost omnichain
 
 ## Demo Video
 
-[![Defrost Platform Overview](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID)
+### Video Overview
+
+[![Defrost Platform Overview](https://i.ytimg.com/vi/urdV8GvGs3s/maxresdefault.jpg)](https://youtu.be/urdV8GvGs3s?si=jmw7QqyK6S2zZl9D)
 
 Watch our comprehensive platform walkthrough demonstrating key features
 including project creation, launchpool setup, and staking workflows.
