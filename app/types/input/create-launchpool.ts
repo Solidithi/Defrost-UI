@@ -12,10 +12,12 @@ export interface FormDataType {
 	maxStake: number;
 	from: string;
 	to: string;
+	phases: PhaseDataType[];
 	// emissionRate: string;
 }
 
 export interface PhaseDataType {
+	id: number;
 	emissionRate: number;
 	from: string;
 	to: string;
