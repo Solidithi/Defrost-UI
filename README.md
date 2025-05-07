@@ -1,6 +1,8 @@
-# Defrost
+# Defrost 🧊
 
 <h3 align="center">DEFROST</h3>
+
+![image](https://github.com/user-attachments/assets/350164ed-e65e-4bfe-82ae-1414efaa421c)
 
 This is the source repository for the Defrost, a decentralized platform that
 connects blockchain project creators, startups with potential funders, investors
