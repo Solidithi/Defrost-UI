@@ -2,8 +2,6 @@
 
 <h3 align="center">DEFROST</h3>
 
-[IMAGE PLACEHOLDER - Add project image here]
-
 This is the source repository for the Defrost, a decentralized platform that
 connects blockchain project creators, startups with potential funders, investors
 providing a transparent and efficient way to showcase and support innovative
@@ -82,10 +80,6 @@ including project creation, launchpool setup, and staking workflows.
 ### Project Management
 
 ![image](https://github.com/user-attachments/assets/72da2baa-55ce-4690-a76d-8193cf7ea25b)
-
-### Project Details View
-
-[IMAGE PLACEHOLDER - Add project details view screenshot here]
 
 ## Technical Details
 
