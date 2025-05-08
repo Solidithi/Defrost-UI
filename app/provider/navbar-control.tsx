@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext } from 'react'
 import { useState, useContext } from 'react'
 
