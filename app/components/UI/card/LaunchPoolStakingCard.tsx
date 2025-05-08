@@ -30,7 +30,11 @@ export function LaunchpoolStakingCard({
 	}
 
 	/* ---------------------- Access staking store ---------------------- */
-	const { setTokensInfo } = useStakingStore()
+	const {
+		tokensInfo,
+		setTokensInfo,
+		setPoolClaimableRewardsFormatted: setUserClaimableRewards,
+	} = useStakingStore()
 
 	/* ---------------------- Read from contract ---------------------- */
 	const account = useAccount()
@@ -74,6 +78,7 @@ export function LaunchpoolStakingCard({
 			functionName: 'totalNativeStake',
 		})
 
+	/* ---------------------- Calculate user's share of stake ---------------------- */
 	const yourPoolSharePercent = useMemo(() => {
 		if (
 			!totalNativeStake ||
@@ -82,8 +87,6 @@ export function LaunchpoolStakingCard({
 		) {
 			return 0
 		}
-
-		/* ---------------------- Calculate user's share of stake ---------------------- */
 		const percentage =
 			(BigInt(yourNativeStake.toString()) * BigInt(10000)) /
 			BigInt(totalNativeStake.toString())
@@ -172,6 +175,30 @@ export function LaunchpoolStakingCard({
 		setTokensInfo,
 	])
 
+	const { data: claimableRewards } = useReadContract({
+		abi: launchpoolABI,
+		address: pool.id as `0x${string}`,
+		functionName: 'getClaimableProjectToken',
+		args: [account.address],
+	})
+
+	// Update StakingStore's user claimable rewards
+	useEffect(() => {
+		if (claimableRewards && typeof claimableRewards === 'bigint') {
+			Number(
+				setUserClaimableRewards(
+					pool.id,
+					Number(
+						formatUnits(
+							claimableRewards as bigint,
+							Number(tokensInfo?.vTokenInfo?.decimals || 18)
+						)
+					)
+				)
+			)
+		}
+	}, [claimableRewards])
+
 	const hasStake = BigInt((yourNativeStake as string) || 0) > 0
 
 	// For backwards compatibility until all components are updated to use store
@@ -189,7 +216,7 @@ export function LaunchpoolStakingCard({
 	return (
 		<BaseStakingCard
 			hasStake={hasStake}
-			image={pool.image}
+			image={placeHolderImage}
 			name={pool.name}
 			description={pool.description || ''}
 			onClick={onSelect}

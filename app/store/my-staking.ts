@@ -7,6 +7,7 @@ import {
 } from "../types/extended-models/enriched-launchpool";
 import { PoolType } from "../types/extended-models/generic-pool";
 import { SortOrderType } from "../components/UI/filter/StakingFilter";
+import { formatTokenAmount } from "../utils/display";
 
 // Base token information
 interface TokenInfo {
@@ -46,6 +47,10 @@ interface FarmTokensInfo extends BaseTokensInfo {
 // Union type for all possible token info configurations
 type PoolTokensInfo = LaunchpoolTokensInfo | FarmTokensInfo | BaseTokensInfo;
 
+interface UserPoolStaking {
+	formattedClaimableRewards: number;
+}
+
 type StakingStore = {
 	// Pool data
 	pools: {
@@ -57,6 +62,8 @@ type StakingStore = {
 
 	// Token information for all pools - using discriminated union type
 	tokensInfo: Record<string, PoolTokensInfo>; // Mapped by pool.id
+
+	userStakingData: Record<string, UserPoolStaking>; // Mapped by pool.id
 
 	// UI state
 	activeTab: "all" | "active" | "ended";
@@ -79,6 +86,11 @@ type StakingStore = {
 	setPools: (pools: EnrichedLaunchpool[]) => void;
 	setTokensInfo: (poolId: string, info: PoolTokensInfo) => void;
 	fetchPools: () => Promise<void>;
+
+	setPoolClaimableRewardsFormatted: (
+		poolAddress: string,
+		formattedAmount: number
+	) => void;
 };
 
 export const useStakingStore = create<StakingStore>()(
@@ -98,6 +110,7 @@ export const useStakingStore = create<StakingStore>()(
 			selectedPoolId: null,
 			selectedPoolType: null,
 			showDetailsModal: false,
+			userStakingData: {},
 
 			// Actions
 			setActiveTab: (tab) => set({ activeTab: tab }),
@@ -182,6 +195,19 @@ export const useStakingStore = create<StakingStore>()(
 					set({ isLoading: false });
 				}
 			},
+			setPoolClaimableRewardsFormatted: (
+				poolAddress: string,
+				amount: number
+			) =>
+				set((state) => ({
+					userStakingData: {
+						...state.userStakingData,
+						[poolAddress]: {
+							...state.userStakingData[poolAddress],
+							formattedClaimableRewards: amount,
+						},
+					},
+				})),
 		}),
 		{
 			name: "staking-store",
@@ -239,4 +265,19 @@ export const useSelectedPoolTokensInfo = () => {
 	if (!selectedPoolId) return null;
 
 	return tokensInfo[selectedPoolId];
+};
+
+export const useTotalClaimableRewardsFormatted = () => {
+	const { userStakingData } = useStakingStore();
+
+	let total = 0;
+	for (const data of Object.values(userStakingData)) {
+		if (data.formattedClaimableRewards) {
+			total += data.formattedClaimableRewards;
+		}
+	}
+
+	return formatTokenAmount(total, {
+		maxDecimals: 6,
+	});
 };

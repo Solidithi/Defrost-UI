@@ -12,6 +12,7 @@ import {
 	useFilteredPools,
 	useSelectedPool,
 	useSelectedPoolTokensInfo,
+	useTotalClaimableRewardsFormatted,
 } from '@/app/store/my-staking'
 import { useAccount, useReadContract } from 'wagmi'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json' // @TODO: optimize this later
@@ -95,10 +96,12 @@ export function MyStakingPage() {
 				) / 100
 
 	// Calculate total staked value across all pools
-	const totalStaked = filteredPools.launchpools.reduce(
-		(acc, pool) => acc + Number(pool.yourStake || 0),
-		0
-	)
+	// const totalStaked = filteredPools.launchpools.reduce(
+	// 	(acc, pool) => acc + Number(pool.yourStake || 0),
+	// 	0
+	// )
+	const totalStaked = 135000
+	const totalRewardsFormatted = useTotalClaimableRewardsFormatted()
 
 	// Calculate total active and ended pools
 	const activePoolsCount = filteredPools.launchpools.filter(
@@ -136,7 +139,9 @@ export function MyStakingPage() {
 			<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-purple-500/10 filter blur-[120px] pointer-events-none"></div>
 
 			{/* Header */}
-			<header className="relative z-10 border-b border-white/20 backdrop-blur-xl bg-white/10 shadow-lg">
+			{/* Filler */}
+			<div className="mb-32"></div>
+			{/* <header className="relative z-10 border-b border-white/20 backdrop-blur-xl bg-white/10 shadow-lg">
 				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
 					<div className="flex items-center space-x-8">
 						<div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
@@ -168,7 +173,7 @@ export function MyStakingPage() {
 						</button>
 					</div>
 				</div>
-			</header>
+			</header> */}
 
 			{/* Main Content */}
 			<main className="relative z-10 container mx-auto px-4 py-8">
@@ -211,7 +216,7 @@ export function MyStakingPage() {
 							/>
 							<StakingStatsCard
 								title="Total Rewards"
-								value="Coming Soon"
+								value={totalRewardsFormatted}
 								icon={<Award className="text-purple-400" />}
 							/>
 							<StakingStatsCard
