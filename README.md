@@ -1,8 +1,8 @@
-# Defrost
+# Defrost 🧊
 
 <h3 align="center">DEFROST</h3>
 
-[IMAGE PLACEHOLDER - Add project image here]
+![image](https://github.com/user-attachments/assets/350164ed-e65e-4bfe-82ae-1414efaa421c)
 
 This is the source repository for the Defrost, a decentralized platform that
 connects blockchain project creators, startups with potential funders, investors
@@ -65,7 +65,12 @@ leverage vAsset LST technology from Bifrost omnichain
 
 ## Demo Video
 
-[VIDEO PLACEHOLDER - Add demo video link and screenshot here]
+### Video Overview
+
+[![Defrost Platform Overview](https://i.ytimg.com/vi/urdV8GvGs3s/maxresdefault.jpg)](https://youtu.be/urdV8GvGs3s?si=jmw7QqyK6S2zZl9D)
+
+Watch our comprehensive platform walkthrough demonstrating key features
+including project creation, launchpool setup, and staking workflows.
 
 ## Screenshots
 
@@ -77,11 +82,6 @@ leverage vAsset LST technology from Bifrost omnichain
 ### Project Management
 
 ![image](https://github.com/user-attachments/assets/72da2baa-55ce-4690-a76d-8193cf7ea25b)
-
-
-### Project Details View
-
-[IMAGE PLACEHOLDER - Add project details view screenshot here]
 
 ## Technical Details
 
@@ -186,8 +186,6 @@ const {
 } = useWriteContract();
 ```
 
-[PLACEHOLDER - Add some main contracts information that deploy to WESTEND here]
-
 ### How interest accrues in our no-loss launchpool
 
 - Exchange Rate System: Rather than directly distributing tokens, the contract
@@ -262,6 +260,9 @@ const {
 - **Real-time Notifications**: Toast notifications for user actions and
   transaction status updates
 
-## Contributing
+## Contributing 🎮
 
-### Team Core 🎮
+1. **[notlongfen](https://github.com/notlongfen)**
+2. **[ducmint864](https://github.com/ducmint864)**
+3. **[nguyenkhanh0209](https://github.com/nguyenkhanh0209)**
+4. **[Trong-tra](https://github.com/Trong-tra)**
