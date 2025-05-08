@@ -63,7 +63,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 
 			// Sort phases by start date for this pool
 			const sortedPhases = [...currentPhases].sort(
-				(a, b) => new Date(a.from).getTime() - new Date(b.from).getTime()
+				(a, b) => new Date(a.from).getTime() - new Date(a.from).getTime()
 			)
 
 			// Create time segments for this pool
@@ -183,15 +183,19 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 			}
 
 			// Calculate total tokens allocated to phases
-			let totalAllocatedToPhases = 0
+			let totalAllocatedToPhases: number = 0
 			const phaseTokens: number[] = []
 
 			sortedPhases.forEach((phase) => {
 				// Now use emissionRate directly as token amount instead of percentage
-				const phaseAmount = phase.emissionRate || 0
+				const phaseAmount = phase.emissionRate
 				phaseTokens.push(phaseAmount)
-				totalAllocatedToPhases += phaseAmount
+				totalAllocatedToPhases += Number(phaseAmount)
 			})
+			console.log(
+				`Total tokens allocated to phases for pool ${currentPoolId}: ${totalAllocatedToPhases}`
+			)
+			console.log(typeof tokenSupply, tokenSupply)
 
 			// Calculate remaining tokens for non-phase periods
 			const remainingTokens = Math.max(0, tokenSupply - totalAllocatedToPhases)
@@ -261,9 +265,14 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 		return {
 			chart: {
 				type: 'line',
-				height: 350,
+				height: 320,
 				toolbar: {
-					show: false,
+					show: true, // Hiển thị thanh công cụ để zoom
+				},
+				zoom: {
+					enabled: true, // Bật tính năng zoom
+					type: 'x', // Chỉ zoom theo trục x
+					autoScaleYaxis: true, // Tự động điều chỉnh trục y khi zoom
 				},
 				foreColor: '#fff',
 				animations: {
@@ -356,6 +365,10 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 						fontFamily: 'orbitron, sans-serif',
 					},
 				},
+				min: 0,
+				max: Number(poolData[poolId]?.tokenSupply) || 0,
+				tickAmount: 5,
+				forceNiceScale: true, // Force nice round numbers
 				labels: {
 					style: {
 						colors: '#fff',
@@ -363,10 +376,10 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 						fontFamily: 'comfortaa, sans-serif',
 					},
 					formatter: function (val) {
-						return val.toFixed(0)
+						// Format to a nice number with locale formatting
+						return Math.round(val).toLocaleString()
 					},
 				},
-				max: poolData[poolId]?.tokenSupply || undefined,
 			},
 			legend: {
 				position: 'top',
@@ -444,7 +457,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	return (
 		<div
 			id="chart"
-			className="glass-component-3 rounded-xl py-5 px-4 sm:px-5 lg:px-8"
+			className="glass-component-3 rounded-xl py-5 px-4 sm:px-5 lg:px-9"
 		>
 			{/* Pool selector when multiple pools exist and no specific poolId is provided */}
 			{pool.length > 1 && poolId === undefined && (
