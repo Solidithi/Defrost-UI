@@ -10,6 +10,18 @@ import {
 
 export async function GET(request: Request) {
 	try {
+		// Parse query parameters
+		const { searchParams } = new URL(request.url);
+		const chainID = parseInt(searchParams.get("chainID") || "1", 10);
+
+		// Validate chainID
+		if (isNaN(chainID)) {
+			return NextResponse.json(
+				{ error: "Invalid chainID parameter" },
+				{ status: 400 }
+			);
+		}
+
 		// Fetch all projects with their various pool types
 		const projects = await prismaClient.project.findMany({
 			include: {
@@ -32,7 +44,9 @@ export async function GET(request: Request) {
 			// Add launchpools to unified pools
 			if (project.launchpool?.length) {
 				project.launchpool.forEach((pool) => {
-					unifiedPools.push(toUnifiedPool(pool, "launchpool"));
+					unifiedPools.push(
+						toUnifiedPool(pool, "launchpool", chainID)
+					);
 				});
 			}
 
