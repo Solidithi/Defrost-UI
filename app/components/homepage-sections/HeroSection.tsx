@@ -81,8 +81,8 @@ const HeroSection = () => {
 							className="text-white text-xl"
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 						>
-							Launchpool believe all project stakeholders are as important as
-							each other.
+							We believe all project stakeholders are as important as each
+							other.
 						</motion.span>
 
 						{/* <motion.button
