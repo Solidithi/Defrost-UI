@@ -118,7 +118,7 @@ export const useProjectStore = create<ProjectStore>()(
 				set({ isLoading: true, error: null });
 
 				// Simulate network delay
-				await new Promise((resolve) => setTimeout(resolve, 5000));
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 
 				const mockProject = {
 					id: projectID,

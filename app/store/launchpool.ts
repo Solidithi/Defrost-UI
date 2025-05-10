@@ -466,7 +466,7 @@ import {
 	PhaseDataType,
 } from "../types/input/create-launchpool";
 type PoolStore = {
-	tokenAddress: string;
+	projectTokenAddress: string;
 	setTokenAddress: (value: string) => void;
 	pool: number[];
 	poolData: Record<number, FormDataType>;
@@ -487,58 +487,65 @@ type PoolStore = {
 	setIsConfirming: (confirm: ConfirmState) => void;
 	setIsOpenEmissionRate: (open: boolean) => void;
 };
+
 export const usePoolStore = create<PoolStore>((set, get) => ({
-	tokenAddress: "0x1234567890abcdef",
-	setTokenAddress: (value) => set({ tokenAddress: value }),
+	projectTokenAddress: "0x96b6D28DF53641A47be72F44BE8C626bf07365A8",
+	setTokenAddress: (value) => set({ projectTokenAddress: value }),
 	pool: [1, 2],
 	poolData: {
 		1: {
 			chain: "Ethereum",
-			token: "ETH",
-			tokenSupply: 1000000,
-			maxStake: 50000,
-			from: "2025-01-01T00:00:00Z",
-			to: "2025-12-31T23:59:59Z",
+			tokenSupply: 1000,
+			maxStake: 100,
+			from: "2025-05-11T00:00:00Z",
+			to: "2027-01-01T16:59:59Z",
+			vTokenAddress: "",
 			phases: [
 				{
 					id: 1,
-					emissionRate: 200000,
-					from: "2025-01-01T00:00:00Z",
-					to: "2025-06-30T23:59:59Z",
+					emissionRate: 200,
+					from: "2025-05-11T00:00:00Z",
+					to: "2025-05-31T23:59:59Z",
 				},
 				{
 					id: 2,
-					emissionRate: 300000,
-					from: "2025-06-30T23:59:59Z",
-					to: "2025-09-30T23:59:59Z",
+					emissionRate: 800,
+					from: "2025-05-31T23:59:59Z",
+					to: "2026-01-01T16:59:59Z",
 				},
 				{
 					id: 3,
-					emissionRate: 400000,
-					from: "2025-09-30T23:59:59Z",
-					to: "2025-11-30T23:59:59Z",
+					emissionRate: 500,
+					from: "2026-01-01T16:59:59Z",
+					to: "2027-01-01T16:59:59Z",
 				},
 			],
 		},
 		2: {
-			chain: "BSC",
-			token: "BNB",
-			tokenSupply: 800000,
-			maxStake: 40000,
-			from: "2025-02-01T00:00:00Z",
-			to: "2025-10-31T23:59:59Z",
+			chain: "Ethereum",
+			tokenSupply: 1000,
+			maxStake: 100,
+			from: "2025-05-11T00:00:00Z",
+			to: "2027-01-01T16:59:59Z",
+			vTokenAddress: "",
 			phases: [
 				{
 					id: 1,
-					emissionRate: 100000,
-					from: "2025-02-01T00:00:00Z",
-					to: "2025-06-30T23:59:59Z",
+					emissionRate: 200,
+					from: "2025-05-11T00:00:00Z",
+					to: "2025-05-31T23:59:59Z",
 				},
 				{
 					id: 2,
-					emissionRate: 200000,
-					from: "2025-06-30T23:59:59Z",
-					to: "2025-10-31T23:59:59Z",
+					emissionRate: 800,
+					from: "2025-05-31T23:59:59Z",
+					to: "2026-01-01T16:59:59Z",
+				},
+				{
+					id: 3,
+					emissionRate: 500,
+					from: "2026-01-01T16:59:59Z",
+					to: "2027-01-01T16:59:59Z",
 				},
 			],
 		},
@@ -563,7 +570,7 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 				...state.poolData,
 				[id]: {
 					chain: "",
-					token: "",
+					vTokenAddress: "",
 					tokenSupply: 0,
 					maxStake: 0,
 					from: "",
@@ -581,6 +588,7 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 			poolData: rest,
 		});
 	},
+
 	addPhase: (poolId) =>
 		set((state) => {
 			const pool = state.poolData[poolId];
@@ -588,7 +596,11 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 			const newPhase: PhaseDataType = {
 				id: Date.now(),
 				emissionRate: 0,
-				from: "",
+				// from: Object.keys(state.poolData).length < 1 ? state.poolData[poolId].from : ,
+				from:
+					pool.phases.length < 1
+						? pool.from
+						: pool.phases.slice(-1)[0].to,
 				to: "",
 			};
 			return {

@@ -7,13 +7,12 @@ export interface ConfirmState {
 
 export interface FormDataType {
 	chain: string;
-	token: string;
 	tokenSupply: number;
 	maxStake: number;
 	from: string;
 	to: string;
 	phases: PhaseDataType[];
-	// emissionRate: string;
+	vTokenAddress: string;
 }
 
 export interface PhaseDataType {
