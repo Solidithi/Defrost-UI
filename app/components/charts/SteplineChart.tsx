@@ -188,7 +188,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 
 			sortedPhases.forEach((phase) => {
 				// Now use emissionRate directly as token amount instead of percentage
-				const phaseAmount = phase.emissionRate
+				const phaseAmount = phase.tokenAmount
 				phaseTokens.push(phaseAmount)
 				totalAllocatedToPhases += Number(phaseAmount)
 			})
@@ -305,7 +305,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 				},
 			},
 			title: {
-				text: `Token Emission Schedule - ${poolData[poolId]?.token || 'Pool ' + poolId}`,
+				text: `Token Emission Schedule - ${poolData[poolId]?.vTokenSymbol || 'Pool ' + poolId}`,
 				align: 'left',
 				style: {
 					color: '#fff',
@@ -413,7 +413,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	const getSeries = (poolId: number) => {
 		return [
 			{
-				name: `${poolData[poolId]?.token || 'Pool ' + poolId} Token Allocation`,
+				name: `${poolData[poolId]?.vTokenSymbol || 'Pool ' + poolId} Token Allocation`,
 				data: chartData[poolId]?.map((point) => point.y) || [],
 			},
 		]
@@ -473,8 +473,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 					>
 						{pool.map((poolId) => (
 							<option key={poolId} value={poolId}>
-								{poolData[poolId]?.token || `Pool ${poolId}`} -{' '}
-								{poolData[poolId]?.chain || 'Unknown Chain'}
+								{poolData[poolId]?.vTokenSymbol || `Pool ${poolId}`}
 							</option>
 						))}
 					</select>
@@ -485,10 +484,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 			<div className="mb-4">
 				<span className="font-orbitron text-base sm:text-sm">
 					Total Supply: {poolData[selectedPool].tokenSupply.toLocaleString()}{' '}
-					tokens
-				</span>
-				<span className="font-orbitron text-base sm:text-sm ml-4">
-					Chain: {poolData[selectedPool].chain || 'Not specified'}
+					{poolData[selectedPool].vTokenSymbol || 'reward tokens'}
 				</span>
 			</div>
 
@@ -512,7 +508,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 							className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 shadow-sm text-xs text-white"
 						>
 							<div className="font-bold text-cyan-400">Phase {index + 1}</div>
-							<div>{phase.emissionRate?.toLocaleString() || 0} tokens</div>
+							<div>{phase.tokenAmount?.toLocaleString() || 0} tokens</div>
 							<div className="opacity-70">
 								{new Date(phase.from).toLocaleDateString()} –{' '}
 								{new Date(phase.to).toLocaleDateString()}

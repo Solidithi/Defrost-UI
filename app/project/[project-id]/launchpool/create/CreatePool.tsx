@@ -1,4 +1,5 @@
 'use client'
+
 import { motion } from 'framer-motion'
 import { toast, ToastContainer } from 'react-toastify'
 import { red, green, blue, amber } from 'tailwindcss/colors'
@@ -11,15 +12,15 @@ import Stepper, {
 	Step,
 } from '../../../../components/UI/project-progress/Stepper'
 import { usePoolStore } from '@/app/store/launchpool'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
 	useAccount,
 	useReadContract,
 	useWriteContract,
 	useWaitForTransactionReceipt,
+	useReadContracts,
 } from 'wagmi'
 import { ethers } from 'ethers'
-import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { abi as projectHubABI } from '@/abi/ProjectHubUpgradeable.json'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { abi as ERC20MetadataABI } from '@/abi/IERC20Metadata.json'
@@ -28,33 +29,47 @@ import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
 import { useParams } from 'next/navigation'
 import Spinner from '../../../../components/UI/effect/Spinner'
 import chains from '@/app/config/chains.json'
-import { project } from '@prisma/client'
-import { getChainName } from '@/app/utils/chain'
+import { getChainName, getTokenInfoFromConfig } from '@/app/utils/chain'
 import Link from 'next/link'
 import { normalizeAddress, isValidAddressFormat } from '@/app/utils/address'
 import AlertInfo from '@/app/components/UI/shared/AlertInfo'
-import { start } from 'repl'
 import { debounce } from '@/app/utils/timing'
 import { useProjectStore } from '@/app/store/project'
 import { TransactionStatusModal } from '@/app/components/UI/shared/TransactionStatusModal'
+import { useOnChainTime } from '@/app/hooks/useOnChainTime'
+import {
+	PhaseDataType,
+	FormDataType,
+} from '@/app/types/input/create-launchpool'
 
 export default function CreatePool() {
 	/* ---------------------- Project data states ---------------------- */
 	const projectID = useParams()['project-id'].toString().trim()
-	const { currentProject, fetchProject, fetchMockProject } = useProjectStore()
+	const { currentProject } = useProjectStore()
+
+	/* ---------------------- Launchpool store ---------------------- */
+	const {
+		projectTokenAddress,
+		setTokenAddress,
+		pool,
+		poolData,
+		addPool,
+		removePool,
+		updatePoolItem,
+		addPhase,
+		removePhase,
+		updatePhase,
+		isConfirming,
+		setIsConfirming,
+		isOpenEmissionRate,
+		setIsOpenEmissionRate,
+	} = usePoolStore()
 
 	/* ---------------------- Wallet connection state ---------------------- */
 	const account = useAccount()
 	const [isProjectOwner, setIsProjectOwner] = useState(false)
 
 	/* ---------------------- Access control for PO ---------------------- */
-	// Fetch project data when user connects wallet
-	// useEffect(() => {
-	// 	if (account.address) {
-	// 		fetchProjectData()
-	// 	}
-	// }, [account.address])
-
 	// When project data mounts, check if current user is PO
 	useEffect(() => {
 		if (!currentProject) return
@@ -114,8 +129,6 @@ export default function CreatePool() {
 		})
 
 	// Project token constants
-	const projectToken =
-		'0x96b6D28DF53641A47be72F44BE8C626bf07365A8' as `0x${string}`
 	const projectTokenAmount = ethers.parseUnits('10', 18)
 
 	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
@@ -137,7 +150,7 @@ export default function CreatePool() {
 			return
 		}
 
-		if (!projectToken || !projectHubProxyAddress) {
+		if (!projectTokenAddress || !projectHubProxyAddress) {
 			toast.error('Invalid token address or contract', {
 				style: { backgroundColor: red[500], color: 'white' },
 			})
@@ -149,7 +162,7 @@ export default function CreatePool() {
 
 			await approveTokenAsync({
 				abi: ERC20ABI,
-				address: projectToken,
+				address: projectTokenAddress as `0x${string}`,
 				functionName: 'approve',
 				args: [projectHubProxyAddress, projectTokenAmount],
 			})
@@ -283,7 +296,7 @@ export default function CreatePool() {
 	} = useReadContract({
 		abi: ERC20ABI,
 		functionName: 'allowance',
-		address: projectToken,
+		address: projectTokenAddress as `0x${string}`,
 		args: [account.address, projectHubProxyAddress],
 		query: { enabled: !!account.address && !!projectHubProxyAddress },
 	})
@@ -318,24 +331,6 @@ export default function CreatePool() {
 			})
 		}
 	}, [approveTokenReceiptStatus, approveTokenReceipt, refetchAllowance])
-
-	/* ---------------------- Launchpool store ---------------------- */
-	const {
-		tokenAddress,
-		setTokenAddress,
-		pool,
-		poolData,
-		addPool,
-		removePool,
-		updatePoolItem,
-		addPhase,
-		removePhase,
-		updatePhase,
-		isConfirming,
-		setIsConfirming,
-		isOpenEmissionRate,
-		setIsOpenEmissionRate,
-	} = usePoolStore()
 
 	// Current selected pool for emission rate modal
 	const [selectedPoolId, setSelectedPoolId] = useState(null)
@@ -441,6 +436,8 @@ export default function CreatePool() {
 			field === 'from' &&
 			fromDate.getTime() !== poolFromDate.getTime()
 		) {
+			console.log('Phase from date:', fromDate)
+			console.log('Pool from date:', poolFromDate)
 			toast.error('The first phase must start at the same time as the pool.')
 			return false
 		}
@@ -471,11 +468,77 @@ export default function CreatePool() {
 		return true
 	}
 
+	/* ---------------------- Find mistakes in emission rate number when changed ---------------------- */
+	const findMistakesInEmissionRate = (
+		poolId: number,
+		phaseId: number,
+		newEmissionRate: number
+	): { mistake: string | null } => {
+		if (isNaN(newEmissionRate) || newEmissionRate <= 0) {
+			return { mistake: 'Emission rate must be a positive number.' }
+		}
+
+		const totalEmitTokens =
+			newEmissionRate +
+			poolData[poolId]?.phases?.reduce((prev, curr) => {
+				if (curr.id === phaseId) {
+					return prev
+				}
+				return prev + curr.tokenAmount
+			}, 0)
+
+		if (totalEmitTokens > poolData[poolId]?.tokenSupply) {
+			console.log('Total emitted tokens:', totalEmitTokens)
+			console.log('Pool token supply:', poolData[poolId]?.tokenSupply)
+			return {
+				mistake:
+					'Total emission rate exceeds the pool token supply. Please adjust.',
+			}
+		}
+
+		return { mistake: null }
+	}
+
+	const findMistakesInTokenSupply = (
+		poolId: number,
+		newTokenSupply: string
+	): { mistake: string | null } => {
+		const parsedTokenSupply = parseFloat(newTokenSupply)
+		if (isNaN(parsedTokenSupply) || parsedTokenSupply <= 0) {
+			return { mistake: 'Token supply must be a positive number.' }
+		}
+		const totalEmitTokens =
+			poolData[poolId]?.phases?.reduce((prev, curr) => {
+				return prev + curr.tokenAmount
+			}, 0) || 0
+		if (totalEmitTokens > parsedTokenSupply) {
+			return {
+				mistake:
+					'Total emission rate exceeds the pool token supply. Please adjust.',
+			}
+		}
+
+		return { mistake: null }
+	}
+
 	/* ---------------------- Handle Change Pool ---------------------- */
-	const handleChangePool = (poolId: number, field: string, value: string) => {
+	const handleChangePool = (
+		poolId: number,
+		field: keyof FormDataType,
+		value: string
+	) => {
 		if (field === 'from' || field === 'to') {
 			if (!validatePoolDates(poolId, field, value)) return
 		}
+
+		if (field === 'tokenSupply') {
+			const { mistake } = findMistakesInTokenSupply(poolId, value)
+			if (mistake) {
+				toast.warning(mistake)
+				return
+			}
+		}
+
 		updatePoolItem(poolId, { [field]: value })
 	}
 
@@ -483,12 +546,30 @@ export default function CreatePool() {
 	const handleChangeEmissionRate = (
 		poolId: number,
 		phaseId: number,
-		field: string,
+		field: keyof PhaseDataType,
 		value: string
 	) => {
 		if (field === 'from' || field === 'to') {
 			if (!validatePhaseDates(poolId, phaseId, field, value)) return
 		}
+
+		if (field === 'tokenAmount') {
+			const newTokenAmount = parseFloat(value as string)
+			const { mistake } = findMistakesInEmissionRate(
+				poolId,
+				phaseId,
+				newTokenAmount
+			)
+
+			if (mistake) {
+				toast.warning(mistake)
+				return
+			}
+
+			updatePhase(poolId, phaseId, { [field]: newTokenAmount })
+			return
+		}
+
 		updatePhase(poolId, phaseId, { [field]: value })
 	}
 
@@ -512,6 +593,12 @@ export default function CreatePool() {
 		setSelectedPoolId(null)
 	}
 
+	useEffect(() => {
+		if (poolData) {
+			console.log('Pool data updated:', poolData)
+		}
+	}, [poolData])
+
 	/* ---------------------- Format DateTime for Input ---------------------- */
 	const formatDateTimeLocal = (dateString: string) => {
 		if (!dateString) return ''
@@ -529,7 +616,7 @@ export default function CreatePool() {
 		console.log('Step number: ', changeToStepNumber)
 		switch (changeToStepNumber) {
 			case 2:
-				if (!isValidAddressFormat(tokenAddress as `0x${string}`)) {
+				if (!isValidAddressFormat(projectTokenAddress as `0x${string}`)) {
 					toast.error('Invalid token address format')
 				}
 				break
@@ -537,15 +624,9 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Final step: Handle Create Launchpool ---------------------- */
-	const handleCreateLaunchpool = async () => {
-		// Check wallet connection
-		if (!account || !account.isConnected) {
-			toast.warn('Connect your wallet first', {
-				style: { backgroundColor: red[500], color: 'white' },
-			})
-			return
-		}
+	const { estimateBlockNumForDate } = useOnChainTime()
 
+	const handleCreateLaunchpool = async () => {
 		// Check if approval is needed
 		if (isApprovalNeeded) {
 			toast.info('Token approval required before creating launchpool', {
@@ -562,61 +643,101 @@ export default function CreatePool() {
 		setIsTransactionStatusModalOpen(false)
 
 		try {
-			const provider = new ethers.JsonRpcProvider(
-				'https://rpc.api.moonbase.moonbeam.network'
-			)
-			const startBlock = BigInt(await provider.getBlockNumber()) + BigInt(1000)
-
-			if (
-				Object.values(poolData).reduce(
-					(acc, pool) => acc + (pool.phases?.length || 0),
-					0
-				) !== Object.keys(poolData).length
-			) {
-				console.error('phaseData and poolData length mismatch')
-				return
-			}
-
 			// Create params object exactly matching Solidity struct
-			// const createLaunchpoolCalldataBatch = poolData.map((pool, index) => {
-			// 	console.log('Encoding calldata for pool: ', pool)
-			// 	const launchpoolParams = {
-			// 		projectId: BigInt(projectID),
-			// 		projectTokenAmount: ethers.parseUnits(pool.tokenSupply.toString() , 18),
-			// 		projectToken: pool.token,
-			// 		vAsset: '0xD02D73E05b002Cb8EB7BEf9DF8Ed68ed39752465', // TODO: add this field to store this field
-			// 		startBlock: pool.from, // TODO: convert datetime to block number
-			// 		endBlock: startBlock * BigInt(2), // TODO: convert datetime to block number
-			// 		// maxVTokensPerStaker: ethers.parseUnits('1000', 18),
-			// 		maxVTokensPerStaker: ethers.parseUnits(pool.maxStake.toString(), 18),
-			// 		// changeBlocks: [startBlock, startBlock + BigInt(100)],
-			// 		changeBlocks: pool.phaseData.emissionRate
-			// 		emissionRateChanges: [
-			// 			// ethers.parseUnits('1000', 18),
-			// 			// ethers.parseUnits('500', 18),
-			// 			phaseData[index].emissionRate,
-			// 			phaseData[index],
-			// 		],
-			// 	}
+			const createLaunchpoolCalldataBatch = Object.entries(poolData).map(
+				([_, pool]) => {
+					const startBlock = estimateBlockNumForDate(pool.from)
+					const endBlock = estimateBlockNumForDate(pool.to)
+					const vTokenMetadata = getTokenInfoFromConfig(
+						chainIdStr,
+						pool.vTokenAddress
+					)
+					if (!vTokenMetadata) {
+						console.error('Cannot find vToken in config')
+						return
+					}
 
-			// 		const createLaunchpoolCalldata =
-			// 			ProjectHubUpgradeable__factory.createInterface().encodeFunctionData(
-			// 				'createLaunchpool',
-			// 				[launchpoolParams]
-			// 			)
+					const changeBlocks = [
+						startBlock,
+						...pool.phases
+							.slice(1)
+							.map((phase) => estimateBlockNumForDate(phase.from)),
+					]
+					const phaseCount = pool.phases.length
+					const emissionRateChanges = changeBlocks.map((block, index) => {
+						const currPhase = pool.phases[index]
+						const phaseTokenSupply = currPhase.tokenAmount
 
-			// 		return createLaunchpoolCalldata
-			// 	})
+						const blockDelta =
+							index < phaseCount - 1
+								? changeBlocks[index + 1] - block
+								: endBlock - block
 
-			// 	// 4. Call selfMultiCall (this matches your Foundry test)
-			// 	console.log('createLaunchpool payload: ', callPayloadBatch[0])
+						let phaseEmissionRate = phaseTokenSupply / blockDelta
 
-			// 	await selfMultiCall({
-			// 		abi: projectHubABI,
-			// 		address: projectHubProxyAddress,
-			// 		functionName: 'selfMultiCall',
-			// 		args: [callPayloadBatch],
-			// 	})
+						// Adjust each phase's emissionRate if exceed token supply (probably not needed)
+						const emissionRateError =
+							phaseTokenSupply - phaseEmissionRate * blockDelta
+						phaseEmissionRate += emissionRateError / blockDelta
+
+						console.log(
+							`Phase ${index} emission rate: ${phaseEmissionRate} tokens/block`
+						)
+
+						// Limit the maximum number of decimals
+						const formattedEmissionRate = phaseEmissionRate.toFixed(
+							projectTokenMetadata.decimals
+						)
+
+						return ethers.parseUnits(
+							formattedEmissionRate,
+							projectTokenMetadata.decimals
+						)
+					})
+
+					// Build launchpool creation params
+					const launchpoolParams = {
+						projectId: BigInt(projectID),
+						projectTokenAmount: ethers.parseUnits(
+							pool.tokenSupply.toString(),
+							projectTokenMetadata.decimals
+						),
+						projectToken: projectTokenAddress,
+						vAsset: pool.vTokenAddress,
+						startBlock,
+						endBlock,
+						maxVTokensPerStaker: ethers.parseUnits(
+							pool.maxStake.toString(),
+							vTokenMetadata.decimals
+						),
+						changeBlocks,
+						emissionRateChanges,
+					}
+
+					console.log('Launchpool params: ', launchpoolParams)
+
+					const createLaunchpoolCalldata =
+						ProjectHubUpgradeable__factory.createInterface().encodeFunctionData(
+							'createLaunchpool',
+							[launchpoolParams]
+						)
+
+					return createLaunchpoolCalldata
+				}
+			)
+
+			// 4. Call selfMultiCall
+			console.log(
+				'createLaunchpool payload: ',
+				createLaunchpoolCalldataBatch[0]
+			)
+
+			await selfMultiCall({
+				abi: projectHubABI,
+				address: projectHubProxyAddress,
+				functionName: 'selfMultiCall',
+				args: [createLaunchpoolCalldataBatch],
+			})
 		} catch (error: any) {
 			console.error('Error starting transaction:', error)
 
@@ -639,28 +760,72 @@ export default function CreatePool() {
 	const [tokenValidationMessage, setTokenValidationMessage] = useState('')
 
 	// Attempt to read token decimals (read from ZeroAddress if isValidatingToken is false)
-	const readTokenDecimals = useReadContract({
-		address: tokenAddress as `0x${string}`,
-		abi: ERC20MetadataABI,
-		functionName: 'decimals',
+	const tokenContract = useMemo(() => {
+		if (!projectTokenAddress) return
+		return {
+			address: projectTokenAddress as `0x${string}`,
+			abi: [...ERC20MetadataABI, ...ERC20ABI],
+		}
+	}, [projectTokenAddress])
+
+	const readTokenDecimalsAndSymbol = useReadContracts({
+		contracts: [
+			{
+				...tokenContract,
+				functionName: 'decimals',
+			},
+			{
+				...tokenContract,
+				functionName: 'symbol',
+			},
+		],
 	})
 
-	// Attempt to read token symbol as well (read from ZeroAddress if isValidatingToken is false)
-	const readTokenSymbol = useReadContract({
-		address: tokenAddress as `0x${string}`,
-		abi: ERC20MetadataABI,
-		functionName: 'symbol',
-	})
+	const projectTokenMetadata = useMemo(() => {
+		if (
+			!isTokenValid ||
+			!readTokenDecimalsAndSymbol ||
+			readTokenDecimalsAndSymbol.status !== 'success'
+		) {
+			return {
+				decimals: undefined,
+				symbol: undefined,
+			}
+		}
+
+		console.log('token decimals: ', readTokenDecimalsAndSymbol.data[0].result)
+		console.log('token symbol: ', readTokenDecimalsAndSymbol.data[1].result)
+		return {
+			decimals: Number(readTokenDecimalsAndSymbol.data[0].result),
+			symbol: String(readTokenDecimalsAndSymbol.data[1].result),
+		}
+	}, [readTokenDecimalsAndSymbol, isTokenValid])
+
+	// const readTokenDecimals = useReadContract({
+	// 	address: tokenAddress as `0x${string}`,
+	// 	abi: ERC20MetadataABI,
+	// 	functionName: 'decimals',
+	// })
+
+	// // Attempt to read token symbol as well (read from ZeroAddress if isValidatingToken is false)
+	// const readTokenSymbol = useReadContract({
+	// 	address: tokenAddress as `0x${string}`,
+	// 	abi: ERC20MetadataABI,
+	// 	functionName: 'symbol',
+	// })
 
 	// 500ms debounce before calling startValidatingToken()
 	useEffect(() => {
 		startValidatingTokenDebounced()
-	}, [tokenAddress])
+	}, [projectTokenAddress])
 
 	// This function decide to set `isValidatingToken` to true or not, which will trigger token validation side effects (see useEffect below
 	const startValidatingTokenDebounced = debounce(() => {
 		// Abort early if tokenAddress empty, or its format is invalid
-		if (!tokenAddress || !isValidAddressFormat(tokenAddress as `0x${string}`)) {
+		if (
+			!projectTokenAddress ||
+			!isValidAddressFormat(projectTokenAddress as `0x${string}`)
+		) {
 			setIsTokenValid(undefined)
 			setIsValidatingToken(false)
 			setTokenValidationMessage('')
@@ -677,35 +842,32 @@ export default function CreatePool() {
 			return
 		}
 
-		if (readTokenDecimals.status === 'error') {
+		if (readTokenDecimalsAndSymbol.error) {
 			setTokenValidationMessage(
-				"Sorry, we tried our best to discover the decimals of your project's token without any luck"
+				"Sorry, we tried our best to discover your project's token information without any luck"
 			)
-			console.log('read decimals error: ', readTokenDecimals.error)
-			setIsTokenValid(false)
-			setIsValidatingToken(false)
-			return
-		}
-
-		if (readTokenSymbol.status === 'error') {
-			setTokenValidationMessage(
-				"Sorry, we tried our best to discover the symbols of your project's token without any luck"
-			)
-			console.log('read symbol error: ', readTokenSymbol.error)
+			console.log('read token error: ', readTokenDecimalsAndSymbol.error)
 			setIsTokenValid(false)
 			setIsValidatingToken(false)
 			return
 		}
 
 		if (
-			readTokenDecimals.status === 'success' &&
-			readTokenSymbol.status === 'success'
+			readTokenDecimalsAndSymbol.status === 'success' &&
+			readTokenDecimalsAndSymbol.data[0].status === 'success' &&
+			readTokenDecimalsAndSymbol.data[1].status === 'success'
 		) {
 			setTokenValidationMessage(`Token validated successfully.`)
 			setIsTokenValid(true)
 			setIsValidatingToken(false)
 		}
-	}, [readTokenDecimals, readTokenSymbol, isValidatingToken])
+	}, [readTokenDecimalsAndSymbol, isValidatingToken])
+
+	/* ---------------------- currentChainConfig ---------------------- */
+	const currentChainConfig = useMemo(() => {
+		if (!account.isConnected) return null
+		return chains[chainIdStr as keyof typeof chains]
+	}, [account.chainId])
 
 	/* ---------------------- Debug: Log store when poolData or phaseData changes ---------------------- */
 	// useEffect(() => {
@@ -824,7 +986,7 @@ export default function CreatePool() {
 							<div className="relative w-full">
 								<input
 									id="projectName"
-									value={tokenAddress}
+									value={projectTokenAddress}
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
 									className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
@@ -843,18 +1005,19 @@ export default function CreatePool() {
 										{isTokenValid ? (
 											<div>
 												<p>{tokenValidationMessage}</p>
-												{!!readTokenSymbol.data && !!readTokenDecimals.data && (
-													<p className="text-sm mt-1">
-														Token Symbol:{' '}
-														<span className="font-medium">
-															{String(readTokenSymbol.data)}
-														</span>{' '}
-														| Decimals:{' '}
-														<span className="font-medium">
-															{Number(readTokenDecimals.data)}
-														</span>
-													</p>
-												)}
+												{projectTokenMetadata.decimals &&
+													projectTokenMetadata.symbol && (
+														<p className="text-sm mt-1">
+															Token Symbol:{' '}
+															<span className="font-medium">
+																{projectTokenMetadata.decimals}
+															</span>{' '}
+															| Decimals:{' '}
+															<span className="font-medium">
+																{projectTokenMetadata.symbol}
+															</span>
+														</p>
+													)}
 											</div>
 										) : (
 											<div>
@@ -870,7 +1033,7 @@ export default function CreatePool() {
 							)}
 
 							{isTokenValid == undefined &&
-								tokenAddress &&
+								projectTokenAddress &&
 								!isValidatingToken && (
 									<div className="text-sm text-gray-400 italic">
 										Please enter a complete token address
@@ -954,17 +1117,33 @@ export default function CreatePool() {
 
 												<div className="relative group">
 													<select
-														value={poolData[index]?.token || ''}
-														onChange={(e) =>
-															handleChangePool(index, 'token', e.target.value)
-														}
+														value={poolData[poolId]?.vTokenAddress || ''}
+														onChange={(e) => {
+															const selectedOption =
+																e.target.options[e.target.selectedIndex]
+															const vTokenAddress = selectedOption.value
+															console.log('vToken selected: ', vTokenAddress)
+															handleChangePool(
+																poolId,
+																'vTokenAddress',
+																vTokenAddress
+															)
+															handleChangePool(
+																poolId,
+																'vTokenSymbol',
+																selectedOption.text
+															)
+														}}
 														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
-															Select your token
+															Select staking token
 														</option>
-														<option value="vDOT">vDOT</option>
-														<option value="vGLMR">vGLMR</option>
+														{currentChainConfig?.tokens.map((token) => (
+															<option key={token.address} value={token.address}>
+																{token.symbol}
+															</option>
+														))}
 													</select>
 
 													{/* Custom dropdown arrow */}
@@ -994,11 +1173,13 @@ export default function CreatePool() {
 											<div className="flex gap-5">
 												<input
 													type="number"
-													value={poolData[index]?.tokenSupply || ''}
+													value={poolData[poolId]?.tokenSupply || 1}
+													min={1}
 													onChange={(e) => {
 														const value = e.target.value
 														if (/^\d*$/.test(value)) {
-															handleChangePool(index, 'tokenSupply', value)
+															console.log('value: ', value)
+															handleChangePool(poolId, 'tokenSupply', value)
 														}
 													}}
 													onKeyDown={(e) => {
@@ -1028,11 +1209,11 @@ export default function CreatePool() {
 											</span>
 											<input
 												type="number"
-												value={poolData[index]?.maxStake || ''}
+												value={poolData[poolId]?.maxStake || ''}
 												onChange={(e) => {
 													const value = e.target.value
 													if (/^\d*$/.test(value)) {
-														handleChangePool(index, 'maxStake', value)
+														handleChangePool(poolId, 'maxStake', value)
 													}
 												}}
 												onKeyDown={(e) => {
@@ -1055,9 +1236,11 @@ export default function CreatePool() {
 											<span className="font-orbitron text-lg">From</span>
 											<input
 												type="datetime-local"
-												value={formatDateTimeLocal(poolData[index]?.from) || ''}
+												value={
+													formatDateTimeLocal(poolData[poolId]?.from) || ''
+												}
 												onChange={(e) =>
-													handleChangePool(index, 'from', e.target.value)
+													handleChangePool(poolId, 'from', e.target.value)
 												}
 												placeholder="Enter start date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
@@ -1068,9 +1251,9 @@ export default function CreatePool() {
 											<span className="font-orbitron text-lg">To</span>
 											<input
 												type="datetime-local"
-												value={formatDateTimeLocal(poolData[index]?.to) || ''}
+												value={formatDateTimeLocal(poolData[poolId]?.to) || ''}
 												onChange={(e) =>
-													handleChangePool(index, 'to', e.target.value)
+													handleChangePool(poolId, 'to', e.target.value)
 												}
 												placeholder="Enter end date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
@@ -1154,8 +1337,10 @@ export default function CreatePool() {
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Token Address:</span>
 											<span className="font-mono text-blue-400">
-												{tokenAddress.substring(0, 12)}...
-												{tokenAddress.substring(tokenAddress.length - 6)}
+												{projectTokenAddress.substring(0, 12)}...
+												{projectTokenAddress.substring(
+													projectTokenAddress.length - 6
+												)}
 											</span>
 										</div>
 										<div className="flex justify-between text-gray-300 mb-2">
@@ -1428,17 +1613,17 @@ export default function CreatePool() {
 										</Button>
 										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
 											<span className="font-orbitron text-base sm:text-lg">
-												Emission Rate
+												Emitted tokens for this period
 											</span>
 											<div className="relative w-full">
 												<input
 													type="number"
-													value={phase.emissionRate || ''}
+													value={phase.tokenAmount || ''}
 													onChange={(e) =>
 														handleChangeEmissionRate(
 															selectedPoolId,
 															phase.id,
-															'emissionRate',
+															'tokenAmount',
 															e.target.value
 														)
 													}

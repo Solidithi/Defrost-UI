@@ -22,7 +22,7 @@ import { useProjectStore } from '@/app/store/project'
 
 const EditPool = () => {
 	const {
-		tokenAddress,
+		projectTokenAddress,
 		setTokenAddress,
 		pool,
 		poolData,
@@ -270,7 +270,7 @@ const EditPool = () => {
 							<div className="relative w-full">
 								<input
 									id="projectName"
-									value={tokenAddress}
+									value={projectTokenAddress}
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
 									className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
@@ -585,8 +585,10 @@ const EditPool = () => {
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Token Address:</span>
 											<span className="font-mono text-blue-400">
-												{tokenAddress.substring(0, 12)}...
-												{tokenAddress.substring(tokenAddress.length - 6)}
+												{projectTokenAddress.substring(0, 12)}...
+												{projectTokenAddress.substring(
+													projectTokenAddress.length - 6
+												)}
 											</span>
 										</div>
 										<div className="flex justify-between text-gray-300 mb-2">
@@ -678,7 +680,7 @@ const EditPool = () => {
 											<div className="relative w-full">
 												<input
 													type="number"
-													value={phase.emissionRate || ''}
+													value={phase.tokenAmount || ''}
 													onChange={(e) =>
 														handleChangeEmissionRate(
 															selectedPoolId,

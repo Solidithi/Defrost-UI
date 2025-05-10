@@ -25,10 +25,10 @@ export default function ProjectLayout({
 			return
 		}
 
-		if (false) {
-			// fetchMockProject(chainId, projectID, address)
+		if (process.env.NODE_ENV === 'development') {
+			fetchMockProject(chainId, projectID, address)
 		} else {
-			fetchProject(projectID, true)
+			// fetchProject(projectID, true)
 		}
 	}, [projectID, address])
 

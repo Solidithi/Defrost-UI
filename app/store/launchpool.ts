@@ -494,56 +494,56 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 	pool: [1, 2],
 	poolData: {
 		1: {
-			chain: "Ethereum",
 			tokenSupply: 1000,
 			maxStake: 100,
 			from: "2025-05-11T00:00:00Z",
 			to: "2027-01-01T16:59:59Z",
 			vTokenAddress: "",
+			vTokenSymbol: "",
 			phases: [
 				{
 					id: 1,
-					emissionRate: 200,
+					tokenAmount: 200,
 					from: "2025-05-11T00:00:00Z",
 					to: "2025-05-31T23:59:59Z",
 				},
 				{
 					id: 2,
-					emissionRate: 800,
+					tokenAmount: 800,
 					from: "2025-05-31T23:59:59Z",
 					to: "2026-01-01T16:59:59Z",
 				},
 				{
 					id: 3,
-					emissionRate: 500,
+					tokenAmount: 500,
 					from: "2026-01-01T16:59:59Z",
 					to: "2027-01-01T16:59:59Z",
 				},
 			],
 		},
 		2: {
-			chain: "Ethereum",
 			tokenSupply: 1000,
 			maxStake: 100,
 			from: "2025-05-11T00:00:00Z",
 			to: "2027-01-01T16:59:59Z",
 			vTokenAddress: "",
+			vTokenSymbol: "",
 			phases: [
 				{
 					id: 1,
-					emissionRate: 200,
+					tokenAmount: 200,
 					from: "2025-05-11T00:00:00Z",
 					to: "2025-05-31T23:59:59Z",
 				},
 				{
 					id: 2,
-					emissionRate: 800,
+					tokenAmount: 800,
 					from: "2025-05-31T23:59:59Z",
 					to: "2026-01-01T16:59:59Z",
 				},
 				{
 					id: 3,
-					emissionRate: 500,
+					tokenAmount: 500,
 					from: "2026-01-01T16:59:59Z",
 					to: "2027-01-01T16:59:59Z",
 				},
@@ -569,8 +569,8 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 			poolData: {
 				...state.poolData,
 				[id]: {
-					chain: "",
 					vTokenAddress: "",
+					vTokenSymbol: "",
 					tokenSupply: 0,
 					maxStake: 0,
 					from: "",
@@ -595,7 +595,7 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 			if (!pool) return {};
 			const newPhase: PhaseDataType = {
 				id: Date.now(),
-				emissionRate: 0,
+				tokenAmount: 0,
 				// from: Object.keys(state.poolData).length < 1 ? state.poolData[poolId].from : ,
 				from:
 					pool.phases.length < 1
