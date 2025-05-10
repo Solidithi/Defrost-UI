@@ -6,20 +6,35 @@ export function getChainName(chainID: number): string {
 	return chains[chainIDKey]?.chainName || "Unknown Chain";
 }
 
+export function getChainFromConfig(
+	chainID: number
+): (typeof chains)[keyof typeof chains] {
+	const chainIDKey = chainID.toString() as keyof typeof chains;
+	return chains[chainIDKey];
+}
+
 export function getTokenInfoFromConfig(
-	chainID: number,
+	chainID: number | string,
 	tokenAddress: string | undefined
-): { symbol: string; decimals: number } | undefined {
-	// Check if tokenAddress is defined and not empty
+):
+	| {
+			symbol: string;
+			decimals: number;
+			address: string;
+			name: string;
+			alias?: string;
+	  }
+	| undefined {
 	if (!tokenAddress) {
 		return undefined;
 	}
 
-	const token = chains[chainID.toString() as keyof typeof chains].tokens.find(
+	if (typeof chainID === "number") {
+		chainID = chainID.toString();
+	}
+	const token = chains[chainID as keyof typeof chains].tokens.find(
 		(token) =>
 			normalizeAddress(token.address) === normalizeAddress(tokenAddress)
 	);
-	return token
-		? { symbol: token.symbol, decimals: token.decimals }
-		: undefined;
+	return token;
 }
