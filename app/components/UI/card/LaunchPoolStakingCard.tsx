@@ -11,7 +11,9 @@ import { useMemo, useEffect } from 'react'
 import { BaseStakingCard } from './BaseStakingCard'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
-import { useStakingStore } from '@/app/store/my-staking'
+import { useStakingStore, LaunchpoolTokenInfo } from '@/app/store/my-staking'
+import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
+import { useLaunchpoolNameAndDescription } from '@/app/hooks/usePoolNameAndDescription'
 
 interface LaunchpoolStakingCardProps {
 	pool: EnrichedLaunchpool
@@ -31,10 +33,13 @@ export function LaunchpoolStakingCard({
 
 	/* ---------------------- Access staking store ---------------------- */
 	const {
-		tokensInfo,
 		setTokensInfo,
 		setPoolClaimableRewardsFormatted: setUserClaimableRewards,
 	} = useStakingStore()
+
+	// Use the hook for all token info
+	const { tokensInfo } = useLaunchpoolTokenInfo(pool)
+	const launchpoolTokenInfo = tokensInfo as LaunchpoolTokenInfo
 
 	/* ---------------------- Read from contract ---------------------- */
 	const account = useAccount()
@@ -191,7 +196,7 @@ export function LaunchpoolStakingCard({
 					Number(
 						formatUnits(
 							claimableRewards as bigint,
-							Number(tokensInfo?.vTokenInfo?.decimals || 18)
+							Number(launchpoolTokenInfo.vTokenInfo?.decimals || 18)
 						)
 					)
 				)
@@ -213,12 +218,15 @@ export function LaunchpoolStakingCard({
 		},
 	}
 
+	/**----------------- Get derived pool name and description ------------------ */
+	const { name, description } = useLaunchpoolNameAndDescription(pool)
+
 	return (
 		<BaseStakingCard
 			hasStake={hasStake}
-			image={placeHolderImage}
-			name={pool.name}
-			description={pool.description || ''}
+			image="/placeholders/card-thumbnail-1.png"
+			name={name}
+			description={description || ''}
 			onClick={onSelect}
 		>
 			<div className="flex justify-between items-center mb-4">

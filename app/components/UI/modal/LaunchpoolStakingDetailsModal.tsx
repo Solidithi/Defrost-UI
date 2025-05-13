@@ -11,7 +11,10 @@ import {
 import { Info, Zap, Award, ArrowRight } from 'lucide-react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { parseUnits, formatUnits } from 'ethers'
-import { useSelectedPoolTokensInfo } from '@/app/store/my-staking'
+import {
+	LaunchpoolTokenInfo,
+	useSelectedPoolTokensInfo,
+} from '@/app/store/my-staking'
 import {
 	useAccount,
 	useBalance,
@@ -32,6 +35,9 @@ import {
 import { useApproveAndeDepositToken } from '@/app/hooks/useApproveAndSendToken'
 import Spinner from '../effect/Spinner'
 import { toast, ToastContainer } from 'react-toastify'
+import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
+import { useLaunchpoolNameAndDescription } from '@/app/hooks/usePoolNameAndDescription'
+import Decimal from 'decimal.js'
 
 function getFunctionAbiFromIface(factory: any, functionName: string): any {
 	return [factory.abi.find((f: any) => f.name === functionName)]
@@ -58,7 +64,8 @@ export function LaunchpoolStakingDetailsModal({
 	const account = useAccount()
 
 	// Get token info from the store
-	const tokensInfo = useSelectedPoolTokensInfo()
+	// const tokensInfo = useSelectedPoolTokensInfo()
+	const { tokensInfo, rewards } = usePoolTokenInfo(pool)
 
 	const hasStake = yourStakePercent > 0
 
@@ -102,33 +109,34 @@ export function LaunchpoolStakingDetailsModal({
 	})
 
 	/* ---------------------- Handle pending rewards ---------------------- */
-	const { data: pendingRewards } = useReadContract({
-		address: pool.id as `0x${string}`,
-		abi: getFunctionAbiFromIface(
-			Launchpool__factory,
-			'getClaimableProjectToken'
-		),
-		functionName: 'getClaimableProjectToken',
-		args: [account.address!],
-		query: {
-			enabled: !!account.address && !!pool.id && hasStake,
-		},
-	})
+	// const { data: pendingRewards } = useReadContract({
+	// 	address: pool.id as `0x${string}`,
+	// 	abi: getFunctionAbiFromIface(
+	// 		Launchpool__factory,
+	// 		'getClaimableProjectToken'
+	// 	),
+	// 	functionName: 'getClaimableProjectToken',
+	// 	args: [account.address!],
+	// 	query: {
+	// 		enabled: !!account.address && !!pool.id && hasStake,
+	// 	},
+	// })
 
 	// Format pending rewards with proper decimals and abbreviation
-	const formattedPendingRewards = pendingRewards
-		? formatTokenAmount(
-				formatUnits(
-					pendingRewards as bigint,
-					safeTokensInfo.projectTokenInfo.decimals
-				),
-				{
-					symbol: safeTokensInfo.projectTokenInfo.symbol,
-					maxDecimals: 6,
-					maxChars: 10,
-				}
-			)
-		: '0.00'
+	// const formattedPendingRewards = pendingRewards
+	// 	? formatTokenAmount(
+	// 			formatUnits(
+	// 				pendingRewards as bigint,
+	// 				safeTokensInfo.projectTokenInfo.decimals
+	// 			),
+	// 			{
+	// 				symbol: safeTokensInfo.projectTokenInfo.symbol,
+	// 				maxDecimals: 6,
+	// 				maxChars: 10,
+	// 			}
+	// 		)
+	// 	: '0.00'
+	const formattedPendingRewards = rewards.formatted
 
 	// Calculate estimated rewards based on APY and stake amount
 	const calculateRewards = (amount: string, apy: number, period: number) => {
@@ -175,13 +183,13 @@ export function LaunchpoolStakingDetailsModal({
 
 	const isClaimButtonDisabled = useMemo(() => {
 		return (
-			!pendingRewards ||
-			BigInt(pendingRewards.toString()) === BigInt(0) ||
+			!rewards.claimable ||
+			BigInt(rewards.claimable.toString()) === BigInt(0) ||
 			claimRewardsStatus === 'pending' ||
 			(claimRewardsStatus === 'success' &&
 				claimRewardsConfirmStatus === 'pending')
 		)
-	}, [pendingRewards, claimRewardsStatus, claimRewardsConfirmStatus])
+	}, [formattedPendingRewards, claimRewardsStatus, claimRewardsConfirmStatus])
 
 	/* ---------------------- Handle stake amount change ---------------------- */
 	const [stakeAmount, setStakeAmount] = useState('')
@@ -317,6 +325,9 @@ export function LaunchpoolStakingDetailsModal({
 		}
 	}, [unstakeConfirmStatus])
 
+	/* ---------------------- Get derived pool name and description ---------------------- */
+	const { name, description } = usePoolNameAndDescription(pool)
+
 	/* ---------------------- User interface ---------------------- */
 	return (
 		<div className="text-white">
@@ -324,15 +335,15 @@ export function LaunchpoolStakingDetailsModal({
 				<div className="relative w-16 h-16 rounded-xl overflow-hidden">
 					<Image
 						src={pool.image || '/placeholder.svg'}
-						alt={pool.name}
+						alt={name}
 						width={64}
 						height={64}
 						className="w-full h-full object-cover"
 					/>
 				</div>
 				<div>
-					<h2 className="text-2xl font-bold">{pool.name}</h2>
-					<p className="text-white/80">{pool.description}</p>
+					<h2 className="text-2xl font-bold">{name}</h2>
+					<p className="text-white/80">{description}</p>
 				</div>
 			</div>
 

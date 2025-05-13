@@ -11,7 +11,6 @@ import {
 	useStakingStore,
 	useFilteredPools,
 	useSelectedPool,
-	useSelectedPoolTokensInfo,
 	useTotalClaimableRewardsFormatted,
 } from '@/app/store/my-staking'
 import { useAccount, useReadContract } from 'wagmi'
@@ -33,13 +32,16 @@ export function MyStakingPage() {
 
 	const filteredPools = useFilteredPools()
 	const selectedPool = useSelectedPool()
-	const selectedTokensInfo = useSelectedPoolTokensInfo()
+	// const selectedTokensInfo = useSelectedPoolTokensInfo()
 	const account = useAccount()
 
 	// Fetch pools when component mounts or when account changes
 	useEffect(() => {
-		fetchPools()
-	}, [fetchPools, account.address])
+		if (!account.isConnected || !account.address || !account.chainId) {
+			return
+		}
+		fetchPools(account.address, account.chainId)
+	}, [fetchPools, account.address, account.chainId])
 
 	// Read staking data for selected pool
 	const { data: yourNativeStake, status: readStakerNativeAmountStatus } =

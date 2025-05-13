@@ -12,6 +12,7 @@ import {
 import React, { type ReactNode } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 import { NavBarControlProvider } from './navbar-control'
+import '@/app/lib/superjson-init'
 
 // Set up queryClient
 const queryClient = new QueryClient()
