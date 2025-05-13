@@ -12,10 +12,6 @@ import { Info, Zap, Award, ArrowRight } from 'lucide-react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { parseUnits, formatUnits } from 'ethers'
 import {
-	LaunchpoolTokenInfo,
-	useSelectedPoolTokensInfo,
-} from '@/app/store/my-staking'
-import {
 	useAccount,
 	useBalance,
 	useReadContract,
@@ -35,9 +31,8 @@ import {
 import { useApproveAndeDepositToken } from '@/app/hooks/useApproveAndSendToken'
 import Spinner from '../effect/Spinner'
 import { toast, ToastContainer } from 'react-toastify'
-import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
 import { useLaunchpoolNameAndDescription } from '@/app/hooks/usePoolNameAndDescription'
-import Decimal from 'decimal.js'
+import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
 
 function getFunctionAbiFromIface(factory: any, functionName: string): any {
 	return [factory.abi.find((f: any) => f.name === functionName)]
@@ -65,7 +60,7 @@ export function LaunchpoolStakingDetailsModal({
 
 	// Get token info from the store
 	// const tokensInfo = useSelectedPoolTokensInfo()
-	const { tokensInfo, rewards } = usePoolTokenInfo(pool)
+	const { tokensInfo, rewards } = useLaunchpoolTokenInfo(pool)
 
 	const hasStake = yourStakePercent > 0
 
@@ -326,7 +321,7 @@ export function LaunchpoolStakingDetailsModal({
 	}, [unstakeConfirmStatus])
 
 	/* ---------------------- Get derived pool name and description ---------------------- */
-	const { name, description } = usePoolNameAndDescription(pool)
+	const { name, description } = useLaunchpoolNameAndDescription(pool)
 
 	/* ---------------------- User interface ---------------------- */
 	return (
