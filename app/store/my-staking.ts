@@ -11,7 +11,7 @@ import { SortOrderType } from "../components/UI/filter/StakingFilter";
 import { formatTokenAmount } from "../utils/display";
 import { launchpool } from "@prisma/client";
 import { parse } from "superjson";
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 
 // Base token information
 interface TokenInfo {
@@ -263,28 +263,60 @@ export const useStakingStore = create<StakingStore>()(
 
 // Selector functions for derived data
 export const useFilteredPools = () => {
-	const { pools, activeTab, activeFilters } = useStakingStore();
-	const [filteredPools, setFilteredPools] = useState<typeof pools>({
-		launchpools: [],
-	});
+	const pools = useStakingStore((state) => state.pools);
+	const activeTab = useStakingStore((state) => state.activeTab);
+	const activePoolTypes = useStakingStore(
+		(state) => state.activeFilters.activePoolTypes
+	);
+	const activeSortOrder = useStakingStore(
+		(state) => state.activeFilters.activeSortOrder
+	);
 
-	// Return filtered pools based on active tab and filters changes
-	useEffect(() => {
-		setFilteredPools({
-			launchpools: pools.launchpools.filter((pool) => {
-				// Filter by status
-				if (activeTab === "active" && pool.status !== "active")
-					return false;
-				if (activeTab === "ended" && pool.status !== "ended")
-					return false;
+	// Using primitive dependencies instead of objects for better performance
+	return useMemo(() => {
+		console.log("Filter recalculating...");
+		console.log("Active tab:", activeTab);
+		console.log("Active pool types:", activePoolTypes);
 
-				// Filter by type
-				return activeFilters.activePoolTypes.includes("launchpool");
-			}),
+		// Filter by status and type
+		const filteredLaunchpools = pools.launchpools.filter((pool) => {
+			// Status filtering
+			if (activeTab === "all") return true;
+
+			if (pool.status !== activeTab) return false;
+
+			// Type filtering
+			return activePoolTypes.includes("launchpool");
 		});
-	}, [pools, activeTab, activeFilters]);
 
-	return filteredPools;
+		// Sort the filtered pools
+		const sortedLaunchpools = [...filteredLaunchpools].sort((a, b) => {
+			switch (activeSortOrder) {
+				case "Highest APY":
+					return b.staker_apy.minus(a.staker_apy).toNumber();
+				case "Lowest APY":
+					return a.staker_apy.minus(b.staker_apy).toNumber();
+				case "Recently Added":
+					return (
+						new Date(b.created_at).getTime() -
+						new Date(a.created_at).getTime()
+					);
+				case "Ending Soon":
+					return (
+						new Date(a.created_at).getTime() -
+						new Date(b.created_at).getTime()
+					);
+				default:
+					return 0;
+			}
+		});
+
+		console.log("Filtered and sorted pools:", sortedLaunchpools);
+
+		return {
+			launchpools: sortedLaunchpools,
+		};
+	}, [pools.launchpools, activeTab, activePoolTypes, activeSortOrder]);
 };
 
 export const useSelectedPool = () => {

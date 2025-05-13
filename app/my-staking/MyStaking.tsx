@@ -307,9 +307,9 @@ export function MyStakingPage() {
 						{/* Staking Pools Grid */}
 						{filteredPools.launchpools.length > 0 ? (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-								{filteredPools.launchpools.map((pool) => (
+								{filteredPools.launchpools.map((pool, index) => (
 									<LaunchpoolStakingCard
-										key={pool.id}
+										key={index}
 										pool={pool}
 										onSelect={() => selectPool(pool.id, 'launchpool')}
 									/>

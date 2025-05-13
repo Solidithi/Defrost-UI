@@ -18,7 +18,6 @@ import {
 	useWaitForTransactionReceipt,
 	useWriteContract,
 } from 'wagmi'
-import { abi as erc20ABI } from '@/abi/ERC20.json'
 import { Launchpool__factory } from '@/app/types/typechain'
 import { formatTokenAmount, formatUsdValue } from '@/app/utils/display'
 import { cn } from '@/app/lib/utils'
@@ -329,7 +328,8 @@ export function LaunchpoolStakingDetailsModal({
 			<div className="flex items-center gap-4 mb-6">
 				<div className="relative w-16 h-16 rounded-xl overflow-hidden">
 					<Image
-						src={pool.image || '/placeholder.svg'}
+						// src={pool.image || '/placeholder.svg'}
+						src="/token-logos/vdot.webp"
 						alt={name}
 						width={64}
 						height={64}
