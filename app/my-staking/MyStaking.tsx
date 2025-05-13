@@ -120,9 +120,10 @@ export function MyStakingPage() {
 		0
 	)
 
-	const { setIsNavbarShown } = useNavBarControl()
+	const { setIsNavbarShown, setReactToScroll } = useNavBarControl()
 	useEffect(() => {
 		setIsNavbarShown(!showDetailsModal)
+		setReactToScroll(!showDetailsModal)
 	}, [showDetailsModal])
 
 	return (

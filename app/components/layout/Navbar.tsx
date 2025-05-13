@@ -26,9 +26,12 @@ const Navbar = ({
 	const toggleNavbar = () => setToggle(!toggle)
 
 	// const { scrollY } = useScroll()
-	const { isNavbarShown, setIsNavbarShown } = useNavBarControl()
+	const { isNavbarShown, setIsNavbarShown, reactToScroll } = useNavBarControl()
 
 	useEffect(() => {
+		if (!reactToScroll) {
+			return
+		}
 		let lastScrollY = window.scrollY
 
 		const handleScroll = () => {

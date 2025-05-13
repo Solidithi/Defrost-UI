@@ -7,6 +7,8 @@ interface NavBarControlContextType {
 	isNavbarShown: boolean
 	setIsNavbarShown: (isShown: boolean) => void
 	toggleIsNavbarShow: () => void
+	reactToScroll: boolean // For cases when we want the navbar to get the f* outta the way at all cost
+	setReactToScroll: (isHidden: boolean) => void
 }
 
 const NavBarControlContext = createContext<
@@ -18,14 +20,17 @@ export function NavBarControlProvider({
 }: {
 	children: React.ReactNode
 }) {
-	const [isShown, setIsShown] = useState(false)
+	const [isNavbarShown, setIsNavbarShown] = useState(false)
+	const [reactToScroll, setReactToScroll] = useState(false)
 
 	return (
 		<NavBarControlContext.Provider
 			value={{
-				isNavbarShown: isShown,
-				setIsNavbarShown: (isShown: boolean) => setIsShown(isShown),
-				toggleIsNavbarShow: () => setIsShown((prev) => !prev),
+				isNavbarShown,
+				setIsNavbarShown,
+				toggleIsNavbarShow: () => setIsNavbarShown((prev) => !prev),
+				reactToScroll,
+				setReactToScroll,
 			}}
 		>
 			{children}
