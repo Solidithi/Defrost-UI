@@ -11,7 +11,7 @@ import { useMemo, useEffect } from 'react'
 import { BaseStakingCard } from './BaseStakingCard'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
-import { useStakingStore, LaunchpoolTokenInfo } from '@/app/store/my-staking'
+import { useStakingStore, LaunchpoolTokenInfo } from '@/app/store/staking'
 import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
 import { useLaunchpoolNameAndDescription } from '@/app/hooks/usePoolNameAndDescription'
 

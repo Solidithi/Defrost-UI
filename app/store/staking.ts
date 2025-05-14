@@ -58,6 +58,24 @@ interface UserPoolStaking {
 	formattedClaimableRewards: number;
 }
 
+interface LaunchpoolStakingInfo {
+	totalVTokenStake: bigint;
+	totalNativeStake: bigint;
+	yourNativeStake: bigint;
+	withdrawableVTokens: bigint;
+	yourShare: number; // in percentage
+	claimableReward: bigint; // in project token
+	updatedAt: number; // timestamp of the last update (milliseconds)
+
+	readTotalNativeStakeStatus: "pending" | "success" | "error";
+	readYourNativeStakeStatus: "pending" | "success" | "error";
+	readTotalVTokenStakeStatus: "pending" | "success" | "error";
+	readWithdrawableVTokensStatus: "pending" | "success" | "error";
+	readClaimableRewardStatus: "pending" | "success" | "error";
+}
+
+export type StakingInfo = LaunchpoolStakingInfo; // Add more types here |
+
 type StakingStore = {
 	// Pool data
 	pools: {
@@ -71,6 +89,7 @@ type StakingStore = {
 	tokensInfo: Record<string, PoolTokenInfo>; // Mapped by pool.id
 
 	userStakingData: Record<string, UserPoolStaking>; // Mapped by pool.id
+	stakingInfo: Record<string, StakingInfo>; // Mapped by pool.id
 
 	// UI state
 	activeTab: "all" | "active" | "ended";
@@ -83,15 +102,17 @@ type StakingStore = {
 	showDetailsModal: boolean;
 
 	// Actions
+	getStakingInfo: (poolID: `0x${string}`) => StakingInfo | null;
 	setActiveTab: (tab: "all" | "active" | "ended") => void;
 	setActiveFilters: (filters: {
 		activePoolTypes: PoolType[];
 		activeSortOrder: SortOrderType;
 	}) => void;
-	selectPool: (id: string, type: PoolType) => void;
+	selectPool: (ID: `0x${string}`, type: PoolType) => void;
 	closeDetailsModal: () => void;
 	setPools: (pools: EnrichedLaunchpool[]) => void;
-	setTokensInfo: (poolId: string, info: PoolTokenInfo) => void;
+	setTokensInfo: (poolID: `0x${string}`, info: PoolTokenInfo) => void;
+	setStakingInfo: (poolID: `0x${string}`, info: StakingInfo) => void;
 	fetchPools: (userID: `0x${string}`, chainID: number) => Promise<void>;
 
 	setPoolClaimableRewardsFormatted: (
@@ -109,6 +130,7 @@ export const useStakingStore = create<StakingStore>()(
 			},
 			isLoading: false,
 			tokensInfo: {},
+			stakingInfo: {},
 			activeTab: "all",
 			activeFilters: {
 				activePoolTypes: ["launchpool"],
@@ -120,6 +142,9 @@ export const useStakingStore = create<StakingStore>()(
 			userStakingData: {},
 
 			// Actions
+			getStakingInfo: (poolID: `0x${string}`) => {
+				return get().stakingInfo[poolID] || null;
+			},
 			setActiveTab: (tab) => set({ activeTab: tab }),
 			setActiveFilters: (filters) => set({ activeFilters: filters }),
 			selectPool: (id, type) =>
@@ -136,14 +161,21 @@ export const useStakingStore = create<StakingStore>()(
 						launchpools,
 					},
 				}),
-			setTokensInfo: (poolId, info) =>
+			setTokensInfo: (poolID, info) =>
 				set({
 					tokensInfo: {
 						...get().tokensInfo,
-						[poolId]: info,
+						[poolID]: info,
 					},
 				}),
-
+			setStakingInfo: (poolID: `0x${string}`, info: StakingInfo) => {
+				set({
+					stakingInfo: {
+						...get().stakingInfo,
+						[poolID]: info,
+					},
+				});
+			},
 			fetchPools: async (userID: `0x${string}`, chainID: number) => {
 				set({ isLoading: true });
 				try {
@@ -175,66 +207,6 @@ export const useStakingStore = create<StakingStore>()(
 					set({ isLoading: false });
 				}
 			},
-
-			// fetchPools: async () => {
-			// 	set({ isLoading: true });
-			// 	try {
-			// 		// Simulating API call - replace with your actual data fetching
-			// 		// const response = await fetch('/api/pools')
-			// 		// const launchpools = await response.json()
-			// 		await new Promise((resolve) => setTimeout(resolve, 2000));
-
-			// 		// For now, use mock data
-			// 		const launchpools: EnrichedLaunchpool[] = Array(6)
-			// 			.fill(0)
-			// 			.map((_, index) => ({
-			// 				id:
-			// 					index < 3
-			// 						? `0xfbe66a07021d7cf5bd89486abe9690421dcc649b`
-			// 						: "0x",
-			// 				pool_id: `{index}`,
-			// 				project_id: "dot-staking",
-			// 				tx_hash: "0x123abc",
-			// 				chain_id: 1287,
-			// 				type: "launchpool",
-			// 				name: "vDOT Flexible Staking",
-			// 				description:
-			// 					"Liquid staking for Polkadot with flexible redemption",
-			// 				image: "/placeholder.svg?height=200&width=200",
-			// 				staker_apy: new Decimal(245837.23),
-			// 				durationSeconds: 30 * 86400,
-			// 				v_asset_address:
-			// 					"0xd02d73e05b002cb8eb7bef9df8ed68ed39752465",
-			// 				native_asset_address:
-			// 					"0x7a4ebae8ca815b9f52f23a8ac9a2f707d4d4ff81",
-			// 				total_staked: new Decimal(1068 * 10 ** 18),
-			// 				status: "active" as LaunchpoolStatus,
-			// 				start_date: new Date(Date.now() / 1000 - 86400), // Yesterday
-			// 				end_date: new Date(Date.now() / 1000 + 29 * 86400), // 29 days from now
-			// 				created_at: new Date(Date.now() / 1000 - 86400), // Yesterday
-			// 				updated_at: new Date(Date.now() / 1000 - 86400), // Yesterday
-			// 				project_token_address:
-			// 					"0x96b6D28DF53641A47be72F44BE8C626bf07365A8",
-			// 				// Adding missing properties from EnrichedLaunchpool
-			// 				start_block: new Decimal(1000000),
-			// 				end_block: new Decimal(2000000),
-			// 				total_stakers: 250,
-			// 				owner_apy: new Decimal(10.5),
-			// 				combined_apy: new Decimal(255837.23),
-			// 				platform_apy: new Decimal(0.5),
-			// 			}));
-			// 		set({
-			// 			pools: {
-			// 				...get().pools,
-			// 				launchpools,
-			// 			},
-			// 			isLoading: false,
-			// 		});
-			// 	} catch (error) {
-			// 		console.error("Failed to fetch pools:", error);
-			// 		set({ isLoading: false });
-			// 	}
-			// },
 			setPoolClaimableRewardsFormatted: (
 				poolAddress: string,
 				amount: number
@@ -274,10 +246,6 @@ export const useFilteredPools = () => {
 
 	// Using primitive dependencies instead of objects for better performance
 	return useMemo(() => {
-		console.log("Filter recalculating...");
-		console.log("Active tab:", activeTab);
-		console.log("Active pool types:", activePoolTypes);
-
 		// Filter by status and type
 		const filteredLaunchpools = pools.launchpools.filter((pool) => {
 			// Status filtering
