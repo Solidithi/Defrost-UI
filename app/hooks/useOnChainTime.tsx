@@ -37,14 +37,8 @@ export function useOnChainTime() {
 			if (!latestBlock) {
 				return 0
 			}
-			console.log('Block time estimation log:')
-			console.log('Requested timestamp: ', timestamp)
-			console.log('Latest block timestamp: ', latestBlock.timestamp)
-
 			const signedTimeDelta = timestamp - Number(latestBlock?.timestamp)
 			const signedBlockDelta = Math.ceil(signedTimeDelta / chain!.blockTime)
-			console.log('Signed time delta: ', signedTimeDelta)
-			console.log('Signed block delta: ', signedBlockDelta)
 			return Number(latestBlock.number) + signedBlockDelta
 		},
 		[latestBlock]

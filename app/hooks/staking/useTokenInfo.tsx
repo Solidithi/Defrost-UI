@@ -3,7 +3,7 @@ import { useReadContract, useAccount } from 'wagmi'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 // Import other pool types when available
 // import { EnrichedFarm } from '@/app/types/extended-models/enriched-farm'
-import { useStakingStore } from '@/app/store/my-staking'
+import { useStakingStore } from '@/app/store/staking'
 import { getTokenInfoFromConfig } from '@/app/utils/chain'
 import { formatTokenAmount } from '@/app/utils/display'
 import { formatUnits } from 'ethers'
@@ -11,7 +11,7 @@ import {
 	PoolTokenInfo,
 	LaunchpoolTokenInfo,
 	FarmTokenInfo,
-} from '@/app/store/my-staking'
+} from '@/app/store/staking'
 
 // Standard ERC20 ABI fragments we need
 const erc20AbiFragment = [
@@ -122,7 +122,7 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 			return
 		}
 
-		setTokensInfo(pool.id, {
+		setTokensInfo(pool.id as `0x${string}`, {
 			poolType: 'launchpool',
 			vTokenInfo: {
 				symbol: vTokenInfo?.symbol || 'vToken',
@@ -225,31 +225,3 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 		},
 	}
 }
-
-/**
- * Generic factory function to select the right token info hook based on pool type
- */
-// export function usePoolTokenInfo(pool: EnrichedLaunchpool | null) {
-// 	if (!pool)
-// 		return {
-// 			isLoading: false,
-// 			tokensInfo: null,
-// 			rewards: { claimable: undefined, formatted: '0.00' },
-// 		}
-
-// 	// Dispatch to specific pool type handler
-// 	switch (pool.type) {
-// 		case 'launchpool':
-// 			return useLaunchpoolTokenInfo(pool)
-// 		// Add other pool types here as they become available
-// 		// case 'farm':
-// 		//   return useFarmTokenInfo(pool as EnrichedFarm)
-// 		default:
-// 			console.warn(`Unknown pool type: ${pool.type}`)
-// 			return {
-// 				isLoading: false,
-// 				tokensInfo: null,
-// 				rewards: { claimable: undefined, formatted: '0.00' },
-// 			}
-// 	}
-// }

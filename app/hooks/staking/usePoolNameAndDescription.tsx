@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { getChainName, getTokenInfoFromConfig } from '@/app/utils/chain'
-import { useLaunchpoolTokenInfo } from './usePoolTokenInfo'
+import { useLaunchpoolTokenInfo } from './useTokenInfo'
 
 export function useLaunchpoolNameAndDescription(pool: EnrichedLaunchpool) {
 	const [name, setName] = useState('vToken launchpool')
