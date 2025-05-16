@@ -47,7 +47,7 @@ const AnimatedBlobs = ({ count = 3 }: { count?: number }) => {
 			{blobs.map((blob, index) => (
 				<motion.div
 					key={index}
-					className={`absolute rounded-full opacity-20 z-10 bg-gradient-to-r ${blob.gradient}`}
+					className={`absolute rounded-full opacity-20 z-0 bg-gradient-to-r ${blob.gradient}`}
 					style={{
 						top: blob.top,
 						left: blob.left,
