@@ -48,7 +48,7 @@ const ProgressBar = ({
 					className={
 						overrideClassName && colorClassName
 							? colorClassName
-							: `bg-gradient-to-r from-[#F05550] to-[#54A4F2]
+							: `warm-cool-bg
            h-full transition-all ease-out duration-700 ${colorClassName}`
 					}
 					style={{ width: `${progress}%` }}

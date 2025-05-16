@@ -9,7 +9,7 @@ const OurTeam = () => {
 	return (
 		<section className="relative flex justify-center items-center px-20 pb-20 min-h-screen ">
 			<motion.div
-				className="absolute top-[-5vh] left-[-20vw] h-[50vh] w-[50vw] max-w-[600px] max-h-[600px] rounded-full opacity-20 blur-[100px] bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] z-10"
+				className="absolute top-[-5vh] left-[-20vw] h-[50vh] w-[50vw] max-w-[600px] max-h-[600px] rounded-full opacity-20 blur-[100px] bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] z-10"
 				animate={{
 					x: ['-10vw', '10vw', '-10vw'],
 				}}
@@ -22,7 +22,7 @@ const OurTeam = () => {
 			/>
 
 			<motion.div
-				className="absolute top-[5vh] left-[40vw] h-[50vh] w-[75vw] max-w-[900px] max-h-[600px] rotate-180 rounded-full opacity-20 blur-[100px] bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] z-10"
+				className="absolute top-[5vh] left-[40vw] h-[50vh] w-[75vw] max-w-[900px] max-h-[600px] rotate-180 rounded-full opacity-20 blur-[100px] bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] z-10"
 				animate={{
 					x: ['0vw', '5vw', '0vw'],
 					y: ['0vh', '5vh', '0vh'],

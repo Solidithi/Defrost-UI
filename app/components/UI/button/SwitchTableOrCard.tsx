@@ -57,8 +57,8 @@ const SwitchTableOrCard: React.FC<SwitchTableOrCardProps> = ({
 			<motion.div
 				className={
 					isCard
-						? 'absolute w-10 h-10 bg-blue-500 rounded-xl'
-						: 'absolute w-12 h-10 bg-blue-500 rounded-xl'
+						? 'absolute w-10 h-10 warm-cool-bg rounded-xl'
+						: 'absolute w-12 h-10 warm-cool-bg rounded-xl'
 				}
 				initial={false}
 				animate={{ x: isCard ? '33%' : '161%' }}
