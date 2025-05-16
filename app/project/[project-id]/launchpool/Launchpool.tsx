@@ -84,6 +84,13 @@ const Launchpool = () => {
 				percentage: 100,
 			},
 		],
+		socials: {
+			website: 'https://www.example.com',
+			twitter: 'https://twitter.com/example',
+			telegram: 'https://t.me/example',
+			discord: 'https://discord.gg/example',
+			github: 'https://github.com/example',
+		},
 	}
 
 	const statCardItems: StatCardItem[] = [

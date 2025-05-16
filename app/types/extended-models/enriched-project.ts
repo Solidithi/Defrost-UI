@@ -26,4 +26,13 @@ export type ProjectDetail = {
 	image: string;
 	status: string;
 	tokenPools: TokenPool[];
+	socials: Socials;
+};
+
+export type Socials = {
+	website: string;
+	twitter: string;
+	telegram: string;
+	discord: string;
+	github: string;
 };
