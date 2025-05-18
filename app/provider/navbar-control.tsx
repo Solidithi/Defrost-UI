@@ -20,8 +20,8 @@ export function NavBarControlProvider({
 }: {
 	children: React.ReactNode
 }) {
-	const [isNavbarShown, setIsNavbarShown] = useState(false)
-	const [reactToScroll, setReactToScroll] = useState(false)
+	const [isNavbarShown, setIsNavbarShown] = useState(true)
+	const [reactToScroll, setReactToScroll] = useState(true)
 
 	return (
 		<NavBarControlContext.Provider
