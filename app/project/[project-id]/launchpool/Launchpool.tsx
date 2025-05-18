@@ -12,6 +12,7 @@ import Button from '@/app/components/UI/button/Button'
 import StatCard from '@/app/components/UI/card/StatCard'
 import Tabs from '@/app/components/UI/shared/Tabs'
 import { ProjectDetail } from '@/app/types'
+import Logo from '@/public/Logo.png'
 
 const Launchpool = () => {
 	const projectDetail: ProjectDetail = {
@@ -19,26 +20,32 @@ const Launchpool = () => {
 		name: 'Project Name',
 		description:
 			'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-		image: '/Logo.png',
+		image: Logo,
 		status: 'Upcoming',
 		tokenPools: [
 			{
 				id: 1,
-				name: 'Token Pool 1	',
+				name: 'Token Pool 1',
 				amount: 1000,
 				percentage: 10,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 2,
 				name: 'Token Pool 2',
 				amount: 2000,
 				percentage: 20,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 3,
 				name: 'Token Pool 3',
 				amount: 3000,
 				percentage: 30,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			//Create total 10 pools
 			{
@@ -46,42 +53,48 @@ const Launchpool = () => {
 				name: 'Token Pool 4',
 				amount: 4000,
 				percentage: 40,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 5,
 				name: 'Token Pool 5',
 				amount: 5000,
 				percentage: 50,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 6,
 				name: 'Token Pool 6',
 				amount: 6000,
 				percentage: 60,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 7,
 				name: 'Token Pool 7',
 				amount: 7000,
 				percentage: 70,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 8,
 				name: 'Token Pool 8',
 				amount: 8000,
 				percentage: 80,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 			{
 				id: 9,
 				name: 'Token Pool 9',
 				amount: 9000,
 				percentage: 90,
-			},
-			{
-				id: 10,
-				name: 'Token Pool 10',
-				amount: 10000,
-				percentage: 100,
+				poolImage:
+					'https://plus.unsplash.com/premium_photo-1685793804465-b12bbd8b7281?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8NGslMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D',
 			},
 		],
 		socials: {

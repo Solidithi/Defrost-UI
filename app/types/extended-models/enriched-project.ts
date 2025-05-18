@@ -1,5 +1,6 @@
 import { project } from "@prisma/client";
 import { UnifiedPool } from "./unified-pool";
+import { StaticImageData } from "next/image";
 
 // Enriched project type with calculated fields and unified pools
 export interface EnrichedProject extends project {
@@ -16,6 +17,7 @@ export type TokenPool = {
 	name: string;
 	amount: number;
 	percentage: number;
+	poolImage: string;
 };
 
 export type ProjectDetail = {
@@ -23,7 +25,7 @@ export type ProjectDetail = {
 	// projectDetail: string;
 	name: string;
 	description: string;
-	image: string;
+	image: string | StaticImageData;
 	status: string;
 	tokenPools: TokenPool[];
 	socials: Socials;
