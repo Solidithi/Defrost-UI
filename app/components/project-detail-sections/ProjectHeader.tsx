@@ -28,7 +28,7 @@ const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
 			<div className="text-white">
 				<div className="flex justify-between px-8 w-full">
 					<div className="flex flex-row gap-5">
-						<div className=" w-52">
+						<div className=" w-32">
 							<Image
 								src={projectDetail.image}
 								alt="Project Logo"
@@ -43,7 +43,6 @@ const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
 								<span className="text-2xl font-orbitron font-bold">
 									{projectDetail.name}
 								</span>
-								{/* Status if it upcoming then bg yellow if ongoing green if ended red */}
 
 								<div
 									className={`flex ml-14 justify-center items-center rounded-xl

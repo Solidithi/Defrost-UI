@@ -29,16 +29,17 @@ const DescriptionTab = ({ description }: DescriptionTabProps) => {
 const AllPoolsTab = ({ projectCards }: { projectCards: any[] }) => {
 	return (
 		<div className="">
-			<div className="glass-component-1 text-white mt-10 p-6 rounded-lg">
-				<div className="grid grid-cols-3 gap-8 w-full mx-auto mb-24">
+			<div className=" text-white mt-10 p-6 rounded-lg">
+				<div className="grid grid-cols-3 gap-8 w-full mx-auto ">
 					{projectCards.map((card: any, index: Key | null | undefined) => (
-						<SectionComponent key={index}>
-							<CardInModal
+						// <SectionComponent key={index}>
+						<CardInModal
+							key={index}
 							// projectName={card.projectName}
 							// projectShortDescription={card.projectShortDescription}
 							// projectAPR={card.projectAPR}
-							/>
-						</SectionComponent>
+						/>
+						// </SectionComponent>
 					))}
 				</div>
 			</div>

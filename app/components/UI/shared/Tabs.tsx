@@ -169,9 +169,9 @@ const Tabs: React.FC<TabsProps> = ({
 							rounded-xl px-4 py-2 w-36 font-orbitron font-bold cursor-pointer transition-all duration-300 
 							${tabClassName} ${
 								activeIndex === idx
-									? `border-b-2 border-blue-500  !text-[#59A1EC] 
-									backdrop-blur-md border bg-gradient-to-br border-blue-500/10 from-[#ffffff] to-[#ffffff]`
-									: 'text-white hover:text-[#59A1EC]'
+									? `border-b-2  warm-cool-text
+     								glass-component-3  `
+									: 'text-white hover:text-[#593dd4]'
 							}`}
 						onClick={() => setActiveIndex(idx)}
 					>
