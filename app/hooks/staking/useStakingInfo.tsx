@@ -1,3 +1,5 @@
+'use client'
+
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { useAccount, useReadContract } from 'wagmi'
 import { useMemo } from 'react'

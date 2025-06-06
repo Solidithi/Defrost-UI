@@ -1,4 +1,6 @@
-import { useEffect, useMemo } from 'react'
+'use client'
+
+import { useEffect, useMemo, useRef } from 'react'
 import { useReadContract, useAccount } from 'wagmi'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 // Import other pool types when available
@@ -43,7 +45,8 @@ const erc20AbiFragment = [
  * This handles v_asset, native_asset, and project_token
  */
 export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
-	const { tokensInfo, setTokensInfo } = useStakingStore()
+	const { tokensInfo, setTokensInfo, setPoolClaimableRewardsFormatted } =
+		useStakingStore()
 	const account = useAccount()
 
 	// Check if we already have token info in the store
@@ -160,21 +163,6 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 		typedTokenInfo?.projectTokenInfo?.symbol,
 	])
 
-	// Update rewards in the store when they change
-	useEffect(() => {
-		if (claimableRewards && typeof claimableRewards === 'bigint' && pool.id) {
-			const projectTokenDecimals =
-				typedTokenInfo?.projectTokenInfo?.decimals || 18
-			const formattedAmount = Number(
-				formatUnits(claimableRewards, projectTokenDecimals)
-			)
-
-			useStakingStore
-				.getState()
-				.setPoolClaimableRewardsFormatted(pool.id, formattedAmount)
-		}
-	}, [claimableRewards, pool.id, typedTokenInfo?.projectTokenInfo?.decimals])
-
 	// Calculate and format rewards for display
 	const formattedRewards = useMemo(() => {
 		if (!claimableRewards || !pool.id) return '0.00'
@@ -191,6 +179,30 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 			}
 		)
 	}, [claimableRewards, pool.id, typedTokenInfo?.projectTokenInfo])
+
+	const formattedRewardsForStoreRef = useRef<string | null>(null)
+
+	// Update rewards in the store only when they change (with debounce)
+	useEffect(() => {
+		if (
+			formattedRewards !== null &&
+			formattedRewards !== formattedRewardsForStoreRef.current &&
+			pool.id
+		) {
+			// Update ref immediately to prevent infinite loops
+			formattedRewardsForStoreRef.current = formattedRewards
+
+			const timeoutId = setTimeout(() => {
+				console.log('re-rendering this shit once again')
+				console.log(
+					`DEBUG: formattedRewards=${formattedRewards}, ref=${formattedRewardsForStoreRef.current}`
+				)
+				setPoolClaimableRewardsFormatted(pool.id, Number(formattedRewards))
+			}, 100) // 100ms debounce
+
+			return () => clearTimeout(timeoutId)
+		}
+	}, [formattedRewards, pool.id, setPoolClaimableRewardsFormatted])
 
 	return {
 		isLoading: isLoadingSymbol || isLoadingDecimals || isLoadingRewards,

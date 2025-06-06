@@ -1,20 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { getChainName, getTokenInfoFromConfig } from '@/app/utils/chain'
 import { useLaunchpoolTokenInfo } from './useTokenInfo'
 
 export function useLaunchpoolNameAndDescription(pool: EnrichedLaunchpool) {
-	const [name, setName] = useState('vToken launchpool')
-	const [description, setDescription] = useState<string>(
-		'Stake tokens and earn rewards while maintaining liquidity'
-	)
-
 	const { tokensInfo } = useLaunchpoolTokenInfo(pool)
 
-	useEffect(() => {
-		if (!pool) return
+	return useMemo(() => {
+		if (!pool) {
+			return {
+				name: 'vToken launchpool',
+				description:
+					'Stake tokens and earn rewards while maintaining liquidity',
+			}
+		}
 
 		const chainName = getChainName(pool.chain_id)
 
@@ -25,8 +26,8 @@ export function useLaunchpoolNameAndDescription(pool: EnrichedLaunchpool) {
 
 		if (tokensInfo?.poolType === 'launchpool') {
 			// Use token info from the hook if available
-			vTokenSymbol = tokensInfo.vTokenInfo.symbol
-			nativeTokenSymbol = tokensInfo.nativeTokenInfo.symbol
+			vTokenSymbol = tokensInfo.vTokenInfo?.symbol || 'vToken'
+			nativeTokenSymbol = tokensInfo.nativeTokenInfo?.symbol || 'native tokens'
 			projectTokenSymbol =
 				tokensInfo.projectTokenInfo?.symbol || 'project tokens'
 		} else {
@@ -44,11 +45,19 @@ export function useLaunchpoolNameAndDescription(pool: EnrichedLaunchpool) {
 			nativeTokenSymbol = nativeTokenInfo?.symbol || 'native tokens'
 		}
 
-		setDescription(
-			`Stake ${vTokenSymbol} and earn ${projectTokenSymbol || 'project tokens'} while maintaining ${nativeTokenSymbol} liquidity on ${chainName}`
-		)
-		setName(`${vTokenSymbol} Staking Pool`)
-	}, [pool, tokensInfo])
+		const description = `Stake ${vTokenSymbol} and earn ${projectTokenSymbol} while maintaining ${nativeTokenSymbol} liquidity on ${chainName}`
+		const name = `${vTokenSymbol} Staking Pool`
 
-	return { name, description }
+		return { name, description }
+	}, [
+		// Only depend on the specific values we actually use
+		pool?.id,
+		pool?.chain_id,
+		pool?.v_asset_address,
+		pool?.native_asset_address,
+		tokensInfo?.vTokenInfo?.symbol,
+		tokensInfo?.nativeTokenInfo?.symbol,
+		tokensInfo?.projectTokenInfo?.symbol,
+		tokensInfo?.poolType,
+	])
 }

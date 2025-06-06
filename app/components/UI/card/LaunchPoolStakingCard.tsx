@@ -7,13 +7,16 @@ import { ChevronDown, ChevronUp, Zap } from 'lucide-react'
 import { cn } from '@/app/lib/utils'
 import { useAccount, useReadContract } from 'wagmi'
 import { ethers, formatUnits } from 'ethers'
-import { useMemo, useEffect } from 'react'
+import { useEffect } from 'react'
 import { BaseStakingCard } from './BaseStakingCard'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { useStakingStore, LaunchpoolTokenInfo } from '@/app/store/staking'
-import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
-import { useLaunchpoolNameAndDescription } from '@/app/hooks/usePoolNameAndDescription'
+import {
+	useLaunchpoolTokenInfo,
+	useLaunchpoolStakingInfo,
+	useLaunchpoolNameAndDescription,
+} from '@/app/hooks/staking'
 
 interface LaunchpoolStakingCardProps {
 	pool: EnrichedLaunchpool
@@ -35,7 +38,16 @@ export function LaunchpoolStakingCard({
 	const {
 		setTokensInfo,
 		setPoolClaimableRewardsFormatted: setUserClaimableRewards,
+		stakingInfo,
 	} = useStakingStore()
+	// let poolStakingInfo = stakingInfo[pool.id as `0x${string}`]
+
+	// Fetch new staking info if not available or outdated
+	// if (!poolStakingInfo || Date.now() - poolStakingInfo.updatedAt > 3000) {
+	const poolStakingInfo = useLaunchpoolStakingInfo(pool)
+	// }
+
+	/* ---------------------- Get staking info from contract ---------------------- */
 
 	// Use the hook for all token info
 	const { tokensInfo } = useLaunchpoolTokenInfo(pool)
@@ -43,60 +55,6 @@ export function LaunchpoolStakingCard({
 
 	/* ---------------------- Read from contract ---------------------- */
 	const account = useAccount()
-
-	const { data: yourNativeStake, status: readStakerNativeAmountStatus } =
-		useReadContract({
-			abi: launchpoolABI,
-			address: pool.id as `0x${string}`,
-			functionName: 'getStakerNativeAmount',
-			args: [account.address],
-			query: {
-				enabled: !!account.address,
-			},
-		})
-
-	const { data: totalVTokensStake, status: readTotalStakedVTokensStatus } =
-		useReadContract({
-			abi: launchpoolABI,
-			address: pool.id as `0x${string}`,
-			functionName: 'getTotalStakedVTokens',
-			query: {
-				enabled: !!account.address,
-			},
-		})
-
-	const { data: withdrawableVTokens, status: readWithdrawableVTokensStatus } =
-		useReadContract({
-			abi: launchpoolABI,
-			address: pool.id as `0x${string}`,
-			functionName: 'getWithdrawableVTokens',
-			args: [BigInt((yourNativeStake as string) || 0)],
-			query: {
-				enabled: !!account.address && !!yourNativeStake,
-			},
-		})
-
-	const { data: totalNativeStake, status: readTotalNativeStakeStatus } =
-		useReadContract({
-			abi: launchpoolABI,
-			address: pool.id as `0x${string}`,
-			functionName: 'totalNativeStake',
-		})
-
-	/* ---------------------- Calculate user's share of stake ---------------------- */
-	const yourPoolSharePercent = useMemo(() => {
-		if (
-			!totalNativeStake ||
-			!yourNativeStake ||
-			BigInt(totalNativeStake as string) === BigInt(0)
-		) {
-			return 0
-		}
-		const percentage =
-			(BigInt(yourNativeStake.toString()) * BigInt(10000)) /
-			BigInt(totalNativeStake.toString())
-		return Number(percentage) / 100
-	}, [account.address, yourNativeStake, totalNativeStake])
 
 	/* ---------------------- Get tokens info from config and chain ---------------------- */
 	// Get vToken and native token info from config
@@ -147,7 +105,7 @@ export function LaunchpoolStakingCard({
 		}
 
 		// Create token info object for store
-		setTokensInfo(pool.id, {
+		setTokensInfo(pool.id as `0x${string}`, {
 			poolType: 'launchpool',
 			vTokenInfo: {
 				symbol: 'vDOT', // Replace with actual symbol from config
@@ -204,7 +162,7 @@ export function LaunchpoolStakingCard({
 		}
 	}, [claimableRewards])
 
-	const hasStake = BigInt((yourNativeStake as string) || 0) > 0
+	const hasStake = Boolean(poolStakingInfo.yourNativeStake)
 
 	// For backwards compatibility until all components are updated to use store
 	const tokensInfoFromConfig = {
@@ -251,7 +209,7 @@ export function LaunchpoolStakingCard({
 					<div className="text-md font-medium">
 						{/* @TODO: Improve this */}
 						{ethers.formatUnits(
-							BigInt((withdrawableVTokens as string) || 0),
+							poolStakingInfo.withdrawableVTokens ?? BigInt(0),
 							tokensInfoFromConfig.vTokenInfo.decimals
 						)}{' '}
 						{tokensInfoFromConfig.vTokenInfo.symbol}
@@ -261,8 +219,9 @@ export function LaunchpoolStakingCard({
 					<div
 						className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
 						style={{
-							width:
-								yourPoolSharePercent !== 0 ? `${yourPoolSharePercent}%` : '0%',
+							width: poolStakingInfo.yourShare
+								? `${poolStakingInfo.yourShare}%`
+								: '0%',
 						}}
 					></div>
 				</div>
@@ -270,12 +229,12 @@ export function LaunchpoolStakingCard({
 					<div className="text-xs text-white/60">
 						Pool Total:{' '}
 						{ethers.formatUnits(
-							BigInt((totalVTokensStake as string) || 0),
+							poolStakingInfo.totalVTokenStake ?? 0,
 							tokensInfoFromConfig.vTokenInfo.decimals
 						)}
 					</div>
 					<div className="text-xs text-white/60">
-						Your Share: {yourPoolSharePercent.toFixed(2)}%
+						Your Share: {poolStakingInfo.yourShare.toFixed(2)}%
 					</div>
 				</div>
 			</div>
