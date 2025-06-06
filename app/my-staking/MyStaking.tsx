@@ -12,7 +12,7 @@ import {
 	useFilteredPools,
 	useSelectedPool,
 	useTotalClaimableRewardsFormatted,
-} from '@/app/store/my-staking'
+} from '@/app/store/staking'
 import { useAccount, useReadContract } from 'wagmi'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json' // @TODO: optimize this later
 import { useNavBarControl } from '../provider/navbar-control'
@@ -312,7 +312,9 @@ export function MyStakingPage() {
 									<LaunchpoolStakingCard
 										key={index}
 										pool={pool}
-										onSelect={() => selectPool(pool.id, 'launchpool')}
+										onSelect={() =>
+											selectPool(pool.id as `0x${string}`, 'launchpool')
+										}
 									/>
 								))}
 							</div>
