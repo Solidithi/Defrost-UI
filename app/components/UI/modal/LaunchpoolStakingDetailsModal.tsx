@@ -8,13 +8,12 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '@/app/components/UI/shadcn/Tabs'
-import { Info, Zap, Award, ArrowRight } from 'lucide-react'
+import { Info, Zap, Award } from 'lucide-react'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { parseUnits, formatUnits } from 'ethers'
 import {
 	useAccount,
 	useBalance,
-	useReadContract,
 	useWaitForTransactionReceipt,
 	useWriteContract,
 } from 'wagmi'
@@ -30,8 +29,8 @@ import {
 import { useApproveAndeDepositToken } from '@/app/hooks/useApproveAndSendToken'
 import Spinner from '../effect/Spinner'
 import { toast, ToastContainer } from 'react-toastify'
-import { useLaunchpoolNameAndDescription } from '@/app/hooks/usePoolNameAndDescription'
-import { useLaunchpoolTokenInfo } from '@/app/hooks/usePoolTokenInfo'
+import { useLaunchpoolNameAndDescription } from '@/app/hooks/staking/usePoolNameAndDescription'
+import { useLaunchpoolTokenInfo } from '@/app/hooks/staking/useTokenInfo'
 
 function getFunctionAbiFromIface(factory: any, functionName: string): any {
 	return [factory.abi.find((f: any) => f.name === functionName)]
