@@ -24,16 +24,17 @@ export async function GET(req: NextRequest) {
 		const launchpoolRows = await prismaClient.launchpool_stake.findMany({
 			where: {
 				user_id: normalizeAddress(userID),
+				launchpool: {
+					chain_id: chainID,
+				},
 			},
 			select: {
 				launchpool_id: true,
-				launchpool: {
-					where: {
-						chain_id: chainID,
-					},
-				},
+				launchpool: true,
 			},
 		});
+
+		// Transform ouput
 		const launchpools = launchpoolRows.map((row) => row.launchpool);
 		const responseData = {
 			launchpools,
