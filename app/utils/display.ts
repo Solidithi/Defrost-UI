@@ -96,6 +96,25 @@ export function formatTokenAmount(
 	return symbol ? `${formatted} ${symbol}` : formatted;
 }
 
+export function formatTimeDuration(milliseconds: number): string {
+	const seconds = Math.floor(milliseconds / 1000);
+	const minutes = Math.floor((milliseconds / (1000 * 60)) % 60);
+	const hours = Math.floor((milliseconds / (1000 * 60 * 60)) % 24);
+	const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+
+	if (days > 0) {
+		return `${days}d` + (hours > 0 ? ` ${hours}h` : "");
+	} else if (hours > 0) {
+		return `${hours}h` + (minutes > 0 ? ` ${minutes}m` : "");
+	} else if (minutes > 0) {
+		return `${minutes}m` + (seconds > 0 ? ` ${seconds}s` : "");
+	} else if (seconds > 0) {
+		return `${seconds}s`;
+	} else {
+		return "0s";
+	}
+}
+
 /**
  * Formats a USD value
  * @param value The number to format
