@@ -114,6 +114,17 @@ type StakingStore = {
 	setTokensInfo: (poolID: `0x${string}`, info: PoolTokenInfo) => void;
 	setStakingInfo: (poolID: `0x${string}`, info: StakingInfo) => void;
 	fetchPools: (userID: `0x${string}`, chainID: number) => Promise<void>;
+	fetchPoolsOfProject: (
+		projectID: string,
+		fetchOptions?: Partial<{
+			fetchLaunchpools: boolean;
+			fetchFarmPools: boolean;
+			fetchLaunchpads: boolean;
+			offset: number;
+			limit: number;
+			// ... more pool types
+		}>
+	) => Promise<void>;
 
 	setPoolClaimableRewardsFormatted: (
 		poolAddress: string,
@@ -188,6 +199,7 @@ export const useStakingStore = create<StakingStore>()(
 					);
 					const data = await response.json();
 					const { launchpools } = parse(data) as Record<string, any>;
+					console.log("Fetched launchpools:", launchpools);
 
 					const enrichedLaunchpools = launchpools.map(
 						(launchpool: launchpool) =>
@@ -205,6 +217,50 @@ export const useStakingStore = create<StakingStore>()(
 					set({ isLoading: false });
 				} finally {
 					set({ isLoading: false });
+				}
+			},
+			fetchPoolsOfProject: async (
+				projectID: string,
+				fetchOptions = {
+					fetchLaunchpools: true,
+					fetchFarmPools: false,
+					fetchLaunchpads: false,
+					offset: 0,
+					limit: 10,
+				}
+			) => {
+				try {
+					if (fetchOptions.fetchLaunchpools) {
+						console.log("Fetching launchpool");
+						const response = await fetch(
+							"/api/project/launchpools?" +
+								new URLSearchParams({
+									"project-id": projectID,
+									offset: (
+										fetchOptions?.offset ?? 0
+									).toString(),
+									limit: (
+										fetchOptions?.limit ?? 10
+									).toString(),
+								}).toString()
+						);
+						const pools = parse(
+							await response.json()
+						) as launchpool[];
+						const enrichedLaunchpools = pools.map(
+							(launchpool: launchpool) =>
+								toEnrichedLaunchpool(launchpool)
+						);
+						console.log("launchpools set");
+						set({
+							pools: {
+								...get().pools,
+								launchpools: enrichedLaunchpools,
+							},
+						});
+					}
+				} catch (err) {
+					console.error("Failed to fetch pools of project:", err);
 				}
 			},
 			setPoolClaimableRewardsFormatted: (
