@@ -218,7 +218,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 			/>
 			<div className="rounded-xl overflow-hidden relative group">
 				{/* Gradient border effect */}
-				<div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-50 rounded-xl" />
+				{/* <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-50 rounded-xl" /> */}
 
 				{/* Card content with glassmorphism */}
 				<div className="glass-component-1 relative m-[1px] rounded-xl bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl overflow-hidden">

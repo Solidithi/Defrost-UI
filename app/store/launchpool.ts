@@ -285,13 +285,13 @@
 // 	setIsOpenEmissionRate: (open) => set({ isOpenEmissionRate: open }),
 // }));
 
-// export const useHoverSideBarIndexStore = create<{
-// 	hoveredData: number | null;
-// 	setHoveredData: (data: number | null) => void;
-// }>((set) => ({
-// 	hoveredData: null,
-// 	setHoveredData: (data) => set({ hoveredData: data }),
-// }));
+export const useHoverSideBarIndexStore = create<{
+	hoveredData: number | null;
+	setHoveredData: (data: number | null) => void;
+}>((set) => ({
+	hoveredData: null,
+	setHoveredData: (data) => set({ hoveredData: data }),
+}));
 
 // import { create } from "zustand";
 // import {
