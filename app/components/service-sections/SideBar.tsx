@@ -4,6 +4,7 @@ import SidebarLineChart from '../charts/SideBarLineChart'
 import { ChevronLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useHoverSideBarIndexStore } from '@/app/store/launchpool'
+import chains from '@/app/config/chains.json'
 import Link from 'next/link'
 import Image from 'next/image'
 import SocialLinks from '../UI/shared/SocialLinks'
@@ -27,63 +28,6 @@ const SideBar = ({ socials }: SideBarProps) => {
 		Object.values(socials).some(
 			(link) => typeof link === 'string' && link.trim() !== ''
 		)
-
-	const availableNetworks = [
-		{
-			id: 1,
-			name: 'Ethereum',
-			chainId: 1,
-			chain: 'ETH',
-		},
-		{
-			id: 2,
-			name: 'Binance Smart Chain',
-			chainId: 56,
-			chain: 'BSC',
-		},
-		{
-			id: 3,
-			name: 'Polygon',
-			chainId: 137,
-			chain: 'MATIC',
-		},
-		// {
-		// 	id: 4,
-		// 	name: 'Avalanche',
-		// 	chainId: 43114,
-		// 	chain: 'AVAX',
-		// },
-		// {
-		// 	id: 5,
-		// 	name: 'Fantom',
-		// 	chainId: 250,
-		// 	chain: 'FTM',
-		// },
-		// {
-		// 	id: 6,
-		// 	name: 'Arbitrum',
-		// 	chainId: 42161,
-		// 	chain: 'ARB',
-		// },
-		// {
-		// 	id: 7,
-		// 	name: 'Optimism',
-		// 	chainId: 10,
-		// 	chain: 'OP',
-		// },
-		// {
-		// 	id: 8,
-		// 	name: 'Solana',
-		// 	chainId: 501,
-		// 	chain: 'SOL',
-		// },
-		// {
-		// 	id: 9,
-		// 	name: 'Cardano',
-		// 	chainId: 201,
-		// 	chain: 'ADA',
-		// },
-	]
 
 	const sections = [
 		{
@@ -212,14 +156,14 @@ const SideBar = ({ socials }: SideBarProps) => {
 				{/* Hide available networks when collapsed */}
 				{isExpanded && (
 					<div className="flex justify-center flex-wrap gap-x-8 gap-y-2 mt-4">
-						{availableNetworks.map((network) => (
+						{Object.entries(chains).map(([chainID, chainData]) => (
 							<div
-								key={network.id}
+								key={chainID}
 								className=" flex justify-center items-center glass-component-1 rounded-xl w-12 h-12"
 							>
 								<div className=" bg-white rounded-full">
 									<Image
-										src={DefrostLogo}
+										src={chainData.chainIcon || DefrostLogo}
 										alt=""
 										className="w-9 h-9"
 										width={32}
