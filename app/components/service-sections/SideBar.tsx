@@ -1,11 +1,11 @@
 import { permanentMarker } from '@/app/lib/font'
-import Link from 'next/link'
-import Image from 'next/image'
 import DefrostLogo from '@/public/Logo.png'
 import SidebarLineChart from '../charts/SideBarLineChart'
 import { ChevronLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useHoverSideBarIndexStore } from '@/app/store/launchpool'
+import Link from 'next/link'
+import Image from 'next/image'
 import SocialLinks from '../UI/shared/SocialLinks'
 
 interface SideBarProps {
@@ -89,22 +89,22 @@ const SideBar = ({ socials }: SideBarProps) => {
 		{
 			id: 1,
 			name: 'General',
-			icon: '/icons/staking.svg',
+			icon: '/sidebar/general.png',
 		},
 		{
 			id: 2,
 			name: 'Launchpool',
-			icon: '/icons/farming.svg',
+			icon: '/sidebar/launchpool.png',
 		},
 		{
 			id: 3,
 			name: 'Launchpad',
-			icon: '/icons/liquidity.svg',
+			icon: '/sidebar/launchpad.png',
 		},
 		{
 			id: 4,
 			name: 'NFT',
-			icon: '/icons/nft.svg',
+			icon: '/sidebar/nft.png',
 		},
 		// {
 		// 	id: 5,
@@ -238,7 +238,7 @@ const SideBar = ({ socials }: SideBarProps) => {
 							className={`text-white font-orbitron font-bold text-base hover:bg-white/10 p-2 rounded-xl flex items-center ${isExpanded ? 'mt-14' : 'mt-4'}`}
 						>
 							<div className="flex justify-start items-center gap-4">
-								<div className="w-10 h-10 bg-white rounded-full flex justify-center items-center">
+								<div className="w-10 h-10 rounded-full flex justify-center items-center">
 									<Image
 										src={section.icon}
 										alt=""

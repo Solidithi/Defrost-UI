@@ -28,13 +28,15 @@
 				"address": "0xd02d73e05b002cb8eb7bef9df8ed68ed39752465",
 				"symbol": "VI",
 				"name": "Voucher Imaginary",
-				"decimals": 18
+				"decimals": 18,
+				"icon": "/token-logos/vDOT.avif"
 			},
 			{
 				"address": "0x7a4ebae8ca815b9f52f23a8ac9a2f707d4d4ff81",
 				"symbol": "NAT",
 				"name": "Native Token",
-				"decimals": 18
+				"decimals": 18,
+				"icon": "/token-logos/DOT.png"
 			}
 		],
 		"isTestnet": true

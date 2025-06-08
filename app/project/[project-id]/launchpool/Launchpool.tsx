@@ -136,7 +136,7 @@ const Launchpool = () => {
 		{
 			title: 'Pools',
 			value: 'pools',
-			content: <PoolTab projectDetail={projectDetail}></PoolTab>,
+			content: <PoolTab></PoolTab>,
 		},
 		{
 			title: 'Analytics',
@@ -187,7 +187,7 @@ const Launchpool = () => {
 	]
 
 	return (
-		<div className="mt-24 px-4">
+		<div className="mt-24 px-4 mb-8">
 			<div className="flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
 					<SideBar socials={projectDetail.socials} />
