@@ -112,7 +112,7 @@ const ImageManager = ({
 						className={`bg-black border border-gray-700 text-white rounded-3xl max-w-4xl w-full p-6 transform z-10 ${modalAnimation}`}
 						style={{ maxHeight: '85vh' }}
 					>
-						<div className="absolute top-[-50px] left-[200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] z-0"></div>
+						<div className="absolute top-[-50px] left-[200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] z-0"></div>
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-xl font-comfortaa">{title}</h2>
 							<button

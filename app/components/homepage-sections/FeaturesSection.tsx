@@ -11,7 +11,7 @@ const FeaturesSection = () => {
 	return (
 		<section className="relative text-white min-h-screen w-full flex flex-col justify-center p-5">
 			<motion.div
-				className="absolute top-[-50px] left-[-200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] z-10"
+				className="absolute top-[-50px] left-[-200px] h-[600px] w-[600px] rounded-full opacity-20 blur-[5000px] bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] z-10"
 				animate={{
 					x: ['-10vw', '10vw', '-10vw'],
 				}}
@@ -24,7 +24,7 @@ const FeaturesSection = () => {
 			/>
 
 			<motion.div
-				className="absolute top-[600px] left-[-250px] h-[720px] w-[720px] rounded-full opacity-20 blur-[6000px] bg-gradient-to-r from-[#AD7386] via-[#54A4F2] to-[#F05550] z-10"
+				className="absolute top-[600px] left-[-250px] h-[720px] w-[720px] rounded-full opacity-20 blur-[6000px] bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] z-10"
 				animate={{
 					x: ['0vw', '5vw', '0vw'],
 					y: ['0vh', '5vh', '0vh'],
@@ -38,7 +38,7 @@ const FeaturesSection = () => {
 			/>
 
 			<motion.div
-				className="absolute top-[500px] left-[900px] h-[680px] w-[680px] rounded-full opacity-20 blur-[5500px] bg-gradient-to-r from-[#54A4F2] via-[#F05550] to-[#AD7386] z-10"
+				className="absolute top-[500px] left-[900px] h-[680px] w-[680px] rounded-full opacity-20 blur-[5500px] bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] z-10"
 				animate={{
 					x: ['-5vw', '5vw', '-5vw'],
 					y: ['-5vh', '5vh', '-5vh'],
@@ -113,7 +113,7 @@ const FeaturesSection = () => {
 						</span>
 					</div>
 					<div className="h-full w-1/2 overflow-hidden">
-						<Spline scene="https://prod.spline.design/xZKBcVL7RlRWdvHq/scene.splinecode" />
+						<Spline scene="https://prod.spline.design/vR04v2bf9-RKIakO/scene.splinecode" />
 					</div>
 				</motion.div>
 
@@ -125,7 +125,7 @@ const FeaturesSection = () => {
 					className="flex justify-between items-center  p-5 w-full h-auto gap-5"
 				>
 					<div className="h-full w-1/2 ">
-						<Spline scene="https://prod.spline.design/LCl6fW-P2NxKy-XI/scene.splinecode" />{' '}
+						<Spline scene="https://prod.spline.design/pYJimn-GHYQ9SyUK/scene.splinecode" />{' '}
 					</div>
 
 					<div className="h-full w-1/2 glass-component-3 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">

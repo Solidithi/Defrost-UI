@@ -190,7 +190,7 @@ export default function Stepper({
 								onClick={isLastStep ? handleComplete : handleNext}
 								disabled={!canGoToNextStep}
 								className={`min-w-[100px] flex items-center justify-center rounded-full 
-									bg-gradient-to-r from-[#3EB3D3] to-[#FF154C] py-1.5 px-3.5 
+									warm-cool-bg py-1.5 px-3.5 
 									font-comfortaa font-bold tracking-tight text-white 
 									transition-all duration-300 hover:shadow-[0_0_15px_rgba(84,164,242,0.6)] 
 									hover:brightness-110 active:brightness-90 

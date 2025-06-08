@@ -184,7 +184,7 @@ const GlowingEffectForSearchBar = memo(
                   #F05550 5%, 
                   #F07F7F 15%, 
                   transparent 50%),
-                radial-gradient(circle at 40% 60%, #54A4F2 5%, #d79f1e00 15%),
+                radial-gradient(circle at 40% 60%, #427FF6 5%, #d79f1e00 15%),
                 radial-gradient(circle at 60% 60%, #5a922c 10%, #5a922c00 20%), 
                 radial-gradient(circle at 40% 60%, #4c7894 10%, #4c789400 20%),
                 repeating-conic-gradient(

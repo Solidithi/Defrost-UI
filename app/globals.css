@@ -167,15 +167,15 @@ body {
 	}
 
 	.glass-component-3 {
-		@apply bg-white/15 backdrop-blur-sm border border-white/15;
+		@apply bg-white/35 backdrop-blur-sm border border-white/15;
 	}
 
 	.warm-cool-text {
-		@apply bg-gradient-to-r from-[#E05D5F] to-[#609FE3] text-transparent bg-clip-text;
+		@apply bg-gradient-to-r from-[#427FF6]  to-[#E8499E] text-transparent bg-clip-text;
 	}
 
 	.warm-cool-bg {
-		@apply bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2];
+		@apply bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E];
 	}
 
 	.section-container {

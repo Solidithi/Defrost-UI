@@ -89,7 +89,7 @@ const HeroSection = () => {
 							initial={{ opacity: 0, scale: 0.8 }}
 							animate={{ opacity: 1, scale: 1 }}
 							transition={{ duration: 0.3, delay: 0.6 }}
-							className="bg-gradient-to-r from-[#F05550] via-[#AD7386] to-[#54A4F2] text-white rounded-full w-48 h-12 text-xl"
+							className="bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E] text-white rounded-full w-48 h-12 text-xl"
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							onClick={handleSubmit}
 						>

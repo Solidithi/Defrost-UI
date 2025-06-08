@@ -89,7 +89,7 @@ const Navbar = ({
 								<span className="block sm:hidden">{navItem.icon}</span>
 								<span
 									style={{ fontFamily: comfortaa.style.fontFamily }}
-									className="hidden sm:block text-md hover:text-[#B2423F] duration-150 text-white active:text-[#F05550] "
+									className="hidden sm:block text-md hover:text-[#a63973] duration-150 text-white active:text-[#E8499E] "
 								>
 									{navItem.name}
 								</span>

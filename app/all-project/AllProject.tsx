@@ -19,6 +19,7 @@ import { UnifiedPool } from '@/app/types/extended-models/unified-pool'
 import CarouselWithProgress from '../components/UI/carousel/Carousel'
 import AllProjectCard from '../components/UI/card/AllProjectCard'
 import StatCard from '../components/UI/card/StatCard'
+import AnimatedBlobs from '../components/UI/background/AnimatedBlobs'
 
 // Define stat card interface
 export interface StatCardItem {
@@ -247,7 +248,8 @@ const AllProject = () => {
 
 	return (
 		<div>
-			<div className="text-white mb-20">
+			<AnimatedBlobs count={3} />
+			<div className="relative z-10 text-white mb-20 ">
 				<div className="mt-44 text-center">
 					<SplitText
 						text="Explore & Discover Projects"

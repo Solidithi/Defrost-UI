@@ -8,6 +8,9 @@ import { GlowingEffect } from '@/app/components/UI/effect/GlowingEffect'
 const CardInModal = () => {
 	const [projectAPR, setProjectAPR] = useState(0)
 	const [projectName, setProjectName] = useState('Project Name')
+	const [projectImage, setProjectImage] = useState(
+		'https://img.freepik.com/free-vector/night-ocean-landscape-full-moon-stars-shine_107791-7397.jpg?semt=ais_hybrid&w=740'
+	)
 	const [projectShortDescription, setProjectShortDescription] = useState(
 		'Lorem ipsum iba daba doo Is simply dummy text of the printing and typesetting industry. Lorem Ipsum has'
 	)
@@ -38,16 +41,16 @@ const CardInModal = () => {
 				className="absolute inset-0 rounded-2xl"
 			/>
 
-			<div className="glass-component-3 w-full h-full rounded-xl">
+			<div className="glass-component-1 w-full h-full rounded-xl">
 				{/* Image */}
 				<div className="relative rounded-lg overflow-hidden">
 					<div className="flex justify-center items-center">
 						<Image
-							src=""
+							src={projectImage}
 							alt="Picture of the author"
 							width={300}
 							height={180}
-							className="m-4 border border-gray-300 rounded-xl"
+							className="m-4 w-[300px] h-[150px] border border-gray-300 rounded-xl"
 						/>
 					</div>
 					<span
