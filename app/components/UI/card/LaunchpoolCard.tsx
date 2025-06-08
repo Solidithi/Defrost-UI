@@ -27,7 +27,6 @@ import { useLaunchpoolStakingInfo } from '@/app/hooks/staking'
 import { GlowingEffect } from '../effect/GlowingEffect'
 import Image from 'next/image'
 import ProgressBar from '../project-progress/ProgressBar'
-import { isAddress } from 'ethers'
 import {
 	StakingModal,
 	ManageStakeModal,

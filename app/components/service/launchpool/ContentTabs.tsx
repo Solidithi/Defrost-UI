@@ -62,8 +62,6 @@ export const PoolTab = () => {
 					})}
 				</div>
 			</div>
-
-			{/* Display launchpool */}
 		</div>
 	)
 }
