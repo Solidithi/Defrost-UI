@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prismaClient } from "@/app/lib/prisma";
 import { normalizeAddress } from "@/app/utils/address";
 import { stringify } from "superjson";
+import { Address } from "viem";
 import "@/app/lib/superjson-init";
 
 export async function GET(req: NextRequest) {
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
 	try {
 		const launchpoolRows = await prismaClient.launchpool_stake.findMany({
 			where: {
-				user_id: normalizeAddress(userID),
+				user_id: normalizeAddress(userID as Address),
 				launchpool: {
 					chain_id: chainID,
 				},

@@ -1,6 +1,5 @@
 import { ZeroAddress } from "ethers";
-
-export type Address = `0x${string}` | string;
+import { Address } from "viem";
 
 export function normalizeAddress(
 	address: Address | undefined

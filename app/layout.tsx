@@ -35,7 +35,7 @@ export default function RootLayout({
 					<Navbar
 						navItems={[
 							{ name: 'My Project', link: '/' },
-							{ name: 'My Staking', link: '/about' },
+							{ name: 'My Staking', link: '/my-staking' },
 							{ name: 'Launchpool', link: '/about' },
 							{ name: 'Pre-market', link: '/about' },
 							{ name: 'Dashboard', link: '/about' },

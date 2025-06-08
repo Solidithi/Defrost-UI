@@ -113,55 +113,57 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 		})
 
 	// Update the store with fetched token info
-	useEffect(() => {
-		// Only update if we have necessary info and it's not already in the store
-		if (
-			!pool.id ||
-			!pool.project_token_address ||
-			!projectTokenSymbol ||
-			projectTokenDecimals === undefined ||
-			typedTokenInfo?.projectTokenInfo?.symbol === projectTokenSymbol
-		) {
-			return
-		}
+	// useEffect(() => {
+	// 	// Only update if we have necessary info and it's not already in the store
+	// 	if (
+	// 		!pool.id ||
+	// 		!pool.project_token_address ||
+	// 		!projectTokenSymbol ||
+	// 		projectTokenDecimals === undefined ||
+	// 		typedTokenInfo?.projectTokenInfo?.symbol === projectTokenSymbol
+	// 	) {
+	// 		return
+	// 	}
 
-		setTokensInfo(pool.id as `0x${string}`, {
-			poolType: 'launchpool',
-			vTokenInfo: {
-				symbol: vTokenInfo?.symbol || 'vToken',
-				decimals: vTokenInfo?.decimals || 18,
-				address: pool.v_asset_address,
-				name: vTokenInfo?.name,
-			},
-			nativeTokenInfo: {
-				symbol: nativeTokenInfo?.symbol || 'Native',
-				decimals: nativeTokenInfo?.decimals || 18,
-				address: pool.native_asset_address,
-				name: nativeTokenInfo?.name,
-			},
-			projectTokenInfo: {
-				symbol: projectTokenSymbol as string,
-				decimals: Number(projectTokenDecimals),
-				address: pool.project_token_address,
-			},
-			rewardTokens: [
-				{
-					symbol: projectTokenSymbol as string,
-					decimals: Number(projectTokenDecimals),
-					address: pool.project_token_address,
-				},
-			],
-		})
-	}, [
-		pool.id,
-		pool.project_token_address,
-		projectTokenSymbol,
-		projectTokenDecimals,
-		setTokensInfo,
-		vTokenInfo,
-		nativeTokenInfo,
-		typedTokenInfo?.projectTokenInfo?.symbol,
-	])
+	// 	setTokensInfo(pool.id as `0x${string}`, {
+	// 		poolType: 'launchpool',
+	// 		vTokenInfo: {
+	// 			symbol: vTokenInfo?.symbol || 'vToken',
+	// 			decimals: vTokenInfo?.decimals || 18,
+	// 			icon: vTokenInfo?.icon,
+	// 			address: pool.v_asset_address,
+	// 			name: vTokenInfo?.name,
+	// 		},
+	// 		nativeTokenInfo: {
+	// 			symbol: nativeTokenInfo?.symbol || 'Native',
+	// 			decimals: nativeTokenInfo?.decimals || 18,
+	// 			name: nativeTokenInfo?.name,
+	// 			icon: nativeTokenInfo?.icon,
+	// 			address: pool.native_asset_address,
+	// 		},
+	// 		projectTokenInfo: {
+	// 			symbol: projectTokenSymbol as string,
+	// 			decimals: Number(projectTokenDecimals),
+	// 			address: pool.project_token_address,
+	// 		},
+	// 		rewardTokens: [
+	// 			{
+	// 				symbol: projectTokenSymbol as string,
+	// 				decimals: Number(projectTokenDecimals),
+	// 				address: pool.project_token_address,
+	// 			},
+	// 		],
+	// 	})
+	// }, [
+	// 	pool.id,
+	// 	pool.project_token_address,
+	// 	projectTokenSymbol,
+	// 	projectTokenDecimals,
+	// 	setTokensInfo,
+	// 	vTokenInfo,
+	// 	nativeTokenInfo,
+	// 	typedTokenInfo?.projectTokenInfo?.symbol,
+	// ])
 
 	// Calculate and format rewards for display
 	const formattedRewards = useMemo(() => {
@@ -193,7 +195,6 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 			formattedRewardsForStoreRef.current = formattedRewards
 
 			const timeoutId = setTimeout(() => {
-				console.log('re-rendering this shit once again')
 				console.log(
 					`DEBUG: formattedRewards=${formattedRewards}, ref=${formattedRewardsForStoreRef.current}`
 				)
@@ -211,11 +212,13 @@ export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
 			vTokenInfo: {
 				symbol: vTokenInfo?.symbol || 'vToken',
 				decimals: vTokenInfo?.decimals || 18,
+				icon: vTokenInfo?.icon,
 				address: pool.v_asset_address,
 			},
 			nativeTokenInfo: {
 				symbol: nativeTokenInfo?.symbol || 'Native',
 				decimals: nativeTokenInfo?.decimals || 18,
+				icon: nativeTokenInfo?.icon,
 				address: pool.native_asset_address,
 			},
 			projectTokenInfo: {

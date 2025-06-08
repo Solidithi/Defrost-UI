@@ -328,7 +328,7 @@ export function LaunchpoolStakingDetailsModal({
 				<div className="relative w-16 h-16 rounded-xl overflow-hidden">
 					<Image
 						// src={pool.image || '/placeholder.svg'}
-						src="/token-logos/vdot.webp"
+						src={safeTokensInfo.vTokenInfo.icon || ''}
 						alt={name}
 						width={64}
 						height={64}

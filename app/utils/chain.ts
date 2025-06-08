@@ -1,5 +1,6 @@
 import chains from "@/app/config/chains.json";
 import { normalizeAddress } from "@/app/utils/address";
+import { Address } from "viem";
 
 export function getChainName(chainID: number): string {
 	const chainIDKey = chainID.toString() as keyof typeof chains;
@@ -22,6 +23,7 @@ export function getTokenInfoFromConfig(
 			decimals: number;
 			address: string;
 			name: string;
+			icon: string;
 			alias?: string;
 	  }
 	| undefined {
@@ -34,7 +36,8 @@ export function getTokenInfoFromConfig(
 	}
 	const token = chains[chainID as keyof typeof chains].tokens.find(
 		(token) =>
-			normalizeAddress(token.address) === normalizeAddress(tokenAddress)
+			normalizeAddress(token.address as Address) ===
+			normalizeAddress(tokenAddress as Address)
 	);
 	return token;
 }

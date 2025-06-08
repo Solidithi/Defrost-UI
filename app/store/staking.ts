@@ -14,13 +14,13 @@ import { parse } from "superjson";
 import { useMemo } from "react";
 
 // Base token information
-interface TokenInfo {
+export interface TokenInfo {
 	symbol: string;
 	decimals: number;
 	address: string;
 	// Optional additional fields that might be needed in the future
 	name?: string;
-	logo?: string;
+	icon?: string;
 	price?: Decimal;
 }
 

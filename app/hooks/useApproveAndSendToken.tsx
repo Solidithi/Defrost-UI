@@ -107,6 +107,7 @@ export function useApproveAndeDepositToken({
 	}
 
 	const deposit = async () => {
+		console.log('isApprovalNeeded:', isApprovalNeeded)
 		if (isApprovalNeeded) {
 			await approve()
 		}
