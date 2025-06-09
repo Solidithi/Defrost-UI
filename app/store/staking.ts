@@ -12,6 +12,9 @@ import { formatTokenAmount } from "../utils/display";
 import { launchpool } from "@prisma/client";
 import { parse } from "superjson";
 import { useMemo } from "react";
+import { AbiEventSignatureEmptyTopicsError, Address } from "viem";
+import { normalizeAddress } from "../utils/address";
+import { APP_PATH_ROUTES_MANIFEST } from "next/dist/shared/lib/constants";
 
 // Base token information
 export interface TokenInfo {
@@ -290,7 +293,7 @@ export const useStakingStore = create<StakingStore>()(
 );
 
 // Selector functions for derived data
-export const useFilteredPools = () => {
+export const useFilteredPoolsMyStaking = () => {
 	const pools = useStakingStore((state) => state.pools);
 	const activeTab = useStakingStore((state) => state.activeTab);
 	const activePoolTypes = useStakingStore(
@@ -341,6 +344,55 @@ export const useFilteredPools = () => {
 			launchpools: sortedLaunchpools,
 		};
 	}, [pools.launchpools, activeTab, activePoolTypes, activeSortOrder]);
+};
+
+export function useFilteredPoolByStakingToken(stakingToken: TokenInfo | null) {
+	const { pools } = useStakingStore();
+
+	return useMemo(() => {
+		if (!stakingToken) {
+			return pools;
+		}
+
+		const filteredLaunchpools = pools.launchpools.filter(
+			(pool) =>
+				pool.v_asset_address?.toLowerCase() ===
+				stakingToken.address.toLowerCase()
+		);
+
+		return {
+			launchpools: filteredLaunchpools,
+		};
+	}, [pools, stakingToken]);
+}
+
+export const useAveragePoolAPYByStakingToken = (
+	stakingToken: TokenInfo | null
+) => {
+	const { pools } = useStakingStore();
+
+	const totalAPY = {
+		launchpool: 0,
+		// Add other pool types here
+	};
+
+	// Calc total APY for launchpools
+	pools.launchpools
+		.filter((pool) =>
+			stakingToken
+				? normalizeAddress(pool.v_asset_address as Address) ===
+					normalizeAddress(stakingToken?.address as Address)
+				: true
+		)
+		.forEach((pool) => (totalAPY.launchpool += pool.staker_apy.toNumber()));
+
+	return {
+		launchpoolAvgAPY:
+			totalAPY.launchpool == 0
+				? 0
+				: totalAPY.launchpool / pools.launchpools.length,
+		// Add other pool types here
+	};
 };
 
 export const useSelectedPool = () => {

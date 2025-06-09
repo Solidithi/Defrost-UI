@@ -9,7 +9,7 @@ import { LaunchpoolStakingDetailsModal } from '@/app/components/UI/modal/Launchp
 import { cn } from '@/app/lib/utils'
 import {
 	useStakingStore,
-	useFilteredPools,
+	useFilteredPoolsMyStaking,
 	useSelectedPool,
 	useTotalClaimableRewardsFormatted,
 } from '@/app/store/staking'
@@ -30,7 +30,7 @@ export function MyStakingPage() {
 		isLoading,
 	} = useStakingStore()
 
-	const filteredPools = useFilteredPools()
+	const filteredPools = useFilteredPoolsMyStaking()
 	const selectedPool = useSelectedPool()
 	// const selectedTokensInfo = useSelectedPoolTokensInfo()
 	const account = useAccount()
@@ -377,13 +377,9 @@ export function MyStakingPage() {
 								<LaunchpoolStakingDetailsModal
 									pool={selectedPool}
 									yourStakePercent={yourPoolSharePercent}
-									yourNativeStake={(yourNativeStake as bigint) || BigInt(0)}
-									withdrawableVTokens={
-										(withdrawableVTokens as bigint) || BigInt(0)
-									}
-									totalStakedVTokens={
-										(totalVTokensStake as bigint) || BigInt(0)
-									}
+									yourNativeStake={yourNativeStake as bigint}
+									withdrawableVTokens={withdrawableVTokens as bigint}
+									totalStakedVTokens={totalVTokensStake as bigint}
 									onClose={closeDetailsModal}
 								/>
 							)}

@@ -1,15 +1,23 @@
 import { permanentMarker } from '@/app/lib/font'
-import DefrostLogo from '@/public/Logo.png'
-import SidebarLineChart from '../charts/SideBarLineChart'
 import { ChevronLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useHoverSideBarIndexStore } from '@/app/store/launchpool'
-import chains from '@/app/config/chains.json'
+import { useEffect, useState, useMemo } from 'react'
+import { useVTokenData } from '@/app/hooks/staking/useVTokenData'
+import { TokenInfo, useAveragePoolAPYByStakingToken } from '@/app/store/staking'
 import Link from 'next/link'
 import Image from 'next/image'
 import SocialLinks from '../UI/shared/SocialLinks'
+import DefrostLogo from '@/public/Logo.png'
+import SidebarLineChart from '../charts/SideBarLineChart'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@/app/components/UI/shadcn/Tooltip'
 
 interface SideBarProps {
+	selectedVToken: TokenInfo | null
+	onVTokenSelect?: (vToken: TokenInfo | null) => void
 	socials?: {
 		website?: string
 		twitter?: string
@@ -19,8 +27,8 @@ interface SideBarProps {
 	}
 }
 
-const SideBar = ({ socials }: SideBarProps) => {
-	const { hoveredData, setHoveredData } = useHoverSideBarIndexStore()
+const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
+	const { availableVTokens, poolCountByVToken } = useVTokenData()
 
 	// Only show socials if they exist and aren't empty strings
 	const hasSocialLinks =
@@ -50,30 +58,10 @@ const SideBar = ({ socials }: SideBarProps) => {
 			name: 'NFT',
 			icon: '/sidebar/nft.png',
 		},
-		// {
-		// 	id: 5,
-		// 	name: 'Marketplace',
-		// 	icon: '/icons/marketplace.svg',
-		// },
-		// {
-		// 	id: 6,
-		// 	name: 'Wallet',
-		// 	icon: '/icons/wallet.svg',
-		// },
-		// {
-		// 	id: 7,
-		// 	name: 'Bridge',
-		// 	icon: '/icons/bridge.svg',
-		// },
-		// {
-		// 	id: 8,
-		// 	name: 'Staking',
-		// 	icon: '/icons/staking.svg',
-		// },
 	]
 
 	const [collapsed, setCollapsed] = useState(false)
-	const [hovering, setHovering] = useState(false)
+	// const [hovering, setHovering] = useState(false)
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -88,12 +76,15 @@ const SideBar = ({ socials }: SideBarProps) => {
 		return () => window.removeEventListener('resize', handleResize)
 	}, [])
 
-	const isExpanded = hovering || !collapsed
+	const isExpanded = !collapsed
+
+	// Pool APY by selected vToken
+	const { launchpoolAvgAPY } = useAveragePoolAPYByStakingToken(selectedVToken)
 
 	return (
 		<div
-			onMouseEnter={() => setHovering(true)}
-			onMouseLeave={() => setHovering(false)}
+			// onMouseEnter={() => setHovering(true)}
+			// onMouseLeave={() => setHovering(false)}
 			className={`transition-all duration-300 ease-in-out ${isExpanded ? 'w-[250px]' : 'w-[80px]'}`}
 		>
 			<div
@@ -132,15 +123,23 @@ const SideBar = ({ socials }: SideBarProps) => {
 						</div>
 					)}
 				</div>
-				{/* Glass APR Stat */}
+
+				{/* Glass APY Stat */}
 				{isExpanded && (
 					<div className="mt-6 glass-component-1 rounded-xl">
-						<div className="flex">
-							<div className="p-3 text-center w-1/2 text-white font-orbitron font-bold">
-								APR
-								<div className="mt-2 text-xl">{hoveredData}%</div>
+						<div className="flex items-center">
+							<div className="p-3 m-2 text-center w-1/2 flex flex-col justify-center items-center text-white font-orbitron font-bold">
+								<span>APY</span>
+								<div className="mt-2 text-xl">
+									{launchpoolAvgAPY.toFixed(2)}%
+								</div>
+								{selectedVToken && (
+									<div className="text-xs text-gray-400 mt-1">
+										{selectedVToken.symbol}
+									</div>
+								)}
 							</div>
-							<div className="w-1/2 p-2">
+							<div className="w-1/2 p-2 flex items-center">
 								<SidebarLineChart
 									data={[
 										10, 20, 30, 24, 35, 40, 35, 60, 57, 80, 48, 67, 79, 95,
@@ -153,27 +152,143 @@ const SideBar = ({ socials }: SideBarProps) => {
 						</div>
 					</div>
 				)}
-				{/* Hide available networks when collapsed */}
-				{isExpanded && (
-					<div className="flex justify-center flex-wrap gap-x-8 gap-y-2 mt-4">
-						{Object.entries(chains).map(([chainID, chainData]) => (
-							<div
-								key={chainID}
-								className=" flex justify-center items-center glass-component-1 rounded-xl w-12 h-12"
-							>
-								<div className=" bg-white rounded-full">
-									<Image
-										src={chainData.chainIcon || DefrostLogo}
-										alt=""
-										className="w-9 h-9"
-										width={32}
-										height={32}
-									/>
-								</div>
-							</div>
-						))}
-					</div>
+
+				{/* vToken Selector  */}
+				{isExpanded && onVTokenSelect && (
+					<TooltipProvider>
+						<div className="flex justify-center flex-wrap gap-x-2 gap-y-2 mt-4">
+							{/* All vTokens option */}
+							{availableVTokens.length > 0 && (
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<div
+											onClick={() => onVTokenSelect(null)}
+											className={`flex justify-center items-center glass-component-1 rounded-xl w-12 h-12 cursor-pointer transition-all duration-200 hover:scale-105 ${
+												!selectedVToken
+													? 'ring-2 ring-purple-500 bg-purple-500/20'
+													: 'hover:bg-white/10'
+											}`}
+										>
+											<div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-1 flex items-center justify-center w-8 h-8">
+												<span className="text-white text-xs font-bold">
+													ALL
+												</span>
+											</div>
+										</div>
+									</TooltipTrigger>
+									<TooltipContent className="bg-black/80 border-white/10 text-white">
+										<p>Show all vTokens</p>
+									</TooltipContent>
+								</Tooltip>
+							)}
+							{/* Available vToken options */}
+							{availableVTokens.map((vToken) => {
+								const isSelected =
+									selectedVToken?.address.toLowerCase() ===
+									vToken.address.toLowerCase()
+								const poolCount =
+									poolCountByVToken[vToken.address.toLowerCase()] || 0
+
+								return (
+									<Tooltip key={vToken.address}>
+										<TooltipTrigger asChild>
+											<div
+												onClick={() => onVTokenSelect(vToken)}
+												className={`flex justify-center items-center glass-component-1 rounded-xl w-12 h-12 cursor-pointer transition-all duration-200 hover:scale-105 ${
+													isSelected
+														? 'ring-2 ring-blue-500 bg-blue-500/20'
+														: 'hover:bg-white/10'
+												}`}
+											>
+												<div className="rounded-full p-0.5 w-8 h-8 flex items-center justify-center">
+													<Image
+														src={vToken.icon || '/token-logos/default.png'}
+														alt={vToken.symbol}
+														className="w-full h-full rounded-full"
+														width={32}
+														height={32}
+													/>
+												</div>
+											</div>
+										</TooltipTrigger>
+										<TooltipContent className="bg-black/80 border-white/10 text-white">
+											<p>
+												{vToken.symbol} - {poolCount} pools
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								)
+							})}
+						</div>
+					</TooltipProvider>
 				)}
+
+				{/* Collapsed vToken icons */}
+				{!isExpanded && onVTokenSelect && (
+					<TooltipProvider>
+						<div className="flex flex-col gap-2 mt-4">
+							{/* 'All' option */}
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<button
+										onClick={() => onVTokenSelect(null)}
+										className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+											!selectedVToken
+												? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 ring-2 ring-purple-500/50'
+												: 'bg-white/10 hover:bg-white/20'
+										}`}
+									>
+										<span className="text-white text-xs font-bold">ALL</span>
+									</button>
+								</TooltipTrigger>
+								<TooltipContent className="bg-black/80 border-white/10 text-white">
+									<p>Show all vTokens</p>
+								</TooltipContent>
+							</Tooltip>
+
+							{/* Other vTokens options */}
+							{availableVTokens.slice(0, 4).map((vToken) => {
+								const isSelected =
+									selectedVToken?.address.toLowerCase() ===
+									vToken.address.toLowerCase()
+								const poolCount =
+									poolCountByVToken[vToken.address.toLowerCase()] || 0
+
+								return (
+									<Tooltip key={vToken.address}>
+										<TooltipTrigger asChild>
+											<button
+												onClick={() => onVTokenSelect(vToken)}
+												className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+													isSelected
+														? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 ring-2 ring-blue-500/50'
+														: 'bg-white/10 hover:bg-white/20'
+												}`}
+											>
+												<div className="w-8 h-8 rounded-full flex items-center justify-center">
+													<Image
+														src={vToken.icon || '/token-logos/default.png'}
+														alt={vToken.symbol}
+														width={32}
+														height={32}
+														className="w-full h-full rounded-full"
+													/>
+												</div>
+											</button>
+										</TooltipTrigger>
+										<TooltipContent className="bg-black/80 border-white/10 text-white">
+											<p>
+												{vToken.symbol} - {poolCount} pools
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								)
+							})}
+						</div>
+					</TooltipProvider>
+				)}
+
+				{/* Navigation sections */}
 				<div className="">
 					{sections.map((section) => (
 						<Link
@@ -196,6 +311,7 @@ const SideBar = ({ socials }: SideBarProps) => {
 						</Link>
 					))}
 				</div>
+
 				{/* Social Media Links */}
 				{isExpanded && hasSocialLinks && (
 					<div className="mt-14 border-t border-gray-600/40 pt-4">

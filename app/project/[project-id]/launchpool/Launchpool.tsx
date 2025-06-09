@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { StatCardItem } from '@/app/all-project/AllProject'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
@@ -12,9 +13,13 @@ import Button from '@/app/components/UI/button/Button'
 import StatCard from '@/app/components/UI/card/StatCard'
 import Tabs from '@/app/components/UI/shared/Tabs'
 import { ProjectDetail } from '@/app/types'
+import { TokenInfo } from '@/app/store/staking'
 import Logo from '@/public/Logo.png'
 
 const Launchpool = () => {
+	// vToken filtering state (kept local as requested)
+	const [selectedVToken, setSelectedVToken] = useState<TokenInfo | null>(null)
+
 	const projectDetail: ProjectDetail = {
 		id: 1,
 		name: 'Project Name',
@@ -136,7 +141,7 @@ const Launchpool = () => {
 		{
 			title: 'Pools',
 			value: 'pools',
-			content: <PoolTab></PoolTab>,
+			content: <PoolTab selectedVToken={selectedVToken} />,
 		},
 		{
 			title: 'Analytics',
@@ -190,7 +195,11 @@ const Launchpool = () => {
 		<div className="mt-24 px-4 mb-8">
 			<div className="flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
-					<SideBar socials={projectDetail.socials} />
+					<SideBar
+						selectedVToken={selectedVToken}
+						onVTokenSelect={setSelectedVToken}
+						socials={projectDetail.socials}
+					/>
 				</div>
 				<div className="flex-1">
 					<Tabs
