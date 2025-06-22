@@ -40,9 +40,9 @@ const BenefitSection = () => {
 					initial={{ opacity: 0, y: 30 }}
 					animate={isInView ? { opacity: 1, y: 80 } : { opacity: 0, y: 110 }}
 					transition={{ duration: 0.3, delay: 0.2 }}
-					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-2xl translate-y-0"
+					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-xl translate-y-0"
 				>
-					<span className="font-bold font-orbitron text-5xl warm-cool-text">
+					<span className="font-bold font-orbitron text-3xl warm-cool-text">
 						Benefit 1
 					</span>
 					<span className="">
@@ -91,9 +91,9 @@ const BenefitSection = () => {
 					initial={{ opacity: 0, y: 30 }}
 					animate={isInView ? { opacity: 1, y: 120 } : { opacity: 0, y: 150 }}
 					transition={{ duration: 0.5, delay: 0.2 }}
-					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-2xl translate-y-[100px]"
+					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-xl translate-y-[100px]"
 				>
-					<span className="font-bold font-orbitron text-5xl warm-cool-text">
+					<span className="font-bold font-orbitron text-3xl warm-cool-text">
 						Benefit 1
 					</span>
 					<span className="">
@@ -139,9 +139,9 @@ const BenefitSection = () => {
 					initial={{ opacity: 0, y: 30 }}
 					animate={isInView ? { opacity: 1, y: 160 } : { opacity: 0, y: 190 }}
 					transition={{ duration: 0.8, delay: 0.2 }}
-					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-2xl translate-y-[200px]"
+					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-xl translate-y-[200px]"
 				>
-					<span className="font-bold font-orbitron text-5xl warm-cool-text">
+					<span className="font-bold font-orbitron text-3xl warm-cool-text">
 						Benefit 1
 					</span>
 					<span className="">
@@ -190,9 +190,9 @@ const BenefitSection = () => {
 					initial={{ opacity: 0, y: 30 }}
 					animate={isInView ? { opacity: 1, y: 200 } : { opacity: 0, y: 230 }}
 					transition={{ duration: 1.1, delay: 0.2 }}
-					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-2xl  translate-y-[300px]"
+					className="flex flex-col items-start justify-center gap-16 glass-component-1 rounded-2xl p-10 font-comfortaa text-xl  translate-y-[300px]"
 				>
-					<span className="font-bold font-orbitron text-5xl warm-cool-text">
+					<span className="font-bold font-orbitron text-3xl warm-cool-text">
 						Benefit 1
 					</span>
 					<span className="">

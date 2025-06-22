@@ -34,7 +34,7 @@ const OurTeam = () => {
 					ease: 'easeInOut',
 				}}
 			/>
-			<div className=" z-50 text-left glass-component-3 w-full h-auto text-white flex flex-col justify-center items-center gap-10  rounded-2xl p-16">
+			<div className=" z-50 text-left glass-component-1 w-full h-auto text-white flex flex-col justify-center items-center gap-10  rounded-2xl p-16">
 				<div className="text-5xl text-white font-bold   text-center font-orbitron">
 					Our Team
 				</div>

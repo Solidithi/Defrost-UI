@@ -57,7 +57,7 @@ const FeaturesSection = () => {
 			<div className="relative flex flex-col gap-10 p-5 h-full z-50">
 				<div
 					style={{ fontFamily: orbitron.style.fontFamily }}
-					className="flex flex-col items-start text-7xl p-5 gap-5 font-extrabold"
+					className="flex flex-col items-start text-7xl gap-5 font-extrabold"
 				>
 					<motion.span
 						ref={ref}
@@ -89,12 +89,12 @@ const FeaturesSection = () => {
 					initial={{ opacity: 0, y: 30 }}
 					animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
 					transition={{ duration: 0.5, delay: 0.5 }}
-					className="flex justify-between items-center  p-5 w-full h-auto gap-5"
+					className="flex justify-between items-center  w-full h-auto gap-5"
 				>
-					<div className="h-full w-1/2 glass-component-3 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
+					<div className="h-full w-1/2 glass-component-1 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
-							className="text-2xl font-light"
+							className="text-xl font-light"
 						>
 							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
 							simply dummy text of the printing and typesetting industry. Lorem
@@ -104,7 +104,7 @@ const FeaturesSection = () => {
 
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
-							className="text-2xl font-light"
+							className="text-xl font-light"
 						>
 							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
 							simply dummy text of the printing and typesetting industry. Lorem
@@ -122,16 +122,16 @@ const FeaturesSection = () => {
 					initial={{ opacity: 0, y: 30 }}
 					animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
 					transition={{ duration: 0.5, delay: 0.5 }}
-					className="flex justify-between items-center  p-5 w-full h-auto gap-5"
+					className="flex justify-between items-center  w-full h-auto gap-5"
 				>
 					<div className="h-full w-1/2 ">
 						<Spline scene="https://prod.spline.design/pYJimn-GHYQ9SyUK/scene.splinecode" />{' '}
 					</div>
 
-					<div className="h-full w-1/2 glass-component-3 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
+					<div className="h-full w-1/2 glass-component-1 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
-							className="text-2xl font-light"
+							className="text-xl font-light"
 						>
 							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
 							simply dummy text of the printing and typesetting industry. Lorem
@@ -141,7 +141,7 @@ const FeaturesSection = () => {
 
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
-							className="text-2xl font-light"
+							className="text-xl font-light"
 						>
 							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
 							simply dummy text of the printing and typesetting industry. Lorem
