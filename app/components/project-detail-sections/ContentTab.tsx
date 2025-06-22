@@ -9,7 +9,7 @@ interface DescriptionTabProps {
 const DescriptionTab = ({ description }: DescriptionTabProps) => {
 	return (
 		<div className="">
-			<div className="glass-component-1 text-white mt-10 p-6 rounded-lg">
+			<div className="glass-enhanced text-white mt-10 p-6 rounded-lg">
 				{description ? (
 					<p className="whitespace-pre-wrap">{description}</p>
 				) : (

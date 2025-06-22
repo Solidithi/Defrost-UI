@@ -17,6 +17,7 @@ import {
 	AllPoolsTab,
 	DescriptionTab,
 } from '@/app/components/project-detail-sections/ContentTab'
+import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
 
 const ProjectDetail = () => {
 	const projectDetail = {
@@ -129,19 +130,20 @@ const ProjectDetail = () => {
 	return (
 		<Modal>
 			<div className="min-h-screen w-full">
+				<AnimatedBlobs count={5} />
 				{/* Header */}
 				<div className="px-20  pt-48 pb-12">
 					<ProjectHeader projectDetail={projectDetail} />
 				</div>
 
 				{/* Main Content */}
-				<div className="flex items-start justify-center gap-12 m-">
+				<div className="flex items-start justify-center gap-12 mb-10">
 					{/* Left Column */}
 					<div className="w-7/12">
 						<ThumbNailCarousel />
 
 						{/* Long content to allow scrolling */}
-						{/* <div className="glass-component-1 text-white mt-10 p-6 rounded-lg">
+						{/* <div className="glass-enhanced text-white mt-10 p-6 rounded-lg">
 							<p>
 								{Array(20)
 									.fill(
@@ -190,7 +192,7 @@ const ProjectDetail = () => {
 								{projectDetail.tokenPools.map((pool) => (
 									<div key={pool.id}>
 										<motion.div
-											className="glass-component-1 h-12 mb-6 rounded-xl flex flex-row items-center hover:bg-gray-700 transition-colors duration-300"
+											className="glass-enhanced h-12 mb-6 rounded-xl flex flex-row items-center hover:bg-gray-700 transition-colors duration-300"
 											whileHover={{
 												scale: 1.05,
 												// backgroundColor: '#4B5563',

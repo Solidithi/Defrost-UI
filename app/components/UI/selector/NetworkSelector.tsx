@@ -101,7 +101,7 @@ const NetworkSelector = ({
 	}
 
 	// Calculate button styles based on disabled status
-	const buttonStyles = `w-full px-4 py-4 text-center font-comfortaa border rounded-2xl focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white ${
+	const buttonStyles = `w-full px-4 py-4 text-center font-comfortaa border rounded-2xl focus:outline-none flex items-center glass-enhanced justify-center space-x-2 text-white ${
 		!selectedNetwork ? 'text-gray-400' : ''
 	} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`
 
@@ -157,7 +157,7 @@ const NetworkSelector = ({
 							{options.map((network) => (
 								<div
 									key={network.id}
-									className={`relative glass-component-3 hover:bg-gray-600 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 ${
+									className={`relative glass-enhanced hover:bg-gray-600 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 ${
 										selectedNetwork && selectedNetwork.id === network.id
 											? 'ring-2 ring-blue-500'
 											: ''

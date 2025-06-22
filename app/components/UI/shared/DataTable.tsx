@@ -60,7 +60,7 @@ const DataTable = <T extends {}>({
 
 	if (isLoading) {
 		return (
-			<div className="glass-component-3 w-full rounded-[26px] p-8 flex flex-col items-center justify-center">
+			<div className="glass-enhanced w-full rounded-[26px] p-8 flex flex-col items-center justify-center">
 				<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
 				<div className="text-xl font-orbitron">Loading data...</div>
 			</div>
@@ -69,7 +69,7 @@ const DataTable = <T extends {}>({
 
 	if (data.length === 0) {
 		return (
-			<div className="glass-component-3 w-full rounded-[26px] p-8 flex flex-col items-center justify-center">
+			<div className="glass-enhanced w-full rounded-[26px] p-8 flex flex-col items-center justify-center">
 				<div className="text-xl font-orbitron mb-4">{noDataMessage}</div>
 			</div>
 		)
@@ -77,7 +77,7 @@ const DataTable = <T extends {}>({
 
 	return (
 		<div
-			className={`glass-component-3 w-full rounded-[26px] overflow-hidden ${className}`}
+			className={`glass-enhanced w-full rounded-[26px] overflow-hidden ${className}`}
 		>
 			<div className="overflow-x-auto">
 				<table className="w-full">

@@ -33,9 +33,9 @@ const StatCard = ({ count = 0, label, icon, type }: StatCardProps) => {
 
 			<div
 				className={clsx(
-					'relative flex flex-1 flex-col gap-6 rounded-2xl bg-cover p-6 pt-3 shadow-lg h-[118px] glass-component-2 text-white'
+					'relative flex flex-1 flex-col gap-6 rounded-2xl bg-cover p-6 pt-3 shadow-lg h-[118px] glass-enhanced text-white'
 					// {
-					//   " text-white glass-component-2": type === "Total Project",
+					//   " text-white glass-enhanced": type === "Total Project",
 					//   "bg-gradient-to-r from-[#549DE2] to-[#E45A5C] text-white":
 					//     type === "Total Staking",
 					//   "bg-gradient-to-r from-[#E15B5F] to-[#973D41] text-white":

@@ -73,7 +73,7 @@ export const PoolTab = ({ selectedVToken }: PoolTabProps) => {
 
 			{/* Show empty state when vToken selected but no pools */}
 			{showEmptyState ? (
-				<div className="glass-component-1 text-white mt-10 p-12 rounded-lg text-center">
+				<div className="glass-enhanced text-white mt-10 p-12 rounded-lg text-center">
 					<div className="mb-4">
 						<div className="text-6xl mb-4">🚀</div>
 						<h3 className="text-xl font-bold mb-2">
@@ -95,7 +95,7 @@ export const PoolTab = ({ selectedVToken }: PoolTabProps) => {
 				</div>
 			) : (
 				/* The tab inside the launchpool page that shows all project's launchpool */
-				<div className="glass-component-1 text-white mt-10 p-6 rounded-lg">
+				<div className="glass-enhanced text-white mt-10 p-6 rounded-lg">
 					<div className="grid grid-cols-3 gap-8 w-full mx-auto mb-24">
 						{filteredPoolsByVToken.launchpools.map((launchpool, index) => {
 							return (

@@ -92,7 +92,7 @@ const ImageManager = ({
 		<div className={`relative ${className}`}>
 			{/* Trigger Button */}
 			<button
-				className="w-full px-4 py-2 text-center font-comfortaa border rounded-md focus:outline-none flex items-center glass-component-2 justify-center space-x-2 text-white hover:bg-gray-700/30 transition-colors"
+				className="w-full px-4 py-2 text-center font-comfortaa border rounded-md focus:outline-none flex items-center glass-enhanced justify-center space-x-2 text-white hover:bg-gray-700/30 transition-colors"
 				onClick={openModalWithAnimation}
 				type="button"
 				aria-haspopup="dialog"
@@ -179,7 +179,7 @@ const ImageManager = ({
 											{images.map((image) => (
 												<div
 													key={image.id}
-													className="group glass-component-3 rounded-xl p-2 flex flex-col items-center relative"
+													className="group glass-enhanced rounded-xl p-2 flex flex-col items-center relative"
 												>
 													<div className="w-full aspect-square overflow-hidden rounded-lg mb-2 relative">
 														<Image
@@ -230,7 +230,7 @@ const ImageManager = ({
 								<>
 									{logo ? (
 										<div className="flex flex-col items-center">
-											<div className="w-48 h-48 glass-component-3 rounded-xl p-2 mb-4 relative group">
+											<div className="w-48 h-48 glass-enhanced rounded-xl p-2 mb-4 relative group">
 												<Image
 													src={logo.base64}
 													alt="Project Logo"

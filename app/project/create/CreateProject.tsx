@@ -466,7 +466,7 @@ const CreateProject = () => {
 				/>
 			</div>
 			<div
-				className={`mt-8 w-2/3 h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
+				className={`mt-8 w-2/3 h-auto glass-enhanced rounded-2xl p-8 transition-all duration-300 z-20`}
 			>
 				<Stepper
 					className="w-full z-20"
@@ -532,7 +532,7 @@ const CreateProject = () => {
 											createProjectStore.setName(e.target.value)
 										}}
 										placeholder="Enter your project name"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 									/>
 								</div>
 
@@ -557,7 +557,7 @@ const CreateProject = () => {
 											}
 										}}
 										placeholder="Brief overview of your project (100 words max)"
-										className="p-4 font-comfortaa text-white rounded-lg glass-component-2 h-32 resize-none w-full"
+										className="p-4 font-comfortaa text-white rounded-lg glass-enhanced h-32 resize-none w-full"
 									/>
 									<div className="text-xs text-gray-400 text-right font-comfortaa">
 										{
@@ -584,7 +584,7 @@ const CreateProject = () => {
 											createProjectStore.setLongDescription(e.target.value)
 										}}
 										placeholder="Detailed description of your project"
-										className="p-4 rounded-lg glass-component-2 text-white font-comfortaa h-56 resize-none w-full"
+										className="p-4 rounded-lg glass-enhanced text-white font-comfortaa h-56 resize-none w-full"
 									/>
 								</div>
 							</div>
@@ -746,7 +746,7 @@ const CreateProject = () => {
 										createProjectStore.setTargetAudience(e.target.value)
 									}
 									placeholder="Describe your target audience (e.g., DeFi users, NFT collectors, etc.)"
-									className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+									className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 								/>
 							</div>
 						</div>
@@ -770,7 +770,7 @@ const CreateProject = () => {
 										value={website}
 										onChange={(e) => setWebsite(e.target.value)}
 										placeholder="https://yourproject.com"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 									/>
 								</div>
 
@@ -786,7 +786,7 @@ const CreateProject = () => {
 										value={twitter}
 										onChange={(e) => setTwitter(e.target.value)}
 										placeholder="https://twitter.com/yourproject"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 									/>
 								</div>
 
@@ -802,7 +802,7 @@ const CreateProject = () => {
 										value={telegram}
 										onChange={(e) => setTelegram(e.target.value)}
 										placeholder="https://t.me/yourproject"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 									/>
 								</div>
 
@@ -818,7 +818,7 @@ const CreateProject = () => {
 										value={discord}
 										onChange={(e) => setDiscord(e.target.value)}
 										placeholder="https://discord.gg/yourproject"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 									/>
 								</div>
 
@@ -834,7 +834,7 @@ const CreateProject = () => {
 										value={github}
 										onChange={(e) => setGithub(e.target.value)}
 										placeholder="https://github.com/yourproject"
-										className="p-4 rounded-lg font-comfortaa text-white glass-component-2 focus:outline-none w-full"
+										className="p-4 rounded-lg font-comfortaa text-white glass-enhanced focus:outline-none w-full"
 									/>
 								</div>
 							</div>

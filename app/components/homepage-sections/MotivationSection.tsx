@@ -34,7 +34,7 @@ const MotivationSection = () => {
 			<div className="absolute w-full h-[1000px] top-[50px] opacity-45">
 				<Threads amplitude={3} distance={0} enableMouseInteraction={true} />
 			</div>
-			<div className="text-center glass-component-1 w-full h-auto text-white flex flex-col justify-center items-center gap-10 p-14 rounded-2xl">
+			<div className="text-center glass-enhanced w-full h-auto text-white flex flex-col justify-center items-center gap-10 p-14 rounded-2xl">
 				<span className="font-bold font-orbitron text-5xl ">
 					Lorem Ipsum is simply dummy text of the printing and typesetting
 				</span>

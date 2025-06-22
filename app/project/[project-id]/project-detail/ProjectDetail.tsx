@@ -164,7 +164,7 @@ const ProjectDetail = () => {
 				<div className="sticky self-start">
 					<SideBar />
 				</div>
-				<div className="h-auto w-full rounded-xl glass-component-1 flex flex-wrap flex-col gap-10 justify-center items-center p-20">
+				<div className="h-auto w-full rounded-xl glass-enhanced flex flex-wrap flex-col gap-10 justify-center items-center p-20">
 					<div className=" self-start">
 						<ProjectHeader projectDetail={projectDetail} />
 					</div>

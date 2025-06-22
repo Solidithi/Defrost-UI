@@ -31,7 +31,7 @@ const ProjectProgress = ({ socials }: ProjectProgressProps) => {
 		)
 
 	return (
-		<div className="border rounded-xl glass-component-3 text-white w-full h-full">
+		<div className="border rounded-xl glass-enhanced text-white w-full h-full">
 			<div className="xl:flex-col flex items-stretch justify-between md:flex-col md:gap-5 sm:flex-col smL:gap-5">
 				<div className="p-8">
 					<div className="text-xl font-bold font-orbitron mb-4 bg-gradient-to-r bg-white bg-clip-text text-transparent">

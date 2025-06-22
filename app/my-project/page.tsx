@@ -191,7 +191,7 @@ export default function MyProject() {
 					</div>
 
 					{/* Project Control Panel */}
-					<div className="glass-component-3 rounded-2xl p-3 mb-8 mx-auto select-none">
+					<div className="glass-enhanced rounded-2xl p-3 mb-8 mx-auto select-none">
 						{/* White stroke */}
 						<div className="absolute inset-0 border-[0.5px] border-white border-opacity-20 rounded-2xl pointer-events-none"></div>
 
@@ -257,7 +257,7 @@ export default function MyProject() {
 							<input
 								type="text"
 								placeholder="Search project"
-								className="glass-component-3 rounded-lg py-3 px-10 text-md font-orbitron focus:outline-none focus:ring-0"
+								className="glass-enhanced rounded-lg py-3 px-10 text-md font-orbitron focus:outline-none focus:ring-0"
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
 							/>
@@ -279,7 +279,7 @@ export default function MyProject() {
 					</div>
 
 					{/* Project Stats Summary */}
-					<div className="glass-component-3 rounded-2xl p-6 mb-8 mx-auto">
+					<div className="glass-enhanced rounded-2xl p-6 mb-8 mx-auto">
 						<div className="absolute inset-0 border-[0.5px] border-white border-opacity-20 rounded-2xl pointer-events-none"></div>
 						<div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
 							<div className="text-center">
@@ -310,7 +310,7 @@ export default function MyProject() {
 
 					{/* Project list */}
 					{isLoading ? (
-						<div className="glass-component-3 w-full max-w-6xl rounded-[26px] p-8 flex flex-col items-center justify-center mx-auto">
+						<div className="glass-enhanced w-full max-w-6xl rounded-[26px] p-8 flex flex-col items-center justify-center mx-auto">
 							{/* <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div> */}
 							<Spinner className="border-blue-500" />
 							<div className="text-xl font-orbitron">Loading projects...</div>
@@ -318,7 +318,7 @@ export default function MyProject() {
 					) : (
 						<div className="space-y-10 mb-16 flex flex-col items-center font-comfortaa">
 							{filteredProjects.length === 0 ? (
-								<div className="glass-component-3 w-full max-w-6xl rounded-[26px] p-8 flex flex-col items-center justify-center">
+								<div className="glass-enhanced w-full max-w-6xl rounded-[26px] p-8 flex flex-col items-center justify-center">
 									<div className="text-xl font-orbitron mb-4">
 										No projects found
 									</div>
@@ -335,7 +335,7 @@ export default function MyProject() {
 										filteredProjects.map((project) => (
 											<div
 												key={project.id}
-												className="glass-component-3 w-full max-w-6xl rounded-[26px] p-4 flex items-center relative"
+												className="glass-enhanced w-full max-w-6xl rounded-[26px] p-4 flex items-center relative"
 											>
 												{/* White stroke */}
 												<div className="absolute inset-0 border-[0.5px] border-white border-opacity-20 rounded-[26px] pointer-events-none"></div>

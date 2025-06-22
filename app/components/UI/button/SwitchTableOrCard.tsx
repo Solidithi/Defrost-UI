@@ -52,7 +52,7 @@ const SwitchTableOrCard: React.FC<SwitchTableOrCardProps> = ({
 	const selectedTableColor = isCard ? 'gray' : 'white'
 
 	return (
-		<div className="relative w-36 h-[52px] glass-component-1 rounded-xl flex items-center px-1">
+		<div className="relative w-36 h-[52px] glass-enhanced rounded-xl flex items-center px-1">
 			{/* Sliding Indicator */}
 			<motion.div
 				className={

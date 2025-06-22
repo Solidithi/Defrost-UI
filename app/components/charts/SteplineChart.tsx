@@ -188,7 +188,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 
 			sortedPhases.forEach((phase) => {
 				// Now use emissionRate directly as token amount instead of percentage
-				const phaseAmount = phase.tokenAmount
+				const phaseAmount = phase.emissionRate
 				phaseTokens.push(phaseAmount)
 				totalAllocatedToPhases += Number(phaseAmount)
 			})
@@ -305,7 +305,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 				},
 			},
 			title: {
-				text: `Token Emission Schedule - ${poolData[poolId]?.vTokenSymbol || 'Pool ' + poolId}`,
+				text: `Token Emission Schedule - ${poolData[poolId]?.token || 'Pool ' + poolId}`,
 				align: 'left',
 				style: {
 					color: '#fff',
@@ -413,7 +413,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	const getSeries = (poolId: number) => {
 		return [
 			{
-				name: `${poolData[poolId]?.vTokenSymbol || 'Pool ' + poolId} Token Allocation`,
+				name: `${poolData[poolId]?.token || 'Pool ' + poolId} Token Allocation`,
 				data: chartData[poolId]?.map((point) => point.y) || [],
 			},
 		]
@@ -422,7 +422,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	// If no pools available, show a message
 	if (pool.length === 0) {
 		return (
-			<div className="flex items-center justify-center h-64 glass-component-3 rounded-xl p-5 text-white">
+			<div className="flex items-center justify-center h-64 glass-enhanced rounded-xl p-5 text-white">
 				<div className="text-center">
 					<p className="font-orbitron text-lg mb-2">No pools available</p>
 					<p className="font-comfortaa text-sm opacity-75">
@@ -442,7 +442,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 		!poolData[selectedPool]?.tokenSupply
 	) {
 		return (
-			<div className="flex items-center justify-center h-64 glass-component-3 rounded-xl p-5 text-white">
+			<div className="flex items-center justify-center h-64 glass-enhanced rounded-xl p-5 text-white">
 				<div className="text-center">
 					<p className="font-orbitron text-lg mb-2">No data to display</p>
 					<p className="font-comfortaa text-sm opacity-75">
@@ -457,7 +457,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	return (
 		<div
 			id="chart"
-			className="glass-component-3 rounded-xl py-5 px-4 sm:px-5 lg:px-9"
+			className="glass-enhanced rounded-xl py-5 px-4 sm:px-5 lg:px-9"
 		>
 			{/* Pool selector when multiple pools exist and no specific poolId is provided */}
 			{pool.length > 1 && poolId === undefined && (
@@ -473,7 +473,8 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 					>
 						{pool.map((poolId) => (
 							<option key={poolId} value={poolId}>
-								{poolData[poolId]?.vTokenSymbol || `Pool ${poolId}`}
+								{poolData[poolId]?.token || `Pool ${poolId}`} -{' '}
+								{poolData[poolId]?.chain || 'Unknown Chain'}
 							</option>
 						))}
 					</select>
@@ -484,7 +485,10 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 			<div className="mb-4">
 				<span className="font-orbitron text-base sm:text-sm">
 					Total Supply: {poolData[selectedPool].tokenSupply.toLocaleString()}{' '}
-					{poolData[selectedPool].vTokenSymbol || 'reward tokens'}
+					tokens
+				</span>
+				<span className="font-orbitron text-base sm:text-sm ml-4">
+					Chain: {poolData[selectedPool].chain || 'Not specified'}
 				</span>
 			</div>
 
@@ -508,7 +512,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 							className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 shadow-sm text-xs text-white"
 						>
 							<div className="font-bold text-cyan-400">Phase {index + 1}</div>
-							<div>{phase.tokenAmount?.toLocaleString() || 0} tokens</div>
+							<div>{phase.emissionRate?.toLocaleString() || 0} tokens</div>
 							<div className="opacity-70">
 								{new Date(phase.from).toLocaleDateString()} –{' '}
 								{new Date(phase.to).toLocaleDateString()}

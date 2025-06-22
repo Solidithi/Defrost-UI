@@ -88,7 +88,7 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 			className={`transition-all duration-300 ease-in-out ${isExpanded ? 'w-[250px]' : 'w-[80px]'}`}
 		>
 			<div
-				className={`glass-component-1 rounded-xl p-5 relative ${isExpanded ? '' : 'flex flex-col items-center'}`}
+				className={`glass-enhanced rounded-xl p-5 relative ${isExpanded ? '' : 'flex flex-col items-center'}`}
 			>
 				{/* Title area */}
 				<div className="w-full mb-4">
@@ -126,7 +126,7 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 
 				{/* Glass APY Stat */}
 				{isExpanded && (
-					<div className="mt-6 glass-component-1 rounded-xl">
+					<div className="mt-6 glass-enhanced rounded-xl">
 						<div className="flex items-center">
 							<div className="p-3 m-2 text-center w-1/2 flex flex-col justify-center items-center text-white font-orbitron font-bold">
 								<span>APY</span>
@@ -163,7 +163,7 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 									<TooltipTrigger asChild>
 										<div
 											onClick={() => onVTokenSelect(null)}
-											className={`flex justify-center items-center glass-component-1 rounded-xl w-12 h-12 cursor-pointer transition-all duration-200 hover:scale-105 ${
+											className={`flex justify-center items-center glass-enhanced rounded-xl w-12 h-12 cursor-pointer transition-all duration-200 hover:scale-105 ${
 												!selectedVToken
 													? 'ring-2 ring-purple-500 bg-purple-500/20'
 													: 'hover:bg-white/10'
@@ -194,7 +194,7 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 										<TooltipTrigger asChild>
 											<div
 												onClick={() => onVTokenSelect(vToken)}
-												className={`flex justify-center items-center glass-component-1 rounded-xl w-12 h-12 cursor-pointer transition-all duration-200 hover:scale-105 ${
+												className={`flex justify-center items-center glass-enhanced rounded-xl w-12 h-12 cursor-pointer transition-all duration-200 hover:scale-105 ${
 													isSelected
 														? 'ring-2 ring-blue-500 bg-blue-500/20'
 														: 'hover:bg-white/10'

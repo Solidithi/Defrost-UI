@@ -38,7 +38,7 @@ export const TransactionStatusModal = ({
 						Transaction Status
 					</h2>
 
-					<div className="glass-component-1 p-6 rounded-2xl bg-gradient-to-br from-blue-950/80 via-purple-950/70 to-indigo-950/80">
+					<div className="glass-enhanced p-6 rounded-2xl bg-gradient-to-br from-blue-950/80 via-purple-950/70 to-indigo-950/80">
 						{/* Transaction Pending State */}
 						{isTransactionPending && (
 							<motion.div

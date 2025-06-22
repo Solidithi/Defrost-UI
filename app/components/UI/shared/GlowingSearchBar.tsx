@@ -23,7 +23,7 @@ export default function GlowingSearchBar() {
 			{/* Search Bar */}
 			<div
 				className={cn(
-					'flex items-center gap-3 px-4 py-3 rounded-full border-gray-700 bg-transparent transition-all glass-component-2'
+					'flex items-center gap-3 px-4 py-3 rounded-full border-gray-700 bg-transparent transition-all glass-enhanced'
 				)}
 			>
 				<Search className="text-white opacity-75" />

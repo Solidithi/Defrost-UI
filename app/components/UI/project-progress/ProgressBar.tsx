@@ -41,7 +41,7 @@ const ProgressBar = ({
 					overrideClassName && barClassName
 						? barClassName
 						: `w-1/2 m-6
-       glass-component-1 rounded-lg h-1 relative overflow-hidden w-full ${barClassName}`
+       glass-enhanced rounded-lg h-1 relative overflow-hidden w-full ${barClassName}`
 				}
 			>
 				<div

@@ -45,7 +45,7 @@ export default function ModalsPage() {
 					</div>
 				</div>
 
-				<div className="glass-component-3 border border-gray-700/40 rounded-2xl p-8">
+				<div className="glass-enhanced border border-gray-700/40 rounded-2xl p-8">
 					{activeTab === 'showcase' ? <ModalsShowcase /> : <ModalsDemo />}
 				</div>
 			</div>

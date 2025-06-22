@@ -90,7 +90,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ title, series, labels }) => {
 	}
 
 	return (
-		<div className=" mx-auto glass-component-1 h-[420px] dark:bg-gray-900 p-4 rounded-2xl shadow-md">
+		<div className=" mx-auto glass-enhanced h-[420px] dark:bg-gray-900 p-4 rounded-2xl shadow-md">
 			<h2 className="text-xl font-semibold text-center mb-4 text-white dark:text-white font-orbitron">
 				{title}
 			</h2>

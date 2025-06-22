@@ -253,7 +253,7 @@ const EditPool = () => {
 
 			{/* -------------------------------------------Form------------------------------------------------ */}
 			<div
-				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
+				className={`mt-14 w-[1200px] h-auto glass-enhanced rounded-2xl p-8 transition-all duration-300 z-20`}
 			>
 				<Stepper
 					className="w-full"
@@ -273,7 +273,7 @@ const EditPool = () => {
 									value={projectTokenAddress}
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
-									className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
+									className={`p-4 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full`}
 								/>
 							</div>
 						</div>
@@ -281,13 +281,13 @@ const EditPool = () => {
 
 					{/* --------------------------------------Create pool form----------------------------------------------------- */}
 					<Step>
-						<div className="glass-component-3 w-full h--full p-10 rounded-xl text-white flex flex-col gap-5">
+						<div className="glass-enhanced w-full h--full p-10 rounded-xl text-white flex flex-col gap-5">
 							<span className="text-xl font-orbitron flex justify-start w-full">
 								Select staking token
 							</span>
 							<Button
 								onClick={handleAddPool}
-								className="h-16 w-16 rounded-full glass-component-3 flex items-center justify-center "
+								className="h-16 w-16 rounded-full glass-enhanced flex items-center justify-center "
 							>
 								<svg
 									width="36"
@@ -317,12 +317,12 @@ const EditPool = () => {
 										initial={{ opacity: 0, y: 50 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ duration: 0.5 }}
-										className="glass-component-3 h-auto p-4 pt-10 rounded-xl flex items-center justify-center flex-col gap-5"
+										className="glass-enhanced h-auto p-4 pt-10 rounded-xl flex items-center justify-center flex-col gap-5"
 										style={{ width: 'calc(50% - 0.375rem)' }}
 									>
 										<Button
 											onClick={() => handleOpenConfirmModal(poolId, 'pool')}
-											className="absolute top-5 right-5 glass-component-3 px-3 py-1"
+											className="absolute top-5 right-5 glass-enhanced px-3 py-1"
 										>
 											X
 										</Button>
@@ -336,7 +336,7 @@ const EditPool = () => {
 														onChange={(e) =>
 															handleChangePool(poolId, 'chain', e.target.value)
 														}
-														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
+														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
 															Select chain
@@ -371,7 +371,7 @@ const EditPool = () => {
 														onChange={(e) =>
 															handleChangePool(poolId, 'token', e.target.value)
 														}
-														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
+														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
 															Select your token
@@ -422,7 +422,7 @@ const EditPool = () => {
 														}
 													}}
 													placeholder="Enter project token supply"
-													className={`p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+													className={`p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none 
                                         [&::-webkit-inner-spin-button]:appearance-none 
                                         [&::-webkit-outer-spin-button]:appearance-none`}
 													disabled={!editableFields[`tokenSupply-${poolId}`]}
@@ -434,7 +434,7 @@ const EditPool = () => {
 														toggleEditable(`tokenSupply-${poolId}`)
 													}
 												/>
-												<Button className="glass-component-3 rounded-xl">
+												<Button className="glass-enhanced rounded-xl">
 													Check
 												</Button>
 											</div>
@@ -462,7 +462,7 @@ const EditPool = () => {
 													}
 												}}
 												placeholder="Enter max stake"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none 
                                       [&::-webkit-inner-spin-button]:appearance-none 
                                       [&::-webkit-outer-spin-button]:appearance-none"
 												disabled={!editableFields[`maxStake-${poolId}`]}
@@ -484,7 +484,7 @@ const EditPool = () => {
 													handleChangePool(poolId, 'from', e.target.value)
 												}
 												placeholder="Enter start date"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm"
 												disabled={!editableFields[`from-${poolId}`]}
 											/>
 											<Edit2
@@ -502,7 +502,7 @@ const EditPool = () => {
 													handleChangePool(poolId, 'to', e.target.value)
 												}
 												placeholder="Enter end date"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm"
 												disabled={!editableFields[`to-${poolId}`]}
 											/>
 											<Edit2
@@ -539,7 +539,7 @@ const EditPool = () => {
 											</span>
 											<Button
 												onClick={() => handleOpenEmissionRateModal(poolId)}
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm flex justify-center items-center"
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm flex justify-center items-center"
 											>
 												<svg
 													width="29"
@@ -571,7 +571,7 @@ const EditPool = () => {
 							<span className="text-3xl font-orbitron text-white mb-4">
 								Launch Your Pool
 							</span>
-							<div className="glass-component-3 p-8 rounded-2xl w-3/4">
+							<div className="glass-enhanced p-8 rounded-2xl w-3/4">
 								<p className="text-gray-200 text-center mb-8">
 									You&apos;re about to create a new launchpool on the
 									blockchain. This action is irreversible and will require a
@@ -581,7 +581,7 @@ const EditPool = () => {
 									<h4 className="text-white font-orbitron text-xl">
 										Transaction Summary
 									</h4>
-									<div className="glass-component-2 p-4 rounded-xl">
+									<div className="glass-enhanced p-4 rounded-xl">
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Token Address:</span>
 											<span className="font-mono text-blue-400">
@@ -633,7 +633,7 @@ const EditPool = () => {
 					<div className="flex flex-col gap-3 sm:gap-5 mt-3 sm:mt-5">
 						<Button
 							onClick={() => selectedPoolId && handleAddPhase(selectedPoolId)}
-							className="h-12 w-12 sm:h-16 sm:w-16 rounded-full glass-component-3 flex items-center justify-center mx-auto sm:mx-0"
+							className="h-12 w-12 sm:h-16 sm:w-16 rounded-full glass-enhanced flex items-center justify-center mx-auto sm:mx-0"
 						>
 							<svg
 								width="24"
@@ -665,11 +665,11 @@ const EditPool = () => {
 										initial={{ opacity: 0, y: 50 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ duration: 0.5 }}
-										className="glass-component-3 h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
+										className="glass-enhanced h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
 									>
 										<Button
 											onClick={() => handleOpenConfirmModal(phase.id, 'phase')}
-											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-component-3 px-2 sm:px-3 py-1 text-sm sm:text-base"
+											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-enhanced px-2 sm:px-3 py-1 text-sm sm:text-base"
 										>
 											X
 										</Button>
@@ -690,7 +690,7 @@ const EditPool = () => {
 														)
 													}
 													placeholder="Enter emission rate"
-													className="p-2 sm:p-3   rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+													className="p-2 sm:p-3   rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 												/>
 												{/* <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-xs sm:text-sm">
 													%
@@ -713,7 +713,7 @@ const EditPool = () => {
 													)
 												}
 												placeholder="Enter start date"
-												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 											/>
 										</div>
 										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
@@ -732,7 +732,7 @@ const EditPool = () => {
 													)
 												}
 												placeholder="Enter end date"
-												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 											/>
 										</div>
 									</motion.div>

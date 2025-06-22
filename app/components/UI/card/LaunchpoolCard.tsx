@@ -319,7 +319,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 			/>
 			<div className="rounded-xl overflow-hidden relative group">
 				{/* Card content with glassmorphism */}
-				<div className="glass-component-1 relative m-[1px] rounded-xl bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:bg-gradient-to-br hover:from-gray-800/95 hover:to-black/95 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
+				<div className="glass-enhanced relative m-[1px] rounded-xl bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:bg-gradient-to-br hover:from-gray-800/95 hover:to-black/95 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
 					{/* Top section with logo and APR */}
 					<div
 						className="relative p-4 cursor-pointer transition-all duration-300"

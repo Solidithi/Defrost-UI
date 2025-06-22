@@ -11,8 +11,8 @@ import {
 const StakeArea = () => {
 	return (
 		<div className="mt-6">
-			<div className="glass-component-3 p-4 text-white rounded-lg">
-				<div className="glass-component-1 rounded-lg h-36">
+			<div className="glass-enhanced p-4 text-white rounded-lg">
+				<div className="glass-enhanced rounded-lg h-36">
 					<div className="font-orbitron font-bold text-base mt-6 mb-7 ml-4 text-[#C2C6CC]">
 						Number of staked token
 					</div>
@@ -23,7 +23,7 @@ const StakeArea = () => {
 						</div>
 						{/* Token choosing */}
 						<ModalTrigger className="ml-auto mr-4">
-							<div className=" flex glass-component-1 w-20 h-10 rounded-3xl">
+							<div className=" flex glass-enhanced w-20 h-10 rounded-3xl">
 								<div className="flex justify-center items-center w-7 h-7 mt-1 ml-2 bg-gray-200 rounded-3xl">
 									<Image
 										src={Logo}
@@ -68,7 +68,7 @@ const StakeArea = () => {
 								alert('Unstake button clicked')
 							}}
 							className={`
-								px-4 py-2 glass-component-3 text-white rounded-full w-28 font-comfortaa font-extrabold
+								px-4 py-2 glass-enhanced text-white rounded-full w-28 font-comfortaa font-extrabold
 								transition-all duration-300 ease-in-out 
     				hover:opacity-80 hover:shadow-lg hover:scale-105 
     				active:scale-95 active:opacity-90 

@@ -114,7 +114,7 @@ export default function LineChart() {
 	}
 
 	return (
-		<div className="relative w-full h-[420px] glass-component-1 rounded-3xl p-6 text-white">
+		<div className="relative w-full h-[420px] glass-enhanced rounded-3xl p-6 text-white">
 			<h2 className="absolute top-4 right-6 text-2xl font-bold font-orbitron">
 				APR
 			</h2>

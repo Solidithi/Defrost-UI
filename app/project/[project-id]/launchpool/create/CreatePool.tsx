@@ -894,7 +894,7 @@ export default function CreatePool() {
 
 			{/* Project Header */}
 			{currentProject && (
-				<div className="mb-8 glass-component-3 p-4 rounded-xl">
+				<div className="mb-8 glass-enhanced p-4 rounded-xl">
 					<div className="flex items-center gap-4">
 						{currentProject.logo ? (
 							<img
@@ -966,7 +966,7 @@ export default function CreatePool() {
 			{/* -------------------------------------------Form------------------------------------------------ */}
 
 			<div
-				className={`mt-14 w-[1200px] h-auto glass-component-3 rounded-2xl p-8 transition-all duration-300 z-20`}
+				className={`mt-14 w-[1200px] h-auto glass-enhanced rounded-2xl p-8 transition-all duration-300 z-20`}
 			>
 				<Stepper
 					className="w-full"
@@ -989,7 +989,7 @@ export default function CreatePool() {
 									value={projectTokenAddress}
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
-									className={`p-4 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full`}
+									className={`p-4 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full`}
 									disabled={isValidatingToken}
 								/>
 								{isValidatingToken && (
@@ -1045,13 +1045,13 @@ export default function CreatePool() {
 					{/* --------------------------------------Create pool form----------------------------------------------------- */}
 
 					<Step>
-						<div className="glass-component-3 w-full h--full p-10 rounded-xl text-white flex flex-col gap-5">
+						<div className="glass-enhanced w-full h--full p-10 rounded-xl text-white flex flex-col gap-5">
 							<span className="text-xl font-orbitron  flex justify-start w-full">
 								Select staking token
 							</span>
 							<Button
 								onClick={handleAddPool}
-								className="h-16 w-16 rounded-full glass-component-3 flex items-center justify-center "
+								className="h-16 w-16 rounded-full glass-enhanced flex items-center justify-center "
 							>
 								<svg
 									width="36"
@@ -1082,12 +1082,12 @@ export default function CreatePool() {
 										initial={{ opacity: 0, y: 50 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ duration: 0.5 }}
-										className="glass-component-3 h-auto p-4 pt-10 rounded-xl flex items-center justify-center flex-col gap-5"
+										className="glass-enhanced h-auto p-4 pt-10 rounded-xl flex items-center justify-center flex-col gap-5"
 										style={{ width: 'calc(50% - 0.375rem)' }}
 									>
 										<Button
 											onClick={() => handleOpenConfirmModal(poolId, 'pool')}
-											className="absolute top-5 right-5 glass-component-3 px-3 py-1"
+											className="absolute top-5 right-5 glass-enhanced px-3 py-1"
 										>
 											X
 										</Button>
@@ -1096,7 +1096,7 @@ export default function CreatePool() {
 											{/* Chain indicator */}
 											<div className="w-1/2 flex flex-col gap-3 relative">
 												<span className="font-orbitron text-lg">Chain</span>
-												<div className="p-3 rounded-xl font-comfortaa text-white glass-component-2 w-full text-sm">
+												<div className="p-3 rounded-xl font-comfortaa text-white glass-enhanced w-full text-sm">
 													{currentProject ? (
 														<div className="flex items-center gap-2">
 															<span>
@@ -1134,7 +1134,7 @@ export default function CreatePool() {
 																selectedOption.text
 															)
 														}}
-														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none cursor-pointer"
+														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
 														<option value="" disabled>
 															Select staking token
@@ -1192,12 +1192,12 @@ export default function CreatePool() {
 														}
 													}}
 													placeholder="Enter project token supply"
-													className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+													className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none 
     																[&::-webkit-inner-spin-button]:appearance-none 
     																[&::-webkit-outer-spin-button]:appearance-none"
 												/>
 
-												<Button className="glass-component-3 rounded-xl">
+												<Button className="glass-enhanced rounded-xl">
 													Check
 												</Button>
 											</div>
@@ -1226,7 +1226,7 @@ export default function CreatePool() {
 													}
 												}}
 												placeholder="Enter max stake"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm appearance-none 
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none 
     															[&::-webkit-inner-spin-button]:appearance-none 
     															[&::-webkit-outer-spin-button]:appearance-none"
 											/>
@@ -1243,7 +1243,7 @@ export default function CreatePool() {
 													handleChangePool(poolId, 'from', e.target.value)
 												}
 												placeholder="Enter start date"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm"
 											/>
 										</div>
 
@@ -1256,7 +1256,7 @@ export default function CreatePool() {
 													handleChangePool(poolId, 'to', e.target.value)
 												}
 												placeholder="Enter end date"
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm"
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm"
 											/>
 										</div>
 
@@ -1289,7 +1289,7 @@ export default function CreatePool() {
 
 											<Button
 												onClick={() => handleOpenEmissionRateModal(poolId)}
-												className="p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-sm flex justify-center items-center"
+												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm flex justify-center items-center"
 											>
 												<svg
 													width="29"
@@ -1322,7 +1322,7 @@ export default function CreatePool() {
 								Launch Your Pool
 							</span>
 
-							<div className="glass-component-3 p-8 rounded-2xl w-3/4">
+							<div className="glass-enhanced p-8 rounded-2xl w-3/4">
 								<p className="text-gray-200 text-center mb-8">
 									You&apos;re about to create a new launchpool on the
 									blockchain. This action is irreversible and will require a
@@ -1333,7 +1333,7 @@ export default function CreatePool() {
 									<h4 className="text-white font-orbitron text-xl">
 										Transaction Summary
 									</h4>
-									<div className="glass-component-2 p-4 rounded-xl">
+									<div className="glass-enhanced p-4 rounded-xl">
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Token Address:</span>
 											<span className="font-mono text-blue-400">
@@ -1381,7 +1381,7 @@ export default function CreatePool() {
 										<>
 											{/* Approval Status and Error Display */}
 											{txState.showApprovalSection && (
-												<div className="glass-component-2 p-4 rounded-xl mb-6">
+												<div className="glass-enhanced p-4 rounded-xl mb-6">
 													<div className="text-white text-sm mb-3">
 														<p className="font-medium mb-2">
 															Token approval required before creating launchpool
@@ -1571,7 +1571,7 @@ export default function CreatePool() {
 					<div className="flex flex-col gap-3 sm:gap-5 mt-3 sm:mt-5">
 						<Button
 							onClick={() => selectedPoolId && handleAddPhase(selectedPoolId)}
-							className="h-12 w-12 sm:h-16 sm:w-16 rounded-full glass-component-3 flex items-center justify-center mx-auto sm:mx-0"
+							className="h-12 w-12 sm:h-16 sm:w-16 rounded-full glass-enhanced flex items-center justify-center mx-auto sm:mx-0"
 						>
 							<svg
 								width="24"
@@ -1603,11 +1603,11 @@ export default function CreatePool() {
 										initial={{ opacity: 0, y: 50 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ duration: 0.5 }}
-										className="glass-component-3 h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
+										className="glass-enhanced h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
 									>
 										<Button
 											onClick={() => handleOpenConfirmModal(phase.id, 'phase')}
-											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-component-3 px-2 sm:px-3 py-1 text-sm sm:text-base"
+											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-enhanced px-2 sm:px-3 py-1 text-sm sm:text-base"
 										>
 											X
 										</Button>
@@ -1628,7 +1628,7 @@ export default function CreatePool() {
 														)
 													}
 													placeholder="Enter emission rate"
-													className="p-2 sm:p-3   rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+													className="p-2 sm:p-3   rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 												/>
 												{/* <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-xs sm:text-sm">
 													%
@@ -1651,7 +1651,7 @@ export default function CreatePool() {
 													)
 												}
 												placeholder="Enter start date"
-												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 											/>
 										</div>
 										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
@@ -1670,7 +1670,7 @@ export default function CreatePool() {
 													)
 												}
 												placeholder="Enter end date"
-												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-component-2 focus:outline-none w-full text-xs sm:text-sm"
+												className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 											/>
 										</div>
 									</motion.div>

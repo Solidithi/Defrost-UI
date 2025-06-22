@@ -310,7 +310,7 @@ const AllProject = () => {
 						</div>
 
 						{/* Project Stats Summary */}
-						<div className="glass-component-3 rounded-2xl p-6 mb-8 mx-auto">
+						<div className="glass-enhanced rounded-2xl p-6 mb-8 mx-auto">
 							<div className="absolute inset-0 border-[0.5px] border-white border-opacity-20 rounded-2xl pointer-events-none"></div>
 							<div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
 								<div className="text-center">

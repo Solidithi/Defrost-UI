@@ -63,7 +63,7 @@ const Navbar = ({
 				transition={{ duration: 0.2 }}
 				style={{ fontFamily: orbitron.style.fontFamily }}
 				className={cn(
-					'fixed top-0 inset-x-0 z-[100] mx-auto  max-w-fit rounded-full  shadow-lg px-5 py-2 space-x-4 mt-10 glass-component-1 flex-2 ',
+					'fixed top-0 inset-x-0 z-[100] mx-auto  max-w-fit rounded-full  shadow-lg px-5 py-2 space-x-4 mt-10 glass-enhanced flex-2 ',
 					className
 				)}
 			>

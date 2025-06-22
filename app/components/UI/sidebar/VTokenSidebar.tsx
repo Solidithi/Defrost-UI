@@ -65,7 +65,7 @@ export function VTokenSidebar({
 			className={`transition-all duration-300 ease-in-out ${isExpanded ? 'w-[280px]' : 'w-[80px]'}`}
 		>
 			<div
-				className={`glass-component-1 rounded-xl p-5 relative ${isExpanded ? '' : 'flex flex-col items-center'}`}
+				className={`glass-enhanced rounded-xl p-5 relative ${isExpanded ? '' : 'flex flex-col items-center'}`}
 			>
 				{/* Title area */}
 				<div className="w-full mb-4">
@@ -103,7 +103,7 @@ export function VTokenSidebar({
 
 				{/* Selected vToken APR Display */}
 				{isExpanded && selectedVToken && (
-					<div className="mt-6 glass-component-1 rounded-xl">
+					<div className="mt-6 glass-enhanced rounded-xl">
 						<div className="flex">
 							<div className="p-3 text-center w-1/2 text-white font-orbitron font-bold">
 								APR

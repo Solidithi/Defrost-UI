@@ -154,21 +154,101 @@ body {
 	pointer-events: none;
 }
 
+.glass-enhanced {
+	background: rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(5px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	box-shadow:
+		0 8px 32px rgba(0, 0, 0, 0.1),
+		inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Frosted Glass */
+.glass-frosted {
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(5px);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	box-shadow:
+		0 12px 40px rgba(0, 0, 0, 0.15),
+		inset 0 1px 0 rgba(255, 255, 255, 0.3),
+		inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient Glass */
+.glass-gradient {
+	background: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.15) 0%,
+		rgba(255, 255, 255, 0.05) 100%
+	);
+	backdrop-filter: blur(24px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	box-shadow:
+		0 10px 35px rgba(0, 0, 0, 0.12),
+		inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Neon Glass */
+.glass-neon {
+	background: rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(24px);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	box-shadow:
+		0 0 20px rgba(255, 255, 255, 0.1),
+		0 8px 32px rgba(0, 0, 0, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Premium Glass */
+.glass-premium {
+	background:
+		linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.12) 0%,
+			rgba(255, 255, 255, 0.04) 100%
+		),
+		radial-gradient(
+			circle at 50% 0%,
+			rgba(255, 255, 255, 0.08) 0%,
+			transparent 50%
+		);
+	backdrop-filter: blur(40px);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	box-shadow:
+		0 15px 45px rgba(0, 0, 0, 0.15),
+		0 5px 15px rgba(0, 0, 0, 0.08),
+		inset 0 2px 4px rgba(255, 255, 255, 0.2),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Interactive Glass Cards */
+.glass-card {
+	background: rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(24px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 12px;
+	transition: all 0.3s ease-out;
+	box-shadow:
+		0 8px 32px rgba(0, 0, 0, 0.1),
+		inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-card:hover {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.3);
+	transform: translateY(-4px);
+	box-shadow:
+		0 12px 40px rgba(0, 0, 0, 0.15),
+		0 0 25px rgba(255, 255, 255, 0.1),
+		inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
 ::view-transition-old(root) {
 	z-index: 1;
 	animation: none !important;
 }
 @layer utilities {
-	.glass-component-1 {
-		@apply bg-white/5 backdrop-blur-md border border-white/15;
-	}
-	.glass-component-2 {
-		@apply bg-white/5 backdrop-blur-sm border border-white/15;
-	}
-
-	.glass-component-3 {
-		@apply bg-white/35 backdrop-blur-sm border border-white/15;
-	}
+	/* Enhanced Glass - Your original improved */
 
 	.warm-cool-text {
 		@apply bg-gradient-to-r from-[#427FF6]  to-[#E8499E] text-transparent bg-clip-text;

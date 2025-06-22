@@ -60,7 +60,7 @@ export function AccessLockedModal({
 			<motion.div
 				initial={{ opacity: 0, scale: 0.9 }}
 				animate={{ opacity: 1, scale: 1 }}
-				className={`glass-component-3 max-w-lg p-8 rounded-2xl shadow-2xl border border-gray-700/50 ${className}`}
+				className={`glass-enhanced max-w-lg p-8 rounded-2xl shadow-2xl border border-gray-700/50 ${className}`}
 			>
 				<div className="flex flex-col items-center text-center">
 					<div className="mb-4 p-4 rounded-full bg-gray-800/80">

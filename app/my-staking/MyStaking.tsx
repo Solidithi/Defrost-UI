@@ -16,6 +16,7 @@ import {
 import { useAccount, useReadContract } from 'wagmi'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json' // @TODO: optimize this later
 import { useNavBarControl } from '../provider/navbar-control'
+import Button from '../components/UI/button/Button'
 
 export function MyStakingPage() {
 	const {
@@ -169,11 +170,11 @@ export function MyStakingPage() {
 						</nav>
 					</div>
 					<div className="flex items-center space-x-4">
-						<button className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-medium hover:opacity-90 transition shadow-lg shadow-purple-500/30">
+						<Button className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-medium hover:opacity-90 transition shadow-lg shadow-purple-500/30">
 							{account.isConnected
 								? `${account.address?.slice(0, 6)}...${account.address?.slice(-4)}`
 								: 'Connect Wallet'}
-						</button>
+						</Button>
 					</div>
 				</div>
 			</header> */}
@@ -195,14 +196,14 @@ export function MyStakingPage() {
 								pools. Earn rewards and maximize your yield with vToken staking.
 							</p>
 							<div className="flex flex-wrap gap-4">
-								<button className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-medium hover:opacity-90 transition flex items-center gap-2 shadow-lg shadow-purple-500/30">
+								<Button className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-medium hover:opacity-90 transition flex items-center gap-2 shadow-lg shadow-purple-500/30">
 									<Zap size={18} />
 									Stake Now
-								</button>
-								<button className="px-6 py-3 rounded-full backdrop-blur-xl bg-white/15 border border-white/20 text-white font-medium hover:bg-white/20 transition flex items-center gap-2">
+								</Button>
+								<Button className="px-6 py-3 rounded-full backdrop-blur-xl bg-white/15 border border-white/20 text-white font-medium hover:bg-white/20 transition flex items-center gap-2">
 									<Award size={18} />
 									Claim All Rewards
-								</button>
+								</Button>
 							</div>
 						</div>
 
@@ -254,7 +255,7 @@ export function MyStakingPage() {
 
 				{/* Tabs */}
 				<div className="mb-6 flex border-b border-white/20">
-					<button
+					<Button
 						onClick={() => setActiveTab('all')}
 						className={cn(
 							'px-6 py-3 font-medium transition-colors relative',
@@ -267,8 +268,8 @@ export function MyStakingPage() {
 						{activeTab === 'all' && (
 							<span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></span>
 						)}
-					</button>
-					<button
+					</Button>
+					<Button
 						onClick={() => setActiveTab('active')}
 						className={cn(
 							'px-6 py-3 font-medium transition-colors relative',
@@ -281,8 +282,8 @@ export function MyStakingPage() {
 						{activeTab === 'active' && (
 							<span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></span>
 						)}
-					</button>
-					<button
+					</Button>
+					<Button
 						onClick={() => setActiveTab('ended')}
 						className={cn(
 							'px-6 py-3 font-medium transition-colors relative',
@@ -295,7 +296,7 @@ export function MyStakingPage() {
 						{activeTab === 'ended' && (
 							<span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></span>
 						)}
-					</button>
+					</Button>
 				</div>
 
 				{/* Loading State */}
@@ -323,7 +324,7 @@ export function MyStakingPage() {
 								<p className="text-white/80 mb-4">
 									No pools found matching your criteria
 								</p>
-								<button
+								<Button
 									onClick={() => {
 										setActiveTab('all')
 										setActiveFilters({
@@ -334,16 +335,16 @@ export function MyStakingPage() {
 									className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-xl border border-white/20 text-white hover:from-blue-500/40 hover:via-purple-500/40 hover:to-pink-500/40 transition"
 								>
 									Reset Filters
-								</button>
+								</Button>
 							</div>
 						)}
 
 						{/* Show More Button */}
 						{filteredPoolsCount > 6 && (
 							<div className="mt-8 flex justify-center">
-								<button className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-xl border border-white/20 text-white font-medium hover:from-blue-500/40 hover:via-purple-500/40 hover:to-pink-500/40 transition">
+								<Button className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-xl border border-white/20 text-white font-medium hover:from-blue-500/40 hover:via-purple-500/40 hover:to-pink-500/40 transition">
 									Show More
-								</button>
+								</Button>
 							</div>
 						)}
 					</>
@@ -353,7 +354,7 @@ export function MyStakingPage() {
 				{showDetailsModal && selectedPool && (
 					<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
 						<div className="relative w-full max-w-4xl max-h-[90vh] overflow-auto rounded-2xl glossy-card p-6 shadow-xl shadow-purple-500/20">
-							<button
+							<Button
 								onClick={closeDetailsModal}
 								className="absolute top-4 right-4 p-2 rounded-full bg-white/15 hover:bg-white/25 transition"
 							>
@@ -372,7 +373,7 @@ export function MyStakingPage() {
 									<path d="M18 6 6 18" />
 									<path d="m6 6 12 12" />
 								</svg>
-							</button>
+							</Button>
 							{selectedPool.type === 'launchpool' && (
 								<LaunchpoolStakingDetailsModal
 									pool={selectedPool}

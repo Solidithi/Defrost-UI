@@ -91,7 +91,7 @@ const FeaturesSection = () => {
 					transition={{ duration: 0.5, delay: 0.5 }}
 					className="flex justify-between items-center  w-full h-auto gap-5"
 				>
-					<div className="h-full w-1/2 glass-component-1 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
+					<div className="h-full w-1/2 glass-enhanced flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							className="text-xl font-light"
@@ -128,7 +128,7 @@ const FeaturesSection = () => {
 						<Spline scene="https://prod.spline.design/pYJimn-GHYQ9SyUK/scene.splinecode" />{' '}
 					</div>
 
-					<div className="h-full w-1/2 glass-component-1 flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
+					<div className="h-full w-1/2 glass-enhanced flex flex-col items-start gap-5 justify-center p-8 rounded-3xl">
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							className="text-xl font-light"
