@@ -14,17 +14,6 @@ model migrations {
   name      String @db.VarChar
 }
 
-model platform_statistics {
-  id                 String   @id(map: "PK_4416a2d6a3a4ec1260e13337020") @db.VarChar
-  date               DateTime @db.Timestamptz(6)
-  total_projects     Int
-  total_pools        Int
-  unique_users       Int
-  daily_active_users Int
-  total_staked_value Decimal  @db.Decimal
-  total_transactions Int
-}
-
 model project {
   id                String       @id(map: "PK_4d68b1358bb5b766d3e78f32f57") @db.VarChar
   name              String?
@@ -38,6 +27,11 @@ model project {
   tx_hash           String
   chain_id          Int
   created_at        DateTime     @db.Timestamptz(6)
+  discord           String?
+  github            String?
+  telegram          String?
+  twitter           String?
+  website           String?
   owner_id          String?      @db.VarChar
   launchpool        launchpool[]
   user              user?        @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_d40afe32d1d771bea7a5f468185")
@@ -194,4 +188,15 @@ model launchpool_unstake {
 
   @@index([user_id], map: "IDX_45ac69b00417b3e04fb04feb0d")
   @@index([launchpool_id], map: "IDX_5ffd534f5829b4c756e48a0727")
+}
+
+model platform_metrics_snapshots {
+  id                 String   @id(map: "PK_2edb023cca470d9ec7f196004d5") @db.VarChar
+  timestamp          DateTime @db.Timestamptz(6)
+  count_projects     Int
+  count_launchpools  Int
+  count_unique_users Int
+  count_transactions Int
+  count_active_users Int
+  total_value_locked Decimal  @db.Decimal
 }
