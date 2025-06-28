@@ -8,7 +8,10 @@ import {
 	ModalContent,
 	ModalTrigger,
 } from '@/app/components/UI/modal/AnimatedModal'
+import { useStakeAreaStore } from '@/app/store/launchpool'
 const StakeArea = () => {
+	const { setStakeAmount } = useStakeAreaStore()
+
 	return (
 		<div className="mt-6">
 			<div className="glass-enhanced p-4 text-white rounded-lg">
@@ -19,7 +22,13 @@ const StakeArea = () => {
 
 					<div className="flex flex-row items-center">
 						<div className="ml-6 text-white text-2xl font-bold font-comfortaa">
-							--USDT
+							{/* --USDT */}
+							<input
+								type="number"
+								className="bg-transparent border-none outline-none text-white text-2xl font-bold font-comfortaa w-52"
+								onChange={(e) => setStakeAmount(parseFloat(e.target.value))}
+								placeholder="--USDT"
+							/>
 						</div>
 						{/* Token choosing */}
 						<ModalTrigger className="ml-auto mr-4">
