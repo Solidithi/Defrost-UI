@@ -3,7 +3,11 @@ import Button from '../UI/button/Button'
 import { AllPoolsTab } from './ContentTab'
 import { StaticImageData } from 'next/image'
 
-export const LaunchpoolDetail = ({ projectDetail }: any) => {
+export const LaunchpoolDetail = ({
+	projectDetail,
+}: {
+	projectDetail: ProjectDetail
+}) => {
 	return (
 		<div className="mt-10 flex flex-col gap-10 ">
 			<div className="flex flex-col gap-10 items-center">
@@ -52,7 +56,7 @@ export const LaunchpoolDetail = ({ projectDetail }: any) => {
 						<PoolTab projectDetail={projectDetail}></PoolTab>
 					</div> */}
 					<AllPoolsTab
-						projectCards={projectDetail.tokenPools
+						projectCards={projectDetail.pools
 							.slice(0, 3)
 							.map((pool: TokenPool) => ({
 								projectName: pool.name,

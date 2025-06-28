@@ -23,7 +23,10 @@ import { toast, ToastContainer } from 'react-toastify'
 import Spinner from '../effect/Spinner'
 import { cn } from '@/app/lib/utils'
 
-function getFunctionAbiFromIface(factory: any, functionName: string): any {
+export function getFunctionAbiFromIface(
+	factory: any,
+	functionName: string
+): any {
 	return [factory.abi.find((f: any) => f.name === functionName)]
 }
 

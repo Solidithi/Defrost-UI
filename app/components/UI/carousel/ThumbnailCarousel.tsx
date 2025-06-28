@@ -6,14 +6,14 @@ import ImageBarCarousel from './ImageBarCarousel'
 import Image from 'next/image'
 import Vector from '@/public/Vector.svg'
 
-interface Image {
+export interface ThumbnailImage {
 	src: string
-	alt: string
-	description: string
+	alt?: string
+	description?: string
 }
 
 interface ImageCarouselProps {
-	projectImages?: Image[]
+	projectImages?: ThumbnailImage[]
 }
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
@@ -21,7 +21,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 	const ref = useRef<Splide>(null)
 
 	// Default images as fallback if no project images are provided
-	const defaultImages: Image[] = [
+	const defaultImages: ThumbnailImage[] = [
 		{
 			src: 'https://i.pinimg.com/736x/2e/3d/68/2e3d6845011de0d24c13dd1e1028a2ff.jpg',
 			alt: 'Beautiful Landscape 1',
@@ -109,7 +109,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 							<SplideSlide key={index}>
 								<Image
 									src={image.src}
-									alt={image.alt}
+									alt={image.alt || `Image ${index + 1}`}
 									width={956}
 									height={478}
 									className="w-full h-full object-cover rounded-lg shadow-md"

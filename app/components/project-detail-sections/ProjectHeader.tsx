@@ -1,15 +1,13 @@
 'use client'
 import Image, { StaticImageData } from 'next/image'
-interface ProjectHeaderProps {
-	projectDetail: {
-		id: number
-		name: string
-		description: string
-		image: StaticImageData
-		status: string
-	}
+export interface ProjectHeaderProps {
+	id: number
+	name: string
+	description: string
+	image: StaticImageData
+	status: string
 }
-const ProjectHeader = ({ projectDetail }: ProjectHeaderProps) => {
+const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
 			case 'upcoming':

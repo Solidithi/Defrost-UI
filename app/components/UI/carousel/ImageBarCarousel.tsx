@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { current } from 'tailwindcss/colors'
+import { ThumbnailImage } from './ThumbnailCarousel'
 
 interface Image {
 	src: string
@@ -11,7 +12,7 @@ interface Image {
 }
 
 interface ImageBarCarouselProps {
-	image: Image[]
+	image: ThumbnailImage[]
 	currentIndex: number
 	goToSlide: (index: number) => void
 }
@@ -66,7 +67,7 @@ const ImageBarCarousel = ({
 								)}
 								<Image
 									src={img.src}
-									alt={img.alt}
+									alt={img.alt || `Image ${realIndex + 1}`}
 									fill
 									className="object-cover relative"
 								/>
