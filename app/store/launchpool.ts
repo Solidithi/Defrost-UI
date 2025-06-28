@@ -285,6 +285,8 @@
 // 	setIsOpenEmissionRate: (open) => set({ isOpenEmissionRate: open }),
 // }));
 
+// Removed duplicate declaration of useHoverSideBarIndexStore
+
 // import { create } from "zustand";
 // import {
 // 	ConfirmState,
@@ -638,10 +640,19 @@ export const usePoolStore = create<PoolStore>((set, get) => ({
 	setIsConfirming: (confirm) => set({ isConfirming: confirm }),
 	setIsOpenEmissionRate: (open) => set({ isOpenEmissionRate: open }),
 }));
+
 export const useHoverSideBarIndexStore = create<{
 	hoveredData: number | null;
 	setHoveredData: (data: number | null) => void;
 }>((set) => ({
 	hoveredData: null,
 	setHoveredData: (data) => set({ hoveredData: data }),
+}));
+
+export const useStakeAreaStore = create<{
+	stakeAmount: number;
+	setStakeAmount: (amount: number) => void;
+}>((set) => ({
+	stakeAmount: 0,
+	setStakeAmount: (amount) => set({ stakeAmount: amount }),
 }));
