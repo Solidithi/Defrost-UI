@@ -11,6 +11,8 @@ export interface EnrichedLaunchpool extends launchpool {
 	status: LaunchpoolStatus;
 }
 
+export interface LaunchpoolMetrics {}
+
 function getLaunchpoolStatus(startDate: Date, endDate: Date): LaunchpoolStatus {
 	const now = new Date();
 	if (now < startDate) {
