@@ -1,11 +1,41 @@
-import ProjectDetail from './ProjectDetail'
+'use client'
 
-const page = () => {
+import { useMemo } from 'react'
+import ProjectDetail from './ProjectDetail'
+import { useStakingStore } from '@/app/store/staking'
+
+const ProjectDetailPage = () => {
+	const { pools } = useStakingStore()
+	console.log('poolssssssssssssssssssssssssss:', pools)
+	const launchpools = useMemo(() => {
+		if (!pools || !pools.launchpools || !pools.launchpools.length) {
+			return undefined
+		}
+		return pools.launchpools
+	}, [pools.launchpools])
+
+	console.log('ProjectDetailPage - launchpools:', launchpools)
+
 	return (
-		<div>
-			<ProjectDetail />
-		</div>
+		<>
+			{launchpools ? (
+				<div>
+					<ProjectDetail launchpools={launchpools} />
+				</div>
+			) : (
+				<div className="flex items-center justify-center min-h-[400px]">
+					<div className="text-center">
+						<h2 className="text-xl font-semibold text-gray-800 mb-2">
+							Project Not Found
+						</h2>
+						<p className="text-gray-600">
+							The project you are looking for could not be found.
+						</p>
+					</div>
+				</div>
+			)}
+		</>
 	)
 }
 
-export default page
+export default ProjectDetailPage

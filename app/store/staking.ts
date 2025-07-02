@@ -247,9 +247,38 @@ export const useStakingStore = create<StakingStore>()(
 									).toString(),
 								}).toString()
 						);
-						const pools = parse(
-							await response.json()
-						) as launchpool[];
+						const responseData = await response.json();
+						const parsedData = parse(responseData);
+
+						let pools: launchpool[];
+						if (Array.isArray(parsedData)) {
+							pools = parsedData as launchpool[];
+						} else if (
+							parsedData &&
+							typeof parsedData === "object" &&
+							"pools" in parsedData
+						) {
+							pools = (parsedData as any).pools as launchpool[];
+						} else if (
+							parsedData &&
+							typeof parsedData === "object" &&
+							"launchpools" in parsedData
+						) {
+							pools = (parsedData as any)
+								.launchpools as launchpool[];
+						} else {
+							console.error(
+								"Unexpected response structure:",
+								parsedData
+							);
+							pools = [];
+						}
+
+						if (!Array.isArray(pools)) {
+							console.error("Pools is not an array:", pools);
+							return;
+						}
+
 						const enrichedLaunchpools = pools.map(
 							(launchpool: launchpool) =>
 								toEnrichedLaunchpool(launchpool)

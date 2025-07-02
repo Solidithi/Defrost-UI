@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useProjectStore } from '@/app/store/project'
 import { useAccount } from 'wagmi'
 import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
+import { useStakingStore } from '@/app/store/staking'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 
@@ -16,21 +17,37 @@ export default function ProjectLayout({
 	const params = useParams()
 	const projectID = params['project-id'].toString()
 	const { chainId, address } = useAccount()
-
+	const { currentProject } = useProjectStore()
 	const { isLoading, error, fetchProject, fetchMockProject } = useProjectStore()
-
+	const { fetchPoolsOfProject } = useStakingStore()
+	const projectIDFromContext = currentProject?.id
 	// Fetch project data on mount and when projectId changes or when user change wallet
 	useEffect(() => {
 		if (!projectID || !chainId || !address) {
 			return
 		}
 
-		if (process.env.NODE_ENV === 'development') {
-			fetchMockProject(chainId, projectID, address)
-		} else {
-			// fetchProject(projectID, true)
+		// if (process.env.NODE_ENV === 'development') {
+		// 	fetchMockProject(chainId, projectID, address)
+		// } else {
+		fetchProject(projectID, true)
+		// }
+
+		console.log('Fetching project with ID:', projectID)
+		if (projectID) {
+			fetchPoolsOfProject(projectID, {
+				fetchLaunchpools: true,
+				limit: 3,
+			})
 		}
-	}, [projectID, address])
+	}, [
+		projectID,
+		address,
+		chainId,
+		fetchProject,
+		fetchMockProject,
+		fetchPoolsOfProject,
+	])
 
 	// Show loading state
 	if (isLoading) {

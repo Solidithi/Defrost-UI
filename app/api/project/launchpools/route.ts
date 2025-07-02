@@ -13,10 +13,10 @@ export async function GET(req: NextRequest) {
 		where: {
 			project_id: projectID?.toString().trim() || "",
 		},
-		// skip: offset,
-		// take: limit,
+		skip: offset,
+		take: limit,
 	});
 	console.log("Launchpools fetched from db:", launchpools);
 
-	return Response.json(stringify(launchpools));
+	return Response.json(stringify({ message: "Success", launchpools }));
 }

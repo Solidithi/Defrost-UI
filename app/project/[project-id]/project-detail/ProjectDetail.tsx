@@ -5,15 +5,21 @@ import { AcernityCarousel } from '@/app/components/UI/carousel/AcernityCarousel'
 import Logo from '@/public/Logo.png'
 import Tabs from '@/app/components/UI/shared/Tabs'
 import Button from '@/app/components/UI/button/Button'
-import { LaunchpoolStakingCard } from '@/app/components/UI/card/LaunchPoolStakingCard'
-import PoolTab from '@/app/components/service/launchpool/ContentTabs'
-import { AllPoolsTab } from '@/app/components/project-detail-sections/ContentTab'
-import { TokenPool } from '@/app/types'
-import { LaunchpoolDetail } from '@/app/components/project-detail-sections/LaunchpoolDetail'
+import { LaunchpoolSection } from '@/app/components/project-detail-sections/LaunchpoolSection'
 import CarouselWithProgress from '@/app/components/UI/carousel/Carousel'
 import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
+import { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useProjectStore } from '@/app/store/project'
+import { usePoolStore } from '@/app/store/launchpool'
+import { useStakingStore } from '@/app/store/staking'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 
-const ProjectDetail = () => {
+interface ProjectDetailProps {
+	launchpools: EnrichedLaunchpool[]
+}
+
+const ProjectDetail = ({ launchpools }: ProjectDetailProps) => {
 	const projectDetail = {
 		id: 1,
 		name: 'Project Name',
@@ -105,6 +111,8 @@ const ProjectDetail = () => {
 		},
 	}
 
+	const { fetchPoolsOfProject } = useStakingStore()
+
 	const slideData = [
 		{
 			title: 'Mystic Mountains',
@@ -128,11 +136,33 @@ const ProjectDetail = () => {
 		},
 	]
 
+	const params = useParams()
+	const projectId = params['project-id']
+	// const [projectDetails, setProjectDetails] = useState()
+	const { currentProject, isLoading, error, fetchProject, clearProject } =
+		useProjectStore()
+
+	// const { poolData, pool, fetchLaunchpoolData } = usePoolStore()
+
+	useEffect(() => {
+		if (projectId && typeof projectId === 'string') {
+			fetchProject(projectId)
+			// fetchLaunchpoolData(projectId)
+		}
+
+		// return () => {
+		// 	clearProject()
+		// }
+	}, [projectId])
+	console.log('Project ID:', projectId)
+	console.log('Current Project:', currentProject)
+	// console.log('Pool:', pool)
+	// console.log('PoolData:', poolData)
 	const tabs = [
 		{
 			title: 'Launchpool',
 			value: 'description',
-			content: <LaunchpoolDetail projectDetail={projectDetail} />,
+			content: <LaunchpoolSection launchpools={launchpools} />,
 		},
 
 		{
@@ -162,25 +192,47 @@ const ProjectDetail = () => {
 			<AnimatedBlobs />
 			<div className="flex items-start justify-start gap-6 min-h-screen relative z-10">
 				<div className="sticky self-start">
-					<SideBar />
+					<SideBar selectedVToken={null} />
 				</div>
 				<div className="h-auto w-full rounded-xl glass-enhanced flex flex-wrap flex-col gap-10 justify-center items-center p-20">
 					<div className=" self-start">
-						<ProjectHeader projectDetail={projectDetail} />
+						{/* <ProjectHeader projectDetail={currentProject} /> */}
+						{currentProject && (
+							<ProjectHeader
+								projectDetail={{
+									id: Number(currentProject.id),
+									name: currentProject.name ?? 'Unnamed',
+									short_description: currentProject.short_description ?? '',
+									logo: currentProject.logo ?? '/placeholder.png',
+								}}
+							/>
+						)}
 					</div>
 					<div className="h-auto w-full ">
 						{/* <AcernityCarousel slides={slideData} /> */}
-						<CarouselWithProgress />
+						{/* <CarouselWithProgress images={currentProject.images} /> */}
+						{/* {currentProject?.images && (
+							<CarouselWithProgress images={currentProject.images} />
+						)} */}
+						<CarouselWithProgress
+							images={
+								currentProject?.images.map((url) => ({
+									src: url,
+									alt: 'Project image',
+								})) ?? []
+							}
+						/>
 					</div>
 					<div className="relative p-6">
 						<span className="content-text block">
-							If you have funded this project, we will be in touch to let you
+							{/* If you have funded this project, we will be in touch to let you
 							know when the rewards have started distributing and when you can
 							claim them. If you have funded this project, we will be in touch
 							to let you know when the rewards have started distributing and
 							when you can claim them. If you have funded this project, we will
 							be in touch to let you know when the rewards have started
-							distributing and when you can claim them.
+							distributing and when you can claim them. */}
+							{currentProject?.long_description}
 						</span>
 
 						<div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white" />

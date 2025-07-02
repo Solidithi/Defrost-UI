@@ -8,16 +8,16 @@ import {
 } from '@/app/store/staking'
 import { useProjectStore } from '@/app/store/project'
 import { useEffect } from 'react'
-import { LaunchpoolCard } from '../../UI/card/LaunchpoolCard'
 import {} from '@/app/hooks/staking/useVTokenData'
 import Button from '@/app/components/UI/button/Button'
+import { LaunchpoolCard } from '../UI/card/LaunchpoolCard'
 
 interface PoolTabProps {
 	selectedVToken?: TokenInfo | null
 	poolLimit?: number
 }
 
-export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
+export const ExplorePoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 	const { currentProject } = useProjectStore()
 	const { fetchPoolsOfProject } = useStakingStore()
 
@@ -61,15 +61,6 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 						</div>
 					</div>
 				)}
-				<Button
-					className="bg-[#59A1EC] text-white font-orbitron font-bold  hover:bg-[#59A1EC]/80  py-4 rounded-2xl flex items-center ml-auto"
-					onClick={() => {
-						// Handle button click
-					}}
-				>
-					<span className="">Create New Pool</span>
-					{/* <Plus size={16} /> */}
-				</Button>
 			</div>
 
 			{/* Show empty state when vToken selected but no pools */}
@@ -96,8 +87,8 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 				</div>
 			) : (
 				/* The tab inside the launchpool page that shows all project's launchpool */
-				<div className="glass-enhanced text-white mt-10 p-6 rounded-lg">
-					<div className="grid grid-cols-3 gap-8 w-full mx-auto mb-24">
+				<div className="  rounded-lg">
+					<div className="grid grid-cols-3 gap-8 w-full mx-auto ">
 						{filteredPoolsByVToken.launchpools.map((launchpool, index) => {
 							return (
 								<LaunchpoolCard

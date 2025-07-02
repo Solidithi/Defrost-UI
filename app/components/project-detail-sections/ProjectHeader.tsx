@@ -1,11 +1,13 @@
 'use client'
 import Image, { StaticImageData } from 'next/image'
-export interface ProjectHeaderProps {
-	id: number
-	name: string
-	description: string
-	image: StaticImageData
-	status: string
+interface ProjectHeaderProps {
+	projectDetail: {
+		id: number
+		name: string
+		short_description: string
+		logo: StaticImageData | string
+		// status: string
+	}
 }
 const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 	const getStatusColor = (status: string) => {
@@ -17,7 +19,7 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 			case 'ended':
 				return 'bg-red-500 text-white'
 			default:
-				return 'bg-gray-500 text-white' // Default color for unknown status
+				return 'bg-gray-500 text-white'
 		}
 	}
 
@@ -28,7 +30,7 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 					<div className="flex flex-row gap-5">
 						<div className=" w-32">
 							<Image
-								src={projectDetail.image}
+								src={projectDetail.logo}
 								alt="Project Logo"
 								width={64}
 								height={64}
@@ -42,7 +44,7 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 									{projectDetail.name}
 								</span>
 
-								<div
+								{/* <div
 									className={`flex ml-14 justify-center items-center rounded-xl
                   text-xs font-semibold px-5 py-1 {} ${getStatusColor(
 										projectDetail.status
@@ -50,11 +52,11 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 								>
 									{projectDetail.status.charAt(0).toUpperCase() +
 										projectDetail.status.slice(1)}
-								</div>
+								</div> */}
 							</div>
 
 							<div className="text-[#CACACA] font-comfortaa w-2/3  mt-2">
-								{projectDetail.description}
+								{projectDetail.short_description}
 							</div>
 						</div>
 					</div>

@@ -88,6 +88,7 @@ export const useProjectStore = create<ProjectStore>()(
 							"project-id": projectId,
 						}).toString()}`
 					);
+					console.log("okayyyyyyyyyyyyyyyyyyyy");
 
 					if (!response.ok) {
 						throw new Error(
@@ -96,12 +97,14 @@ export const useProjectStore = create<ProjectStore>()(
 					}
 
 					const data = await response.json();
+					console.log("fetched project data:", data);
 
 					set({
 						currentProject: data.project,
 						lastFetchedTime: now,
 						isLoading: false,
 					});
+					console.log("set project state");
 				} catch (error) {
 					console.error("Error fetching project:", error);
 					set({

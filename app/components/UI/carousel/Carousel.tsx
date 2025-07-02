@@ -4,34 +4,38 @@ import { Splide, SplideSlide } from '@splidejs/react-splide'
 import '@splidejs/splide/css'
 import Logo from '@/public/Logo.png'
 import ProgressBar from '../project-progress/ProgressBar'
+import Image from 'next/image'
 
-interface Image {
+export interface Image {
 	src: string
 	alt: string
-	description: string
 }
 
-const images: Image[] = [
-	{
-		src: 'https://i.pinimg.com/736x/2e/3d/68/2e3d6845011de0d24c13dd1e1028a2ff.jpg',
-		alt: 'Beautiful Landscape 1',
-		description: 'Description 01',
-	},
-	{
-		src: 'https://i.pinimg.com/474x/05/6d/d3/056dd39fccee614d4e46d77ef8814bf8.jpg',
-		alt: 'Beautiful Landscape 2',
-		description: 'Description 02',
-	},
-	{
-		src: 'https://i.pinimg.com/474x/ef/78/99/ef7899d792526a5d10f33c30ad250617.jpg',
-		alt: 'Beautiful Landscape 3',
-		description: 'Description 03',
-	},
-]
+interface CarouselWithProgressProps {
+	images: Image[]
+}
 
-const progress = 100 / images.length
+// const images: Image[] = [
+// 	{
+// 		src: 'https://i.pinimg.com/736x/2e/3d/68/2e3d6845011de0d24c13dd1e1028a2ff.jpg',
+// 		alt: 'Beautiful Landscape 1',
+// 		// description: 'Description 01',
+// 	},
+// 	{
+// 		src: 'https://i.pinimg.com/474x/05/6d/d3/056dd39fccee614d4e46d77ef8814bf8.jpg',
+// 		alt: 'Beautiful Landscape 2',
+// 		// description: 'Description 02',
+// 	},
+// 	{
+// 		src: 'https://i.pinimg.com/474x/ef/78/99/ef7899d792526a5d10f33c30ad250617.jpg',
+// 		alt: 'Beautiful Landscape 3',
+// 		// description: 'Description 03',
+// 	},
+// ]
 
-const CarouselWithProgress: React.FC = () => {
+// const progress = 100 / images.length
+
+const CarouselWithProgress = ({ images }: CarouselWithProgressProps) => {
 	const [index, setIndex] = useState(0)
 	const ref = useRef<Splide>(null)
 
@@ -78,13 +82,14 @@ const CarouselWithProgress: React.FC = () => {
 				>
 					{images.map((image, index) => (
 						<SplideSlide key={index} className="relative">
-							<img
+							<Image
 								src={image.src}
 								alt={image.alt}
 								className="w-full h-full object-cover rounded-lg shadow-md"
 							/>
 							<div className="absolute bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
-								{image.description}
+								{/* {image.description} */}
+								Project Images
 							</div>
 						</SplideSlide>
 					))}

@@ -22,15 +22,31 @@ export type TokenPool = {
 	poolImage?: string[] | StaticImageData[];
 };
 
+// export type ProjectDetail = {
+// 	id: number;
+// 	// projectDetail: string;
+// 	name: string;
+// 	description: string;
+// 	image: string | StaticImageData;
+// 	status: string;
+// 	tokenPools: TokenPool[];
+// 	socials: Socials;
+// };
 export type ProjectDetail = {
-	id: number;
-	// projectDetail: string;
-	name: string;
-	shortDescription: string;
-	longDescription: string;
-	image?: string | StaticImageData;
-	logoImage: string | StaticImageData;
-	projectImages: ThumbnailImage[];
+	id: string;
+	name: string | null;
+	token_address: string | null;
+	token_symbol: string | null;
+	token_decimals: number | null;
+	logo: string | StaticImageData | null;
+	images: string[];
+	short_description: string | null;
+	long_description: string | null;
+	tx_hash: string;
+	chain_id: number;
+	created_at: string;
+	owner_id: string | null;
+
 	status: string;
 	pools: TokenPool[];
 	socials: Socials;
