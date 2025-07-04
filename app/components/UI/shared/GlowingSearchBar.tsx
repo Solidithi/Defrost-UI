@@ -5,7 +5,19 @@ import { cn } from '@/app/lib/utils'
 import { memo, useState, useCallback, useEffect, useRef } from 'react'
 import { animate } from 'motion/react'
 
-export default function GlowingSearchBar() {
+interface GlowingSearchBarProps {
+	value?: string
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+	placeholder?: string
+	className?: string
+}
+
+export default function GlowingSearchBar({
+	value,
+	onChange,
+	placeholder = 'Search',
+	className,
+}: GlowingSearchBarProps) {
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	return (
@@ -23,14 +35,17 @@ export default function GlowingSearchBar() {
 			{/* Search Bar */}
 			<div
 				className={cn(
-					'flex items-center gap-3 px-4 py-3 rounded-full border-gray-700 bg-transparent transition-all glass-enhanced'
+					'flex items-center gap-3 px-4 py-3 rounded-full border-gray-700 bg-transparent transition-all glass-enhanced',
+					className
 				)}
 			>
 				<Search className="text-white opacity-75" />
 				<input
 					ref={inputRef}
 					type="text"
-					placeholder="Search"
+					value={value}
+					onChange={onChange}
+					placeholder={placeholder}
 					className="w-full bg-transparent outline-none text-white placeholder-gray-400 rounded-full text-lg"
 				/>
 			</div>
