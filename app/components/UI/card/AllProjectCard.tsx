@@ -4,14 +4,13 @@ import Image from 'next/image'
 import Logo from '@/public/Logo.png'
 import { useState } from 'react'
 import { GlowingEffect } from '@/app/components/UI/effect/GlowingEffect'
+import { EnrichedProject } from '@/app/types'
 
-const AllProjectCard = () => {
-	const [projectAPR, setProjectAPR] = useState(0)
-	const [projectName, setProjectName] = useState('Project Name')
-	const [projectShortDescription, setProjectShortDescription] = useState(
-		'Lorem ipsum iba daba doo Is simply dummy text of the printing and typesetting industry. Lorem Ipsum has'
-	)
+interface AllProjectCardProps {
+	project: EnrichedProject
+}
 
+const AllProjectCard = ({ project }: AllProjectCardProps) => {
 	const DetailDownIcon = () => {
 		return (
 			<svg
@@ -43,11 +42,15 @@ const AllProjectCard = () => {
 				<div className="relative rounded-lg overflow-hidden">
 					<div className="flex justify-center items-center">
 						<Image
-							src=""
+							src={
+								project.images[0] ||
+								project.logo ||
+								'/placeholders/card-thumbnail-1.png'
+							}
 							alt="Picture of the author"
 							width={300}
 							height={180}
-							className="m-4 border border-gray-300 rounded-xl"
+							className="m-4 border border-gray-300 rounded-xl w-[300px] h-[180px] object-cover"
 						/>
 					</div>
 					<span
@@ -56,21 +59,21 @@ const AllProjectCard = () => {
            text-black text-sm text-center font-extrabold font-comfortaa
             px-3 py-1 pt-1 pb-1 rounded-tl-xl rounded-tr-xl w-2/6"
 					>
-						APR: {projectAPR}%
+						APR: {project.avgApy.toFixed(2)}%
 					</span>
 				</div>
 
 				{/* Title */}
 				<div className="flex justify-center items-center mt-3">
 					<h2 className="text-white text-2xl font-orbitron font-bold">
-						{projectName}
+						{project.name || 'Unnamed Project'}
 					</h2>
 				</div>
 
 				{/* Short Description */}
 				<div className="flex justify-center items-center mt-5">
 					<p className="px-10 text-white text-sm font-comfortaa text-center">
-						{projectShortDescription}
+						{project.short_description}
 					</p>
 				</div>
 
