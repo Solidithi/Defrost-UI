@@ -26,8 +26,6 @@ import Button from '@/app/components/UI/button/Button'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import {
 	useAccount,
-	useChainId,
-	useReadContract,
 	useWriteContract,
 	useWaitForTransactionReceipt,
 } from 'wagmi'
@@ -35,6 +33,7 @@ import { abi as ProjectHubABI } from '@/abi/ProjectHubUpgradeable.json'
 import { normalizeAddress } from '@/app/utils/address'
 import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
 import { toast, ToastContainer } from 'react-toastify'
+import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
 import 'react-toastify/dist/ReactToastify.css'
 
 // Define interface for ImageItem to match the new ImageManager component
@@ -61,7 +60,7 @@ const CreateProject = () => {
 	const [isUpdatingDetails, setIsUpdatingDetails] = useState(false)
 	const [finalError, setFinalError] = useState<string | null>(null)
 	const [isProjectCreated, setIsProjectCreated] = useState(false)
-	const [isSavingProject, setIsSavingProject] = useState(false)
+	const [isCreatingProject, setIsCreatingProject] = useState(false)
 
 	// Use ImageItem[] instead of separate state variables for images and previews
 	const [projectImages, setProjectImages] = useState<ImageItem[]>([])
@@ -106,30 +105,7 @@ const CreateProject = () => {
 			console.log('Setting createProjectStore to complete')
 			createProjectStore.setIsComplete(true)
 		}
-	}, []) // Empty dependency array ensures this runs only once
-
-	// Handle transaction receipt state changes
-	useEffect(() => {
-		console.log('Receipt Status:', createProjectReceiptStatus)
-		console.log('Receipt Data:', createProjectReceipt)
-
-		if (createProjectReceiptStatus === 'success') {
-			console.log('Transaction confirmed! Receipt:', createProjectReceipt)
-			// --- START POLLING FOR INDEXER HERE ---
-			setIsWaitingForIndexer(true)
-			setFinalError(null) // Clear previous errors
-
-			const txHash = normalizeAddress(createProjectReceipt.transactionHash)
-			pollIndexerStatus(txHash)
-		} else if (createProjectReceiptStatus === 'error') {
-			console.error('Error waiting for transaction receipt')
-			setFinalError('Error confirming transaction on-chain.')
-			// Reset other statuses
-			setIsWaitingForIndexer(false)
-			setIsUpdatingDetails(false)
-			setIsSavingProject(false)
-		}
-	}, [createProjectReceiptStatus, createProjectReceipt])
+	}, [])
 
 	// Update social links in the store when their state values change
 	useEffect(() => {
@@ -143,51 +119,51 @@ const CreateProject = () => {
 	}, [website, twitter, telegram, discord, github])
 
 	// Poll the indexer to confirm the project was indexed
-	const pollIndexerStatus = async (txHash: `0x${string}`) => {
-		const maxRetries = 20 // 20 retries * 3 seconds = 1 minute timeout
-		const interval = 3000 // 3 seconds
-		let retries = 0
+	// const pollIndexerStatus = async (txHash: `0x${string}`) => {
+	// 	const maxRetries = 20 // 20 retries * 3 seconds = 1 minute timeout
+	// 	const interval = 3000 // 3 seconds
+	// 	let retries = 0
 
-		const poll = async () => {
-			if (retries >= maxRetries) {
-				console.error('Polling timed out waiting for indexer.')
-				setFinalError('Indexer did not process the transaction in time.')
-				setIsWaitingForIndexer(false)
-				return
-			}
+	// 	const poll = async () => {
+	// 		if (retries >= maxRetries) {
+	// 			console.error('Polling timed out waiting for indexer.')
+	// 			setFinalError('Indexer did not process the transaction in time.')
+	// 			setIsWaitingForIndexer(false)
+	// 			return
+	// 		}
 
-			try {
-				console.log(`Polling indexer... Attempt ${retries + 1}`)
-				const response = await fetch(
-					`/api/create-project/is-indexed?txHash=${txHash}`
-				)
-				if (!response.ok) {
-					throw new Error(`API request failed with status ${response.status}`)
-				}
-				const { isIndexed, projectId } = await response.json()
+	// 		try {
+	// 			console.log(`Polling indexer... Attempt ${retries + 1}`)
+	// 			const response = await fetch(
+	// 				`/api/create-project/is-indexed?txHash=${txHash}`
+	// 			)
+	// 			if (!response.ok) {
+	// 				throw new Error(`API request failed with status ${response.status}`)
+	// 			}
+	// 			const { isIndexed, projectId } = await response.json()
 
-				if (isIndexed) {
-					console.log('Indexer confirmed record exists!')
-					setIsWaitingForIndexer(false)
-					await updateProjectDetails(txHash, projectId)
-				} else {
-					retries++
-					setTimeout(poll, interval)
-				}
-			} catch (error) {
-				console.error('Polling error:', error)
-				setFinalError('Error checking indexer status.')
-				setIsWaitingForIndexer(false)
-			}
-		}
+	// 			if (isIndexed) {
+	// 				console.log('Indexer confirmed record exists!')
+	// 				setIsWaitingForIndexer(false)
+	// 				await updateProjectDetails(txHash, projectId)
+	// 			} else {
+	// 				retries++
+	// 				setTimeout(poll, interval)
+	// 			}
+	// 		} catch (error) {
+	// 			console.error('Polling error:', error)
+	// 			setFinalError('Error checking indexer status.')
+	// 			setIsWaitingForIndexer(false)
+	// 		}
+	// 	}
 
-		await poll() // Start the first poll
-	}
+	// 	await poll() // Start the first poll
+	// }
 
 	// Update project details in the database after the transaction is confirmed
 	const updateProjectDetails = async (
 		txHash: `0x${string}`,
-		projectId?: string
+		projectId: number
 	) => {
 		try {
 			setIsUpdatingDetails(true)
@@ -208,6 +184,7 @@ const CreateProject = () => {
 				discord,
 				website,
 				github,
+				chainId: createProjectStore.chainID,
 			}
 
 			// Call API to update project details
@@ -219,22 +196,13 @@ const CreateProject = () => {
 				body: JSON.stringify(updateData),
 			})
 
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}))
-				throw new Error(
-					`Failed to update project: ${errorData.message || response.statusText}`
-				)
-			}
-
-			const data = await response.json()
-			setIsUpdatingDetails(false)
+			console.log('Project details updated successfully!')
 			setIsProjectCreated(true)
-
-			// Show completion modal with the new project ID
 			setIsCompletionModalOpen(true)
 		} catch (error) {
 			console.error('Error updating project details:', error)
 			setFinalError('Error saving project details. Please try again.')
+		} finally {
 			setIsUpdatingDetails(false)
 		}
 	}
@@ -247,68 +215,75 @@ const CreateProject = () => {
 		address: '',
 	}))
 
+	// Handle transaction receipt state changes
+	useEffect(() => {
+		console.log('Receipt Status:', createProjectReceiptStatus)
+		console.log('Receipt Data:', createProjectReceipt)
+
+		if (createProjectStatus === 'error') {
+			console.error('Transaction failed or was cancelled')
+			setFinalError('Transaction failed or was cancelled. Please try again.')
+			// Reset other statuses
+			setIsWaitingForIndexer(false)
+			setIsUpdatingDetails(false)
+			setIsCreatingProject(false)
+		} else if (createProjectReceiptStatus === 'error') {
+			console.error('Error waiting for transaction receipt')
+			setFinalError('Error confirming transaction on-chain.')
+			// Reset other statuses
+			setIsUpdatingDetails(false)
+			setIsCreatingProject(false)
+		} else if (createProjectReceiptStatus === 'success') {
+			// This is where the magic happens
+			const txHash = createProjectReceipt.transactionHash
+			const projectId = Number(createProjectReceipt.logs?.[0]?.topics?.[1])
+			if (Number.isNaN(projectId)) {
+				console.error('NaN project ID from transaction receipt: ', projectId)
+				setFinalError('NaN project ID from transaction receipt.')
+				return
+			}
+			updateProjectDetails(txHash, projectId)
+			console.log('Transaction confirmed! Receipt:', createProjectReceipt)
+		}
+	}, [createProjectStatus, createProjectReceiptStatus])
+
 	const handleComplete = async () => {
 		try {
 			// Reset all states first
-			setIsSavingProject(true)
+			setIsCreatingProject(true)
 			setIsWaitingForIndexer(false)
 			setIsUpdatingDetails(false)
 			setIsProjectCreated(false)
 			setFinalError(null)
 
-			// // Ensure we have the contract address
-			// if (!projectHubProxyAddress) {
-			// 	setFinalError(
-			// 		'Project Hub contract address not found. Please check your network connection.'
-			// 	)
-			// 	setIsSavingProject(false)
-			// 	return
-			// }
+			// Ensure we have the contract address
+			if (!projectHubProxyAddress) {
+				setFinalError(
+					'Project Hub contract address not found. Please check your network connection.'
+				)
+				setIsCreatingProject(false)
+				return
+			}
 
-			// // Ensure user wallet is connected
-			// if (account.isDisconnected) {
-			// 	setFinalError('Please connect your wallet to create a project.')
-			// 	setIsSavingProject(false)
-			// 	return
-			// }
+			// Ensure user wallet is connected
+			if (account.isDisconnected) {
+				setFinalError('Please connect your wallet to create a project.')
+				setIsCreatingProject(false)
+				return
+			}
 
-			// // Initiate the blockchain transaction
-			// console.log('Creating project with hub address:', projectHubProxyAddress)
-			// createProject({
-			// 	abi: ProjectHubABI,
-			// 	address: projectHubProxyAddress,
-			// 	functionName: 'createProject',
-			// })
+			// Initiate the blockchain transaction
+			console.log('Creating project with hub address:', projectHubProxyAddress)
+			createProject({
+				abi: ProjectHubABI,
+				address: projectHubProxyAddress,
+				functionName: 'createProject',
+			})
 
-			// For testing: simulate blockchain transaction
-			console.log('Starting simulated transaction flow for testing')
-
-			// Step 1: Simulate waiting for transaction confirmation (5 seconds)
-			await new Promise((resolve) => setTimeout(resolve, 5000))
-
-			// Step 2: Simulate waiting for indexer (5 seconds)
-			setIsSavingProject(false)
-			setIsWaitingForIndexer(true)
-			await new Promise((resolve) => setTimeout(resolve, 5000))
-
-			// Step 3: Simulate API updating details (3 seconds)
-			setIsWaitingForIndexer(false)
-			setIsUpdatingDetails(true)
-			await new Promise((resolve) => setTimeout(resolve, 3000))
-
-			// Step 4: Show success
 			setIsUpdatingDetails(false)
-			setIsProjectCreated(true)
-			setIsCompletionModalOpen(true)
-
-			// Store a dummy project ID for testing
-			createProjectStore.setProjectID('test-project-id-123')
 		} catch (error) {
-			console.error('Error in simulated transaction:', error)
-			setFinalError('Failed to create project. Please try again.')
-			setIsSavingProject(false)
-			setIsWaitingForIndexer(false)
-			setIsUpdatingDetails(false)
+			console.error('Transaction to create project failed:', error)
+			setFinalError('Transaction to create project failed.')
 		}
 	}
 
@@ -435,6 +410,15 @@ const CreateProject = () => {
 
 	return (
 		<div className="relative page-container ">
+			{/* --------------------------------------Access Control Modal - Only PO is allowed to use this page----------------------------------------------------- */}
+			<AccessLockedModal
+				isOpen={!account.isConnected}
+				title={'Wallet Connection Required'}
+				description={
+					'Before creating a project, please connect your wallet first. Reach for the wallet connect button in the navigation bar. This will help us associate the ownership of the project with your account.'
+				}
+			/>
+
 			<AnimatedBlobs count={4} />
 			<div
 				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
@@ -798,6 +782,13 @@ const CreateProject = () => {
 										Telegram
 									</label>
 									<input
+										links
+										helps
+										potential
+										supporters
+										find
+										and
+										engage
 										id="telegram"
 										value={telegram}
 										onChange={(e) => setTelegram(e.target.value)}
@@ -853,33 +844,33 @@ const CreateProject = () => {
 					</Step>
 				</Stepper>
 			</div>
+			{/* Transaction Status Modal for Testing */}
+			<LoadingModal
+				isOpen={isCreatingProject}
+				message="Setting up your project on-chain"
+				subMessage="Please wait while your transaction is being processed"
+			/>
+
+			{/* Indexer Status Modal for Testing */}
+			{/* <LoadingModal
+				isOpen={isWaitingForIndexer}
+				message="Waiting for indexer"
+				subMessage="Your transaction is confirmed. Waiting for the indexer to process the data"
+			/> */}
+
+			{/* Update Details Modal for Testing */}
+			<LoadingModal
+				isOpen={isUpdatingDetails}
+				message="Updating project details"
+				subMessage="Almost there! Updating your project information"
+			/>
+
 			{/* Project Completion Modal */}
 			<ProjectCompletionModal
 				isOpen={isCompletionModalOpen}
 				projectName={createProjectStore.name || 'New Project'}
 				onViewDetails={handleViewProjectDetails}
 				onContinueEditing={handleContinueEditing}
-			/>
-
-			{/* Transaction Status Modal for Testing */}
-			<LoadingModal
-				isOpen={isSavingProject}
-				message="Creating project on blockchain"
-				subMessage="Please wait while your transaction is being processed"
-			/>
-
-			{/* Indexer Status Modal for Testing */}
-			<LoadingModal
-				isOpen={isWaitingForIndexer}
-				message="Waiting for indexer"
-				subMessage="Your transaction is confirmed. Waiting for the indexer to process the data"
-			/>
-
-			{/* Update Details Modal for Testing */}
-			<LoadingModal
-				isOpen={isUpdatingDetails}
-				message="Updating project details"
-				subMessage="Almost there! Adding your project information to our database"
 			/>
 		</div>
 	)
