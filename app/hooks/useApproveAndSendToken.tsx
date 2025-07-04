@@ -6,7 +6,6 @@ import {
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
-import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 
 const defaultState = {
 	approval: {

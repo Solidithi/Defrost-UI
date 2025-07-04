@@ -70,7 +70,7 @@ export function Footer() {
 				</div>
 
 				<p className="regular-14 w-full text-center text-gray-30 pt-10 opacity-35 mt-20">
-					&copy; {CURRENT_YEAR} Made by Solidithi Squad
+					&copy; {CURRENT_YEAR} Made by Defrost
 				</p>
 			</div>
 		</footer>
