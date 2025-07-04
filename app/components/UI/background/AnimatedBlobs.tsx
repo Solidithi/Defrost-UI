@@ -5,13 +5,25 @@ import { useMemo, useEffect, useState } from 'react'
 const getRandomVW = (min: number, max: number) =>
 	`${Math.random() * (max - min) + min}vw`
 
-const gradients = [
+const defaultGradients = [
 	'from-[#427FF6] via-[#AB54F2] to-[#E8499E]',
 	'from-[#3B82F6] via-[#A855F7] to-[#EC4899]',
 	'from-[#3B82F6] via-[#EC4899] to-[#A855F7]',
 ]
 
-const AnimatedBlobs = ({ count = 3 }: { count?: number }) => {
+interface AnimatedBlobsProps {
+	count?: number
+	customGradients?: string[]
+	opacity?: number
+	blur?: string
+}
+
+const AnimatedBlobs = ({
+	count = 3,
+	customGradients,
+	opacity = 0.2,
+	blur,
+}: AnimatedBlobsProps) => {
 	const [windowHeight, setWindowHeight] = useState(0)
 
 	useEffect(() => {
@@ -21,6 +33,8 @@ const AnimatedBlobs = ({ count = 3 }: { count?: number }) => {
 
 	const blobs = useMemo(() => {
 		if (windowHeight === 0) return []
+
+		const gradients = customGradients || defaultGradients
 
 		const getRandomVH = (minRatio: number, maxRatio: number) => {
 			const topPx =
@@ -34,26 +48,27 @@ const AnimatedBlobs = ({ count = 3 }: { count?: number }) => {
 			left: getRandomVW(-30, 50),
 			width: `${35 + Math.random() * 5}vw`,
 			height: `${35 + Math.random() * 5}vw`,
-			blur: `${15 + Math.random()}vw`,
+			blur: blur || `${15 + Math.random()}vw`,
 			duration: 6 + Math.random() * 4,
 			dx: 5 + Math.random() * 10,
 			dy: Math.random() > 0.5 ? 5 : 0,
 			gradient: gradients[Math.floor(Math.random() * gradients.length)],
 		}))
-	}, [count, windowHeight])
+	}, [count, windowHeight, customGradients, blur])
 
 	return (
 		<>
 			{blobs.map((blob, index) => (
 				<motion.div
 					key={index}
-					className={`absolute rounded-full opacity-20 z-0 bg-gradient-to-r ${blob.gradient}`}
+					className={`absolute rounded-full z-0 bg-gradient-to-r ${blob.gradient}`}
 					style={{
 						top: blob.top,
 						left: blob.left,
 						width: blob.width,
 						height: blob.height,
 						filter: `blur(${blob.blur})`,
+						opacity: opacity,
 					}}
 					animate={{
 						x: [`-${blob.dx}vw`, `${blob.dx}vw`, `-${blob.dx}vw`],

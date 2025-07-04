@@ -199,4 +199,5 @@ model platform_metrics_snapshots {
   count_transactions Int
   count_active_users Int
   total_value_locked Decimal  @db.Decimal
+  tokens_distributed Decimal  @default(0) @db.Decimal
 }

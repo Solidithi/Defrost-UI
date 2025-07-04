@@ -10,7 +10,8 @@
 		"lint:fix": "next lint --fix",
 		"format": "prettier --write .",
 		"prepare": "husky",
-		"typechain": "typechain --target ethers-v6 --out-dir ./app/types/typechain ./abi/*.json"
+		"typechain": "typechain --target ethers-v6 --out-dir ./app/types/typechain ./abi/*.json",
+		"prisma:refresh-schema": "prisma db pull && prisma generate"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
