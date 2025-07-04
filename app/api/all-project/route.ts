@@ -13,8 +13,10 @@ export async function GET(request: Request) {
 		// Parse query parameters
 		const { searchParams } = new URL(request.url);
 		const chainID = parseInt(searchParams.get("chainID") || "1", 10);
+		const page = parseInt(searchParams.get("page") || "1", 10);
+		const limit = parseInt(searchParams.get("limit") || "10", 10);
 
-		// Validate chainID
+		// Validate parameters
 		if (isNaN(chainID)) {
 			return NextResponse.json(
 				{ error: "Invalid chainID parameter" },
@@ -22,8 +24,23 @@ export async function GET(request: Request) {
 			);
 		}
 
-		// Fetch all projects with their various pool types
+		if (page < 1 || limit < 1 || limit > 100) {
+			return NextResponse.json(
+				{ error: "Invalid pagination parameters" },
+				{ status: 400 }
+			);
+		}
+
+		// Calculate skip for pagination
+		const skip = (page - 1) * limit;
+
+		// Get total count for pagination
+		const totalCount = await prismaClient.project.count();
+
+		// Fetch projects with pagination
 		const projects = await prismaClient.project.findMany({
+			skip,
+			take: limit,
 			include: {
 				launchpool: {
 					where: {
@@ -96,7 +113,12 @@ export async function GET(request: Request) {
 			} as EnrichedProject;
 		});
 
-		return NextResponse.json({ projects: enrichedProjects });
+		return NextResponse.json({
+			projects: enrichedProjects,
+			total: totalCount,
+			page,
+			limit,
+		});
 	} catch (error) {
 		console.error("Error fetching projects:", error);
 		return NextResponse.json(
