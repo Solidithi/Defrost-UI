@@ -3,9 +3,11 @@
 import { useMemo } from 'react'
 import ProjectDetail from './ProjectDetail'
 import { useStakingStore } from '@/app/store/staking'
+import { useProjectStore } from '@/app/store/project'
 
 const ProjectDetailPage = () => {
 	const { pools } = useStakingStore()
+	const { currentProject } = useProjectStore()
 	console.log('poolssssssssssssssssssssssssss:', pools)
 	const launchpools = useMemo(() => {
 		if (!pools || !pools.launchpools || !pools.launchpools.length) {
@@ -18,9 +20,9 @@ const ProjectDetailPage = () => {
 
 	return (
 		<>
-			{launchpools ? (
+			{currentProject ? (
 				<div>
-					<ProjectDetail launchpools={launchpools} />
+					<ProjectDetail launchpools={launchpools} project={currentProject} />
 				</div>
 			) : (
 				<div className="flex items-center justify-center min-h-[400px]">
