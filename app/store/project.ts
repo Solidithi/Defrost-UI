@@ -138,6 +138,11 @@ export const useProjectStore = create<ProjectStore>()(
 					long_description:
 						"Contrary to popular belief, Lorem Ipsum is not simply random text...",
 					created_at: new Date(Date.now() - 864000000),
+					twitter: "",
+					telegram: "",
+					discord: "",
+					website: "",
+					github: "",
 					tx_hash: "0x00",
 				} as project;
 
