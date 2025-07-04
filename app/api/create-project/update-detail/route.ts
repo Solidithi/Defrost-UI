@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 		const affected = await prismaClient.project.upsert({
 			where: { id: projectId },
 			create: {
-				id: projectId.tostring(),
+				id: projectId,
 				short_description: shortDescription,
 				long_description: longDescription,
 				twitter,

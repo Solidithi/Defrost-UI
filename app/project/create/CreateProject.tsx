@@ -18,19 +18,15 @@ import {
 	TooltipTrigger,
 } from '@/app/components/UI/shadcn/Tooltip'
 import { Info } from 'lucide-react'
-import { fileToBase64 } from '@/app/utils/file'
 import { resizeAndConvertToBase64 } from '@/app/utils/image'
 import { getChainName } from '@/app/utils/chain'
 import { ProjectCompletionModal } from '@/app/components/UI/modal/ProjectCompletionModal'
-import Button from '@/app/components/UI/button/Button'
-import Spinner from '@/app/components/UI/effect/Spinner'
 import {
 	useAccount,
 	useWriteContract,
 	useWaitForTransactionReceipt,
 } from 'wagmi'
 import { abi as ProjectHubABI } from '@/abi/ProjectHubUpgradeable.json'
-import { normalizeAddress } from '@/app/utils/address'
 import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
 import { toast, ToastContainer } from 'react-toastify'
 import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
@@ -71,6 +67,7 @@ const CreateProject = () => {
 	const [imageUploadFolderOpen, setImageUploadFolderOpen] = useState(false)
 	const [logoUploadFolderOpen, setLogoUploadFolderOpen] = useState(false)
 	const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
+	const [projectId, setProjectId] = useState<string | null>(null)
 
 	// Use Zustand store for all project data
 	const createProjectStore = useCreateProjectStore()
@@ -118,52 +115,10 @@ const CreateProject = () => {
 		})
 	}, [website, twitter, telegram, discord, github])
 
-	// Poll the indexer to confirm the project was indexed
-	// const pollIndexerStatus = async (txHash: `0x${string}`) => {
-	// 	const maxRetries = 20 // 20 retries * 3 seconds = 1 minute timeout
-	// 	const interval = 3000 // 3 seconds
-	// 	let retries = 0
-
-	// 	const poll = async () => {
-	// 		if (retries >= maxRetries) {
-	// 			console.error('Polling timed out waiting for indexer.')
-	// 			setFinalError('Indexer did not process the transaction in time.')
-	// 			setIsWaitingForIndexer(false)
-	// 			return
-	// 		}
-
-	// 		try {
-	// 			console.log(`Polling indexer... Attempt ${retries + 1}`)
-	// 			const response = await fetch(
-	// 				`/api/create-project/is-indexed?txHash=${txHash}`
-	// 			)
-	// 			if (!response.ok) {
-	// 				throw new Error(`API request failed with status ${response.status}`)
-	// 			}
-	// 			const { isIndexed, projectId } = await response.json()
-
-	// 			if (isIndexed) {
-	// 				console.log('Indexer confirmed record exists!')
-	// 				setIsWaitingForIndexer(false)
-	// 				await updateProjectDetails(txHash, projectId)
-	// 			} else {
-	// 				retries++
-	// 				setTimeout(poll, interval)
-	// 			}
-	// 		} catch (error) {
-	// 			console.error('Polling error:', error)
-	// 			setFinalError('Error checking indexer status.')
-	// 			setIsWaitingForIndexer(false)
-	// 		}
-	// 	}
-
-	// 	await poll() // Start the first poll
-	// }
-
 	// Update project details in the database after the transaction is confirmed
 	const updateProjectDetails = async (
 		txHash: `0x${string}`,
-		projectId: number
+		projectId: string // string because id is defined as string in prisma schema
 	) => {
 		try {
 			setIsUpdatingDetails(true)
@@ -188,7 +143,7 @@ const CreateProject = () => {
 			}
 
 			// Call API to update project details
-			const response = await fetch('/api/create-project/update-detail', {
+			await fetch('/api/create-project/update-detail', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -227,21 +182,38 @@ const CreateProject = () => {
 			setIsWaitingForIndexer(false)
 			setIsUpdatingDetails(false)
 			setIsCreatingProject(false)
+			toast.error('Transaction failed or was cancelled.', {
+				position: 'top-right',
+				autoClose: 3000,
+			})
 		} else if (createProjectReceiptStatus === 'error') {
 			console.error('Error waiting for transaction receipt')
 			setFinalError('Error confirming transaction on-chain.')
 			// Reset other statuses
 			setIsUpdatingDetails(false)
 			setIsCreatingProject(false)
+			toast.error('Transaction confirmation failed.', {
+				position: 'top-right',
+				autoClose: 3000,
+			})
 		} else if (createProjectReceiptStatus === 'success') {
 			// This is where the magic happens
+			setIsCreatingProject(false)
 			const txHash = createProjectReceipt.transactionHash
-			const projectId = Number(createProjectReceipt.logs?.[0]?.topics?.[1])
+			const projectId = Number(
+				createProjectReceipt.logs?.[0]?.topics?.[1]
+			).toString()
+			setProjectId(projectId)
+			console.log('parsed project id:', projectId)
 			if (Number.isNaN(projectId)) {
 				console.error('NaN project ID from transaction receipt: ', projectId)
 				setFinalError('NaN project ID from transaction receipt.')
 				return
 			}
+			toast.success('Transaction confirmed.', {
+				position: 'top-right',
+				autoClose: 3000,
+			})
 			updateProjectDetails(txHash, projectId)
 			console.log('Transaction confirmed! Receipt:', createProjectReceipt)
 		}
@@ -287,10 +259,8 @@ const CreateProject = () => {
 		}
 	}
 
-	const handleViewProjectDetails = () => {
-		// In real implementation, we would have the project ID from the API response
-		// For now, we'll just navigate to the projects list
-		router.push('/project-details') // replace with the actual path when the page avaiable
+	const handleViewProjectDetails = (projectId: string | number) => {
+		router.push(`/project/${projectId}/project-detail`) // replace with the actual path when the page avaiable
 	}
 
 	const handleContinueEditing = () => {
@@ -844,19 +814,13 @@ const CreateProject = () => {
 					</Step>
 				</Stepper>
 			</div>
+
 			{/* Transaction Status Modal for Testing */}
 			<LoadingModal
 				isOpen={isCreatingProject}
 				message="Setting up your project on-chain"
 				subMessage="Please wait while your transaction is being processed"
 			/>
-
-			{/* Indexer Status Modal for Testing */}
-			{/* <LoadingModal
-				isOpen={isWaitingForIndexer}
-				message="Waiting for indexer"
-				subMessage="Your transaction is confirmed. Waiting for the indexer to process the data"
-			/> */}
 
 			{/* Update Details Modal for Testing */}
 			<LoadingModal
@@ -869,9 +833,11 @@ const CreateProject = () => {
 			<ProjectCompletionModal
 				isOpen={isCompletionModalOpen}
 				projectName={createProjectStore.name || 'New Project'}
-				onViewDetails={handleViewProjectDetails}
+				onViewDetails={() => handleViewProjectDetails(projectId!)}
 				onContinueEditing={handleContinueEditing}
 			/>
+
+			<ToastContainer />
 		</div>
 	)
 }
