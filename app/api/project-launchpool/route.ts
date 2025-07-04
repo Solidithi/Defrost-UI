@@ -1,7 +1,5 @@
-import { ThumbnailImage } from "@/app/components/UI/carousel/ThumbnailCarousel";
 import { prismaClient } from "@/app/lib/prisma";
 import { ProjectDetail } from "@/app/types";
-import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, res: NextResponse) {
