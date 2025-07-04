@@ -86,6 +86,8 @@ const CarouselWithProgress = ({ images }: CarouselWithProgressProps) => {
 								src={image.src}
 								alt={image.alt}
 								className="w-full h-full object-cover rounded-lg shadow-md"
+								width={10}
+								height={10}
 							/>
 							<div className="absolute bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
 								{/* {image.description} */}
