@@ -45,7 +45,7 @@ interface AccessLockedModalProps {
 export function AccessLockedModal({
 	isOpen: isShowing,
 	title = 'Wallet Connection Required',
-	description = 'Please connect your wallet using the wallet button in the navigation bar. This allows us to verify your wallet and handle token transactions.',
+	description = 'Please connect your wallet using the wallet button in the navigation bar. This allows us to verify your identity and handle transactions.',
 	icon,
 	zIndex = 50,
 	className = '',
@@ -54,13 +54,13 @@ export function AccessLockedModal({
 
 	return (
 		<div
-			className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center`}
+			className={`absolute inset-0 backdrop-blur-lg flex items-center justify-center`}
 			style={{ zIndex }}
 		>
 			<motion.div
 				initial={{ opacity: 0, scale: 0.9 }}
 				animate={{ opacity: 1, scale: 1 }}
-				className={`glass-enhanced max-w-lg p-8 rounded-2xl shadow-2xl border border-gray-700/50 ${className}`}
+				className={`glass-thick max-w-lg p-8 rounded-2xl shadow-2xl border border-gray-700/50 ${className}`}
 			>
 				<div className="flex flex-col items-center text-center">
 					<div className="mb-4 p-4 rounded-full bg-gray-800/80">
