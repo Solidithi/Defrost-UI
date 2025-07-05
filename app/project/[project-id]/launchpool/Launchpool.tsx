@@ -3,15 +3,14 @@ import { useState } from 'react'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
 import LineChart from '@/app/components/charts/LineChart'
-import SidebarLineChart from '@/app/components/charts/SideBarLineChart'
 import StakedAmountChart from '@/app/components/charts/StatLineChart'
 import SideBar from '@/app/components/service-sections/SideBar'
+import Tabs from '@/app/components/UI/shared/Tabs'
+import Logo from '@/public/Logo.png'
 import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
 import { StatCard } from '@/app/components/UI/card/StatCard'
-import Tabs from '@/app/components/UI/shared/Tabs'
 import { ProjectDetail } from '@/app/types'
 import { TokenInfo } from '@/app/store/staking'
-import Logo from '@/public/Logo.png'
 
 const Launchpool = () => {
 	// vToken filtering state (kept local as requested)

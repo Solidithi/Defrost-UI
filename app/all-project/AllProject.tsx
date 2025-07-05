@@ -18,10 +18,12 @@ import { Column } from '../components/UI/shared/DataTable'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EnrichedProject, EnrichedLaunchpool } from '@/app/types'
 import { useProjects } from '@/app/hooks/queries/useProjects'
+import { usePaginatedProjects } from '@/app/hooks/queries/usePaginatedProjects'
 import { usePlatformMetrics } from '@/app/hooks/queries/useStats'
 import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll'
 import { debounce } from '@/app/utils/timing'
 import { StatCard, StatCardSkeleton } from '../components/UI/card/StatCard'
+import Pagination, { PaginationInfo } from '../components/UI/shared/Pagination'
 
 // Stable gradient arrays - defined outside component to prevent re-renders
 const HEAD_SECTION_GRADIENTS = [
@@ -48,6 +50,8 @@ const AllProject = () => {
 	const [selectedPool, setSelectedPool] = useState<EnrichedLaunchpool | null>(
 		null
 	)
+	const [currentPage, setCurrentPage] = useState(1)
+	const [itemsPerPage] = useState(10) // Fixed items per page
 
 	/**----------------- Handle query change in debounced manner ------------------ */
 	const handleDebouncedSearchQuery = debounce(
@@ -57,19 +61,41 @@ const AllProject = () => {
 
 	useEffect(() => {
 		handleDebouncedSearchQuery(searchQuery)
+		// Reset to page 1 when search query changes
+		setCurrentPage(1)
 	}, [searchQuery])
 
-	/**----------------- Use infinite query for projects ------------------ */
+	/**----------------- Use infinite query for projects (Card View) ------------------ */
 	const {
 		data: projectsData,
-		isLoading,
-		isError,
-		error,
+		isLoading: isLoadingInfinite,
+		isError: isErrorInfinite,
+		error: errorInfinite,
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-		refetch,
+		refetch: refetchInfinite,
 	} = useProjects()
+
+	/**----------------- Use paginated query for projects (Table View) ------------------ */
+	const {
+		data: paginatedData,
+		isLoading: isLoadingPaginated,
+		isError: isErrorPaginated,
+		error: errorPaginated,
+		refetch: refetchPaginated,
+	} = usePaginatedProjects({
+		page: currentPage,
+		limit: itemsPerPage,
+		search: debouncedSearchQuery,
+		enabled: !isCard, // Only fetch when in table mode
+	})
+
+	// Use the appropriate data source based on view mode
+	const isLoading = isCard ? isLoadingInfinite : isLoadingPaginated
+	const isError = isCard ? isErrorInfinite : isErrorPaginated
+	const error = isCard ? errorInfinite : errorPaginated
+	const refetch = isCard ? refetchInfinite : refetchPaginated
 
 	// Use infinite scroll hook
 	const { loadMoreRef } = useInfiniteScroll({
@@ -80,26 +106,60 @@ const AllProject = () => {
 		rootMargin: '100px',
 	})
 
-	// Flatten all projects from all pages
+	// Flatten all projects from all pages (for card view)
 	const allProjects =
 		projectsData?.pages.flatMap((page: any) => page.projects) ||
 		([] as EnrichedProject[])
 
-	// Filter projects based on debounced search query
-	const filteredProjects = allProjects.filter((project: EnrichedProject) => {
-		// If no search query, show all projects
-		if (!debouncedSearchQuery.trim()) {
-			return true
-		}
+	// Get projects and pagination info based on view mode
+	const displayProjects = isCard ? allProjects : paginatedData?.projects || []
 
-		// Otherwise, filter based on search query
-		const searchLower = debouncedSearchQuery.toLowerCase()
-		return (
-			project.name?.toLowerCase().includes(searchLower) ||
-			project.short_description?.toLowerCase().includes(searchLower) ||
-			project.token_symbol?.toLowerCase().includes(searchLower)
-		)
-	})
+	const totalPages = isCard
+		? 1 // No pagination for card view
+		: paginatedData?.totalPages || 1
+
+	const totalItems = isCard ? allProjects.length : paginatedData?.total || 0
+
+	// Filter projects based on debounced search query (only for card view)
+	const filteredProjects = isCard
+		? allProjects.filter((project: EnrichedProject) => {
+				// If no search query, show all projects
+				if (!debouncedSearchQuery.trim()) {
+					return true
+				}
+
+				// Otherwise, filter based on search query
+				const searchLower = debouncedSearchQuery.toLowerCase()
+				return (
+					project.name?.toLowerCase().includes(searchLower) ||
+					project.short_description?.toLowerCase().includes(searchLower) ||
+					project.token_symbol?.toLowerCase().includes(searchLower)
+				)
+			})
+		: displayProjects // For table view, filtering is done server-side
+
+	// Calculate final projects to display
+	const paginatedProjects = isCard
+		? filteredProjects // Show filtered projects in card view (client-side pagination via infinite scroll)
+		: displayProjects // Show server-paginated projects in table view
+
+	// Handle page change
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page)
+		// Reset selected project when changing pages
+		setSelectedProject(null)
+	}
+
+	// Handle view toggle (reset pagination when switching between card and table)
+	const handleViewToggle = (cardView: boolean) => {
+		setIsCard(cardView)
+		if (!cardView) {
+			// Reset to first page when switching to table view
+			setCurrentPage(1)
+		}
+		// Reset selected project when switching views
+		setSelectedProject(null)
+	}
 
 	/**----------------- Use platform metrics (tanstack query) ------------------ */
 	const {
@@ -326,7 +386,7 @@ const AllProject = () => {
 				{/* Hero Section */}
 				<div className="pt-36 pb-16 text-center">
 					<SplitText
-						text="THE DEFROST XPERIENCE"
+						text="THE DEFROST X-PERIENCE"
 						className="text-5xl md:text-5xl text-center font-bold text-white font-orbitron mb-4"
 						delay={150}
 						animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -388,7 +448,10 @@ const AllProject = () => {
 								/>
 							</div>
 							<div className="flex-shrink-0">
-								<SwitchTableOrCard isCard={isCard} setIsCard={setIsCard} />
+								<SwitchTableOrCard
+									isCard={isCard}
+									setIsCard={handleViewToggle}
+								/>
 							</div>
 						</div>
 						{/* Projects Section */}
@@ -453,7 +516,7 @@ const AllProject = () => {
 
 									{isCard ? (
 										<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-24 relative z-20">
-											{filteredProjects.map(
+											{paginatedProjects.map(
 												(project: EnrichedProject, index: number) => (
 													<SectionComponent key={`${project.id}-${index}`}>
 														<AllProjectCard project={project} />
@@ -462,9 +525,9 @@ const AllProject = () => {
 											)}
 										</div>
 									) : (
-										<div className="mb-24 relative z-20">
+										<div className="mb-8 relative z-20">
 											<DataTable
-												data={filteredProjects}
+												data={paginatedProjects}
 												columns={tableColumns}
 												keyField="id"
 												renderActions={renderTableActions}
@@ -479,12 +542,31 @@ const AllProject = () => {
 												className="max-w-full"
 												noDataMessage="No projects found"
 											/>
+
+											{/* Pagination Controls */}
+											{totalPages > 1 && (
+												<div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+													<PaginationInfo
+														currentPage={currentPage}
+														totalPages={totalPages}
+														totalItems={totalItems}
+														itemsPerPage={itemsPerPage}
+														className="order-2 sm:order-1"
+													/>
+													<Pagination
+														currentPage={currentPage}
+														totalPages={totalPages}
+														onPageChange={handlePageChange}
+														className="order-1 sm:order-2"
+													/>
+												</div>
+											)}
 										</div>
 									)}
 								</div>
 							)}
-							{/* Infinite scroll loading trigger */}
-							{!debouncedSearchQuery && (
+							{/* Infinite scroll loading trigger - Only for card view */}
+							{!debouncedSearchQuery && isCard && (
 								<div ref={loadMoreRef} className="flex justify-center py-8">
 									{isFetchingNextPage && (
 										<div className="flex items-center space-x-2">

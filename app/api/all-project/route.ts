@@ -21,6 +21,7 @@ export async function GET(request: Request) {
 		const chainID = parseInt(searchParams.get("chainID") || "1", 10);
 		const page = parseInt(searchParams.get("page") || "1", 10);
 		const limit = parseInt(searchParams.get("limit") || "10", 10);
+		const search = searchParams.get("search");
 
 		// Validate parameters
 		if (isNaN(chainID)) {
@@ -40,11 +41,40 @@ export async function GET(request: Request) {
 		// Calculate skip for pagination
 		const skip = (page - 1) * limit;
 
-		// Get total count for pagination
-		const totalCount = await prismaClient.project.count();
+		// Build where clause for search
+		const whereClause = search
+			? {
+					OR: [
+						{
+							name: {
+								contains: search,
+								mode: "insensitive" as const,
+							},
+						},
+						{
+							short_description: {
+								contains: search,
+								mode: "insensitive" as const,
+							},
+						},
+						{
+							token_symbol: {
+								contains: search,
+								mode: "insensitive" as const,
+							},
+						},
+					],
+				}
+			: {};
 
-		// Fetch projects with pagination
+		// Get total count for pagination with search filter
+		const totalCount = await prismaClient.project.count({
+			where: whereClause,
+		});
+
+		// Fetch projects with pagination and search
 		const projects = await prismaClient.project.findMany({
+			where: whereClause,
 			skip,
 			take: limit,
 			include: {
@@ -132,6 +162,7 @@ export async function GET(request: Request) {
 				total: totalCount,
 				page,
 				limit,
+				totalPages: Math.ceil(totalCount / limit),
 			})
 		);
 	} catch (error) {
