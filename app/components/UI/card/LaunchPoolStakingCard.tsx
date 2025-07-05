@@ -270,7 +270,8 @@ export function LaunchpoolStakingCard({
 					className={cn(
 						'flex-1 px-4 py-2 rounded-xl font-medium transition-colors flex items-center justify-center gap-1',
 						hasStake
-							? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md shadow-purple-500/30'
+							? // ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md shadow-purple-500/30'
+								'warm-cool-bg text-white hover:opacity-90 shadow-md shadow-purple-500/30'
 							: 'backdrop-blur-xl bg-white/15 border border-white/20 text-white hover:bg-white/20'
 					)}
 				>
