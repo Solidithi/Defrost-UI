@@ -23,6 +23,7 @@ import { usePlatformMetrics } from '@/app/hooks/queries/useStats'
 import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll'
 import { debounce } from '@/app/utils/timing'
 import { StatCard, StatCardSkeleton } from '../components/UI/card/StatCard'
+import { useChainId } from 'wagmi'
 import Pagination, { PaginationInfo } from '../components/UI/shared/Pagination'
 
 // Stable gradient arrays - defined outside component to prevent re-renders
@@ -65,6 +66,8 @@ const AllProject = () => {
 		setCurrentPage(1)
 	}, [searchQuery])
 
+	const chainID = useChainId()
+
 	/**----------------- Use infinite query for projects (Card View) ------------------ */
 	const {
 		data: projectsData,
@@ -75,7 +78,7 @@ const AllProject = () => {
 		hasNextPage,
 		isFetchingNextPage,
 		refetch: refetchInfinite,
-	} = useProjects()
+	} = useProjects(chainID)
 
 	/**----------------- Use paginated query for projects (Table View) ------------------ */
 	const {
@@ -85,6 +88,7 @@ const AllProject = () => {
 		error: errorPaginated,
 		refetch: refetchPaginated,
 	} = usePaginatedProjects({
+		chainID,
 		page: currentPage,
 		limit: itemsPerPage,
 		search: debouncedSearchQuery,
@@ -254,13 +258,14 @@ const AllProject = () => {
 			accessor: (project) => project.poolCount,
 		},
 		{
-			header: 'Staked',
-			accessor: (project) => `$${project.totalStaked.toLocaleString()}`,
+			header: 'Staked Tokens',
+			accessor: (project) => `${project.totalStaked.toLocaleString()} Tokens`,
 		},
 		{
 			header: 'Mean APY%',
 			accessor: (project) =>
 				project.avgApy ? `${project.avgApy.toFixed(2)}%` : '-',
+			className: 'font-bold warm-cool-text',
 		},
 	]
 

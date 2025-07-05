@@ -86,7 +86,7 @@ const DataTable = <T extends {}>({
 							{columns.map((column, index) => (
 								<th
 									key={index}
-									className={`${getAlignmentClass(column.alignment)} p-4 ${column.className || ''}`}
+									className={`${getAlignmentClass(column.alignment)} p-4`}
 								>
 									{column.header}
 								</th>

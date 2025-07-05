@@ -1,5 +1,6 @@
 import { launchpool } from "@prisma/client";
 import { getTokenInfoFromConfig } from "@/app/utils/chain";
+import { Decimal } from "decimal.js";
 
 // // Define a common pool interface that works across different pool types
 // export interface IPoolBase {
@@ -19,17 +20,17 @@ export interface UnifiedPool {
 	address: string;
 	pool_id: string; // This is on-chain pool id
 	project_id: string;
-	type: "launchpool" | "farmpool" | "launchpad";
-	total_staked: string;
+	type: "lbaunchpool" | "farmpool" | "launchpad";
+	total_staked: Decimal;
 	total_stakers: number;
 	staker_apy: number;
 	start_date: Date;
 	end_date: Date;
 	duration: number;
-	token_address?: string; // @TODO: refactor to multiple token addresses
-	token_symbol?: string; // @TODO: refactor to multiple token symbols
+	token_address?: string;
+	token_symbol?: string;
 	description?: string;
-	project_token_address?: string;
+	reward_token_address?: string;
 }
 
 // Define specific pool interfaces for each pool type
@@ -61,7 +62,7 @@ export function toUnifiedPool(
 				pool_id: pool.pool_id,
 				project_id: pool.project_id,
 				type: type,
-				total_staked: pool.total_staked?.toString() || "0",
+				total_staked: pool.total_staked,
 				total_stakers: pool.total_stakers || 0,
 				staker_apy:
 					typeof pool.staker_apy === "object"
@@ -75,7 +76,7 @@ export function toUnifiedPool(
 					chainID,
 					pool.native_asset_address
 				)?.symbol,
-				project_token_address: pool.project_token_address,
+				reward_token_address: pool.project_token_address,
 				description: `Stake ${getTokenInfoFromConfig(chainID, pool.v_asset_address)?.symbol || "vToken"} to earn rewards`,
 			};
 		default:

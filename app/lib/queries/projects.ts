@@ -13,10 +13,12 @@ export interface ProjectsResponse {
 export const projectsApi = {
 	// Fetch all projects with pagination (for infinite scroll - card view)
 	getAllProjects: async (
+		chainID: number | string,
 		page: number = 1,
 		limit: number = 10
 	): Promise<ProjectsResponse> => {
 		const params = new URLSearchParams({
+			chainID: chainID.toString(),
 			page: page.toString(),
 			limit: limit.toString(),
 		});
@@ -30,11 +32,13 @@ export const projectsApi = {
 
 	// Fetch paginated projects with search (for table view)
 	getPaginatedProjects: async (
+		chainID: number | string,
 		page: number = 1,
 		limit: number = 10,
 		search?: string
 	): Promise<ProjectsResponse> => {
 		const params = new URLSearchParams({
+			chainID: chainID.toString(),
 			page: page.toString(),
 			limit: limit.toString(),
 		});

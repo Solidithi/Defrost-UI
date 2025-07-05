@@ -12,10 +12,11 @@ export const projectsKeys = {
 };
 
 // Fetch all projects with infinite scrolling
-export const useProjects = () => {
+export const useProjects = (chainID: number | string) => {
 	return useInfiniteQuery({
 		queryKey: projectsKeys.lists(),
-		queryFn: ({ pageParam = 1 }) => projectsApi.getAllProjects(pageParam),
+		queryFn: ({ pageParam = 1 }) =>
+			projectsApi.getAllProjects(chainID, pageParam),
 		getNextPageParam: (lastPage) => {
 			// Check if there are more pages
 			const currentPage = lastPage.page;

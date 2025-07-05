@@ -11,6 +11,9 @@ import {
 	EnrichedLaunchpool,
 	toEnrichedLaunchpool,
 } from "@/app/types/extended-models/enriched-launchpool";
+import { normalizeAddress } from "@/app/utils/address";
+import { Address } from "viem";
+import { getTokenInfoFromConfig } from "@/app/utils/chain";
 import { stringify } from "superjson";
 import "@/app/lib/superjson-init";
 
@@ -124,10 +127,25 @@ export async function GET(request: Request) {
 			//   }
 
 			// Calculate metrics across all pool types
-			const totalStaked = unifiedPools.reduce(
-				(sum, pool) => sum + parseFloat(pool.total_staked.toString()),
-				0
-			);
+			const tokenDecimals = new Map<string, number>(); // map for fast access
+			const totalStaked = unifiedPools.reduce((sum, pool) => {
+				let decimals = tokenDecimals.get(pool.token_address ?? "");
+				console.log("Pool token address:", pool.token_address);
+				if (!decimals) {
+					decimals = getTokenInfoFromConfig(
+						chainID,
+						normalizeAddress((pool.token_address as Address) ?? "")
+					)?.decimals;
+					if (decimals) {
+						tokenDecimals.set(pool.token_address!, decimals);
+					}
+				}
+				console.log("Decimals for pool:", decimals);
+
+				return decimals
+					? sum + pool.total_staked.div(decimals).toNumber()
+					: sum;
+			}, 0);
 
 			const totalStakers = unifiedPools.reduce(
 				(sum, pool) => sum + pool.total_stakers,
@@ -140,7 +158,7 @@ export async function GET(request: Request) {
 			const tokenAddress =
 				project.token_address ||
 				(unifiedPools.length > 0
-					? unifiedPools[0].project_token_address
+					? unifiedPools[0].reward_token_address
 					: undefined);
 
 			// Create enriched project with all needed metrics
