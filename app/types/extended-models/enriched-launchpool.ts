@@ -4,10 +4,10 @@ import { launchpool } from "@prisma/client";
 export type LaunchpoolStatus = "upcoming" | "active" | "ended";
 
 export interface EnrichedLaunchpool extends launchpool {
-	// accepted_tokens_symbol: string[];
 	type: "launchpool"; // Define type here for filtering, sorting, searching convenience
 	image: string;
 	durationSeconds: number; // @TODO: should add this to db
+	description: string;
 	status: LaunchpoolStatus;
 }
 
@@ -36,5 +36,6 @@ export function toEnrichedLaunchpool(
 				new Date(launchpool.start_date).getTime()) /
 			1000,
 		status: getLaunchpoolStatus(launchpool.start_date, launchpool.end_date),
+		description: `Stake voucher tokens to earn rewards`,
 	};
 }
