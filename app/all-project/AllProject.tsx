@@ -15,10 +15,8 @@ import AllProjectCard from '../components/UI/card/AllProjectCard'
 import LaunchpoolTableRow from '@/app/components/pool-specific-rows/LaunchpoolTableRow'
 import AnimatedBlobs from '../components/UI/background/AnimatedBlobs'
 import { Column } from '../components/UI/shared/DataTable'
-import { shortenStr } from '@/app/utils/display'
 import { motion, AnimatePresence } from 'framer-motion'
-import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
-import { UnifiedPool } from '@/app/types/extended-models/unified-pool'
+import { EnrichedProject, EnrichedLaunchpool } from '@/app/types'
 import { useProjects } from '@/app/hooks/queries/useProjects'
 import { usePlatformMetrics } from '@/app/hooks/queries/useStats'
 import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll'
@@ -47,7 +45,9 @@ const AllProject = () => {
 	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 	const [selectedProject, setSelectedProject] =
 		useState<EnrichedProject | null>(null)
-	const [selectedPool, setSelectedPool] = useState<UnifiedPool | null>(null)
+	const [selectedPool, setSelectedPool] = useState<EnrichedLaunchpool | null>(
+		null
+	)
 
 	/**----------------- Handle query change in debounced manner ------------------ */
 	const handleDebouncedSearchQuery = debounce(
@@ -131,10 +131,11 @@ const AllProject = () => {
 	const statCardItems = [
 		{
 			label: 'Tokens Distributed',
-			value: platformMetricsData?.snapshot?.tokens_distributed || 0, // number for testing
+			value: platformMetricsData?.snapshot?.tokens_distributed.toNumber() || 0, // number for testing
 			valuePostfix: ' tokens',
 			icon: '/decoration/coin-light.png',
-			growthRate: platformMetricsData?.growthRates?.tokens_distributed || 0,
+			growthRate:
+				platformMetricsData?.growthRates?.tokens_distributed.toNumber() || 0,
 		},
 		{
 			label: 'Active Participants',
@@ -145,17 +146,18 @@ const AllProject = () => {
 		},
 		{
 			label: 'Total Value Locked (TVL)',
-			value: platformMetricsData?.snapshot?.total_value_locked || 0,
+			value: platformMetricsData?.snapshot?.total_value_locked.toNumber() || 0,
 			valuePrefix: '$',
 			icon: '/decoration/locker-light.png',
-			growthRate: platformMetricsData?.growthRates?.total_value_locked || 0,
+			growthRate:
+				platformMetricsData?.growthRates?.total_value_locked.toNumber() || 0,
 		},
 	]
 
-	const handlePoolSelected = (pool: UnifiedPool): void => {
-		console.log('New pool selected:', pool.address)
+	const handlePoolSelected = (pool: EnrichedLaunchpool): void => {
+		console.log('New pool selected:', pool.id)
 		setSelectedPool(pool)
-		console.log('Selected pool:', selectedPool?.address)
+		console.log('Selected pool:', selectedPool?.id)
 		if (selectedProject) {
 			renderExpandableRow(selectedProject)
 		}
@@ -203,54 +205,28 @@ const AllProject = () => {
 	]
 
 	// Render appropriate component based on pool type
-	const renderPoolComponent = (pool: UnifiedPool, project: EnrichedProject) => {
+	const renderPoolComponent = (
+		pool: EnrichedLaunchpool,
+		project: EnrichedProject
+	) => {
 		switch (pool.type) {
 			case 'launchpool':
 				return (
 					<LaunchpoolTableRow
-						key={pool.address}
+						key={pool.id}
 						project={project}
 						pool={pool}
 						onPoolSelected={handlePoolSelected}
 					/>
 				)
-			case 'farmpool':
-				// Future implementation for FarmpoolTableRow
-				return (
-					<div
-						key={pool.address}
-						className="bg-black/20 p-4 rounded-xl border border-white/10"
-					>
-						<p className="text-white">
-							Farm pool component will be implemented soon.
-						</p>
-						<p className="text-gray-400 text-sm mt-2">
-							Pool ID: {pool.address}
-						</p>
-					</div>
-				)
-			case 'launchpad':
-				// Future implementation for LaunchpadTableRow
-				return (
-					<div
-						key={pool.address}
-						className="bg-black/20 p-4 rounded-xl border border-white/10"
-					>
-						<p className="text-white">
-							Launchpad component will be implemented soon.
-						</p>
-						<p className="text-gray-400 text-sm mt-2">
-							Pool ID: {pool.address}
-						</p>
-					</div>
-				)
 			default:
+				// Future implementation for other pool types
 				return (
 					<div
-						key={pool.address}
+						key={pool.id}
 						className="bg-black/20 p-4 rounded-xl border border-white/10"
 					>
-						<p className="text-white">Unknown pool type: {pool.type}</p>
+						<p className="text-white">Unknown pool type (coming soon)</p>
 					</div>
 				)
 		}
@@ -276,16 +252,16 @@ const AllProject = () => {
 					transition={{ duration: 0.3 }}
 					className="w-full overflow-hidden"
 				>
-					{project.unifiedPools && project.unifiedPools.length > 0 ? (
+					{project.launchpools && project.launchpools.length > 0 ? (
 						<div className="w-full space-y-6 my-4">
 							{/* Find the pool with the highest APR and display it */}
-							{project.unifiedPools
-								.sort((a, b) => b.staker_apy - a.staker_apy)
+							{project.launchpools
+								.sort((a, b) => Number(b.staker_apy) - Number(a.staker_apy))
 								.slice(0, 1)
 								.map((pool) => {
 									console.log(
 										'Rendering pool component for new pool: ',
-										pool.address
+										pool.id
 									)
 									if (!selectedPool) {
 										setSelectedPool(pool)

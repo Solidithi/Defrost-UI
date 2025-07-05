@@ -1,3 +1,4 @@
+import "@/app/lib/superjson-init";
 import { platform_metrics_snapshots } from "@prisma/client";
 import { parse } from "superjson";
 
@@ -12,14 +13,15 @@ export const statsApi = {
 	> => {
 		try {
 			const response = await fetch("/api/stats/platform-metrics");
-			const data = parse(
+			const responseData = parse(
 				await response.json()
 			) as PlatformMetricsSnapshotResponse;
+
 			console.log(
 				"Platform metrics snapshot fetched successfully:",
-				data
+				responseData
 			);
-			return data;
+			return responseData;
 		} catch (error) {
 			console.error("Failed to fetch platform stats snapshot:", error);
 		}

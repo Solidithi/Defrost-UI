@@ -1,9 +1,23 @@
-import { prismaClient } from "@/app/lib/prisma";
+import "@/app/lib/superjson-init";
 import { stringify } from "superjson";
+import { prismaClient } from "@/app/lib/prisma";
+import Decimal from "decimal.js";
 
 // Return percentage
-const calculateGrowthRate = (now: number, then: number): number => {
-	return (now / then - 1) * 100;
+const calculateGrowthRate = (
+	now: number | Decimal,
+	then: number | Decimal
+): number | Decimal => {
+	if (typeof now === "number" && typeof then === "number") {
+		if (then === 0) return now === 0 ? 0 : 100; // Handle zero division
+		return (now / then - 1) * 100;
+	} else {
+		now = now as Decimal;
+		then = then as Decimal;
+		if (then.isZero())
+			return now.isZero() ? new Decimal(0) : new Decimal(100); // Handle zero division
+		return (now as Decimal).div(then).minus(1).times(100);
+	}
 };
 
 export async function GET(request: Request) {
@@ -53,8 +67,8 @@ export async function GET(request: Request) {
 	// Calculate growth rates of metrics
 	const growthRates = {
 		total_value_locked: calculateGrowthRate(
-			latestSnapshot.total_value_locked.toNumber(),
-			pastSnapshot.total_value_locked.toNumber()
+			latestSnapshot.total_value_locked,
+			pastSnapshot.total_value_locked
 		),
 		count_projects: calculateGrowthRate(
 			latestSnapshot.count_projects,
@@ -77,8 +91,8 @@ export async function GET(request: Request) {
 			pastSnapshot.count_transactions
 		),
 		tokens_distributed: calculateGrowthRate(
-			latestSnapshot.tokens_distributed.toNumber(),
-			pastSnapshot.tokens_distributed.toNumber()
+			latestSnapshot.tokens_distributed,
+			pastSnapshot.tokens_distributed
 		),
 	};
 

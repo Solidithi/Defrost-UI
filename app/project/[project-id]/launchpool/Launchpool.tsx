@@ -1,16 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { StatCardItem } from '@/app/all-project/AllProject'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
 import LineChart from '@/app/components/charts/LineChart'
 import SidebarLineChart from '@/app/components/charts/SideBarLineChart'
 import StakedAmountChart from '@/app/components/charts/StatLineChart'
-import { AllPoolsTab } from '@/app/components/project-detail-sections/ContentTab'
 import SideBar from '@/app/components/service-sections/SideBar'
 import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
-import Button from '@/app/components/UI/button/Button'
-import StatCard from '@/app/components/UI/card/StatCard'
+import { StatCard } from '@/app/components/UI/card/StatCard'
 import Tabs from '@/app/components/UI/shared/Tabs'
 import { ProjectDetail } from '@/app/types'
 import { TokenInfo } from '@/app/store/staking'
@@ -111,7 +108,7 @@ const Launchpool = () => {
 		},
 	}
 
-	const statCardItems: StatCardItem[] = [
+	const statCardItems = [
 		{
 			type: 'Current number of investors',
 			value: 4000,
@@ -152,8 +149,8 @@ const Launchpool = () => {
 						{statCardItems.map((item, index) => (
 							<StatCard
 								key={index}
-								type={item.type}
-								count={item.value}
+								// type={item.type}
+								value={item.value}
 								label={item.label}
 								icon={item.icon}
 							/>

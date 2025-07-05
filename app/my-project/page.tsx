@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { shortenStr } from '../lib/utils'
+import { shortenStr } from '@/app/utils/display'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
+import { Column } from '@/app/components/UI/shared/DataTable'
+import { parse } from 'superjson'
+import '@/app/lib/superjson-init'
 import SwitchTableOrCard from '@/app/components/UI/button/SwitchTableOrCard'
 import DataTable from '@/app/components/UI/shared/DataTable'
-import { Column } from '@/app/components/UI/shared/DataTable'
 import Head from 'next/head'
 import Image from 'next/image'
 import Spinner from '../components/UI/effect/Spinner'
@@ -29,9 +31,10 @@ export default function MyProject() {
 				method: 'GET',
 			}
 		)
-			.then((raw) => raw.json())
+			.then((rawRes) => rawRes.json())
 			.catch((error) => console.error('Error fetching projects:', error))
 			.then((res) => {
+				res = parse(res)
 				console.log('fetched projects: ', res.projects)
 				setProjects(res.projects || [])
 				setIsLoading(false)

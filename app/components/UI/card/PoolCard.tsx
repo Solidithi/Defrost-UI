@@ -1,4 +1,4 @@
-import { UnifiedPool } from '@/app/types'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { Zap, Rocket, Sprout } from 'lucide-react'
 
 export const getPoolColors = (type: string) => {
@@ -58,23 +58,34 @@ export const getPoolIcon = (type: string) => {
 	}
 }
 
-// Mock func
-export const getAcceptedTokens = (pool: UnifiedPool): string[] => {
-	switch (pool.type) {
-		case 'launchpool':
-		default:
-			return ['vDOT']
-	}
+// Type for any pool-like object with common properties
+interface BasePool {
+	type: string
+	staker_apy?: number | string | { toString(): string }
+	description?: string
+	durationSeconds?: number
+	id: string
 }
 
-interface PoolCardProps {
+interface PoolCardProps<T extends BasePool = EnrichedLaunchpool> {
 	isSelected: boolean
-	pool: UnifiedPool
+	pool: T
 	onClick?: (...args: any) => any
+	tokenSymbol?: string // Optional token symbol prop
 }
 
-export function PoolCard({ isSelected, pool, onClick }: PoolCardProps) {
+export function PoolCard<T extends BasePool = EnrichedLaunchpool>({
+	isSelected,
+	pool,
+	onClick,
+	tokenSymbol: propTokenSymbol,
+}: PoolCardProps<T>) {
 	const colors = getPoolColors(pool.type)
+
+	const stakerApy = Number(pool.staker_apy) || 0
+	const description = pool.description
+	const duration = Math.ceil((pool.durationSeconds || 0) / (24 * 60 * 60))
+	const tokenSymbol = propTokenSymbol || 'Token'
 
 	return (
 		<div
@@ -122,16 +133,16 @@ export function PoolCard({ isSelected, pool, onClick }: PoolCardProps) {
 						isSelected ? 'text-green-300 brightness-125' : 'text-green-400'
 					}`}
 				>
-					{(pool.staker_apy || 0).toFixed(2)}% APY
+					{stakerApy.toFixed(2)}% APY
 				</span>
 			</div>
 
-			{pool.description && (
-				<p className="text-xs text-gray-400 mt-1 mb-2">{pool.description}</p>
+			{description && (
+				<p className="text-xs text-gray-400 mt-1 mb-2">{description}</p>
 			)}
 
 			<div className="flex flex-row justify-between items-center mt-2 text-xs text-gray-400">
-				<span>Duration: {pool.duration} days</span>
+				<span>Duration: {duration} days</span>
 				<span className="flex items-center">
 					Earned:&nbsp;
 					<span className="truncate max-w-[100px] overflow-hidden whitespace-nowrap inline-block align-bottom">
@@ -142,7 +153,7 @@ export function PoolCard({ isSelected, pool, onClick }: PoolCardProps) {
 					)} */}
 						{/* {claimables} */}
 					</span>
-					&nbsp;{pool.token_symbol}
+					&nbsp;{tokenSymbol}
 				</span>
 			</div>
 
@@ -150,14 +161,9 @@ export function PoolCard({ isSelected, pool, onClick }: PoolCardProps) {
 			<div className="mt-3">
 				<div className="text-xs text-gray-400 mb-1">Accepted tokens:</div>
 				<div className="flex flex-wrap gap-1">
-					{getAcceptedTokens(pool).map((token) => (
-						<div
-							key={token}
-							className="bg-white/10 rounded-full px-2 py-0.5 text-xs"
-						>
-							{token}
-						</div>
-					))}
+					<div className="bg-white/10 rounded-full px-2 py-0.5 text-xs">
+						{tokenSymbol}
+					</div>
 				</div>
 			</div>
 		</div>

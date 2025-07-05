@@ -5,10 +5,17 @@ import {
 	EnrichedProject,
 	calcPoolsAvgApy,
 } from "@/app/types";
+import {
+	EnrichedLaunchpool,
+	toEnrichedLaunchpool,
+} from "@/app/types/extended-models/enriched-launchpool";
+import { stringify } from "superjson";
+import "@/app/lib/superjson-init";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const address = searchParams.get("address");
+	const chainID = parseInt(searchParams.get("chainID") || "1", 10);
 
 	if (!address) {
 		return Response.json({ error: "Address is required" }, { status: 400 });
@@ -32,15 +39,23 @@ export async function GET(request: Request) {
 			},
 		});
 
-		// Transform projects to include unified pools
+		// Transform projects to include both specific pool types and unified pools
 		const enrichedProjects = projects.map((project) => {
-			// Convert all pool types to unified format
+			// Convert all pool types to specific enriched types
+			const enrichedLaunchpools: EnrichedLaunchpool[] = [];
 			const unifiedPools: UnifiedPool[] = [];
 
-			// Add launchpools to unified pools
+			// Add launchpools to both enriched and unified pools
 			if (project.launchpool?.length) {
 				project.launchpool.forEach((pool) => {
-					unifiedPools.push(toUnifiedPool(pool, "launchpool"));
+					// Create enriched launchpool
+					const enrichedPool = toEnrichedLaunchpool(pool);
+					enrichedLaunchpools.push(enrichedPool);
+
+					// Create unified pool for backward compatibility
+					unifiedPools.push(
+						toUnifiedPool(pool, "launchpool", chainID)
+					);
 				});
 			}
 
@@ -85,7 +100,8 @@ export async function GET(request: Request) {
 			// Create enriched project with all needed metrics
 			return {
 				...project,
-				unifiedPools,
+				launchpools: enrichedLaunchpools,
+				unifiedPools, // keep for backward compatibility
 				avgApy,
 				tokenAddress,
 				totalStaked,
@@ -94,7 +110,7 @@ export async function GET(request: Request) {
 			} as EnrichedProject;
 		});
 
-		return Response.json({ projects: enrichedProjects });
+		return Response.json(stringify({ projects: enrichedProjects }));
 	} catch (error) {
 		console.error("Error fetching projects:", error);
 		return Response.json(

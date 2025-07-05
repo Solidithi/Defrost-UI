@@ -7,6 +7,12 @@ import {
 	isPoolActive,
 	calcPoolsAvgApy,
 } from "@/app/types";
+import {
+	EnrichedLaunchpool,
+	toEnrichedLaunchpool,
+} from "@/app/types/extended-models/enriched-launchpool";
+import { stringify } from "superjson";
+import "@/app/lib/superjson-init";
 
 export async function GET(request: Request) {
 	try {
@@ -53,14 +59,20 @@ export async function GET(request: Request) {
 			},
 		});
 
-		// Transform projects to include unified pools
+		// Transform projects to include both specific pool types and unified pools
 		const enrichedProjects = projects.map((project) => {
-			// Convert all pool types to unified format
+			// Convert all pool types to specific enriched types
+			const enrichedLaunchpools: EnrichedLaunchpool[] = [];
 			const unifiedPools: UnifiedPool[] = [];
 
-			// Add launchpools to unified pools
+			// Add launchpools to both enriched and unified pools
 			if (project.launchpool?.length) {
 				project.launchpool.forEach((pool) => {
+					// Create enriched launchpool
+					const enrichedPool = toEnrichedLaunchpool(pool);
+					enrichedLaunchpools.push(enrichedPool);
+
+					// Create unified pool for backward compatibility
 					unifiedPools.push(
 						toUnifiedPool(pool, "launchpool", chainID)
 					);
@@ -104,7 +116,8 @@ export async function GET(request: Request) {
 			// Create enriched project with all needed metrics
 			return {
 				...project,
-				unifiedPools,
+				launchpools: enrichedLaunchpools,
+				unifiedPools, // keep for backward compatibility
 				avgApy,
 				tokenAddress,
 				totalStaked,
@@ -113,12 +126,14 @@ export async function GET(request: Request) {
 			} as EnrichedProject;
 		});
 
-		return NextResponse.json({
-			projects: enrichedProjects,
-			total: totalCount,
-			page,
-			limit,
-		});
+		return NextResponse.json(
+			stringify({
+				projects: enrichedProjects,
+				total: totalCount,
+				page,
+				limit,
+			})
+		);
 	} catch (error) {
 		console.error("Error fetching projects:", error);
 		return NextResponse.json(

@@ -10,27 +10,24 @@ import {
 } from '@/app/components/UI/shadcn/Tooltip'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import Button from '@/app/components/UI/button/Button'
-import {
-	useAccount,
-	useReadContract,
-	useWriteContract,
-	useWaitForTransactionReceipt,
-} from 'wagmi'
+import { useAccount, useReadContract, useWriteContract } from 'wagmi'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { parseUnits, formatUnits } from 'ethers'
-import { UnifiedPool, EnrichedProject } from '@/app/types'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { PoolSelector } from '../UI/selector/PoolSelector'
 import { PoolCard } from '../UI/card/PoolCard'
-import { useStakingStore } from '@/app/store/staking'
 import { useLaunchpoolTokenInfo } from '@/app/hooks/staking'
+import { useLaunchpoolStakingInfo } from '@/app/hooks/staking/useStakingInfo'
+import { formatTimeDuration } from '@/app/utils/display'
+import { EnrichedProject } from '@/app/types'
 import ProgressBar from '../UI/project-progress/ProgressBar'
 import AlertInfo from '../UI/shared/AlertInfo'
 
 export interface LaunchpoolTableRowProps {
 	project: EnrichedProject
-	pool: UnifiedPool
-	onPoolSelected: (pool: UnifiedPool) => void
+	pool: EnrichedLaunchpool
+	onPoolSelected: (pool: EnrichedLaunchpool) => void
 }
 
 // Mock function for accepted tokens
@@ -47,9 +44,15 @@ export default function LaunchpoolTableRow({
 	onPoolSelected,
 }: LaunchpoolTableRowProps) {
 	const account = useAccount()
-	const { fetchPools } = useStakingStore()
-	const { tokensInfo } = useLaunchpoolTokenInfo()
-	const poolAddress = pool.address as `0x${string}`
+	const { tokensInfo } = useLaunchpoolTokenInfo(pool)
+	const {
+		claimableReward: claimables,
+		yourNativeStake: userStake,
+		totalNativeStake: totalStaked,
+		yourShare,
+	} = useLaunchpoolStakingInfo(pool)
+
+	const poolAddress = pool.id as `0x${string}`
 
 	const [stakeAmount, setStakeAmount] = useState<string>('')
 	const [isStakeInteded, setIsStakeIntended] = useState(false)
@@ -62,39 +65,12 @@ export default function LaunchpoolTableRow({
 	} = useReadContract({
 		abi: ERC20ABI,
 		functionName: 'allowance',
-		address: '0xD02D73E05b002Cb8EB7BEf9DF8Ed68ed39752465',
+		address: pool.v_asset_address as `0x${string}`,
 		args: [account.address, poolAddress],
 		query: { refetchInterval: 500 },
 	})
 
-	const {
-		data: claimables,
-		status: readClaimablesStatus,
-		error: readClaimablesError,
-	} = useReadContract({
-		abi: launchpoolABI,
-		functionName: 'getClaimableProjectToken',
-		address: poolAddress,
-		args: [account.address],
-		query: {
-			refetchInterval: 1000,
-		},
-	})
-
-	// Read user's staked balance in the pool
-	const {
-		data: userStake,
-		status: readUserStakedStatus,
-		error: readUserStakedError,
-	} = useReadContract({
-		abi: launchpoolABI,
-		functionName: 'getStakerNativeAmount',
-		address: poolAddress,
-		args: [account.address],
-		query: { refetchInterval: 1000 },
-	})
-
-	// Read emission rate from contract
+	// Read project token emission rate from contract
 	const {
 		data: emissionRate,
 		status: readEmissionRateStatus,
@@ -106,44 +82,12 @@ export default function LaunchpoolTableRow({
 		query: { refetchInterval: 1000 },
 	})
 
-	// Read total staked in the pool
-	const {
-		data: totalStaked,
-		status: readTotalStakedStatus,
-		error: readTotalStakedError,
-	} = useReadContract({
-		abi: launchpoolABI,
-		functionName: 'totalNativeStake',
-		address: poolAddress,
-		query: { refetchInterval: 1000 },
-	})
-
-	// Calculate user stake percentage
-	const calculateStakePercentage = () => {
-		if (
-			readUserStakedStatus === 'success' &&
-			readTotalStakedStatus === 'success'
-		) {
-			if (
-				totalStaked &&
-				userStake &&
-				BigInt(totalStaked.toString()) > BigInt(0)
-			) {
-				const percentage =
-					(BigInt(userStake.toString()) * BigInt(10000)) /
-					BigInt(totalStaked.toString())
-				return Number(percentage) / 100
-			}
-		}
-		return 0
-	}
-
-	/** How many tokens am I earning per block? */
+	// How many tokens am I earning per block?
 	const calculatePersonalEearningRate = () => {
 		const emissionRateNum = Number(
 			formatUnits((emissionRate as bigint) ?? '0', 18)
 		)
-		return (emissionRateNum * calculateStakePercentage()) / 100
+		return (emissionRateNum * yourShare) / 100
 	}
 
 	// Contract write operations
@@ -180,7 +124,7 @@ export default function LaunchpoolTableRow({
 			approveAsync({
 				abi: ERC20ABI,
 				functionName: 'approve',
-				address: '0xD02D73E05b002Cb8EB7BEf9DF8Ed68ed39752465',
+				address: pool.v_asset_address as `0x${string}`,
 				args: [poolAddress, onChainStakeAmount],
 			})
 		}
@@ -254,7 +198,8 @@ export default function LaunchpoolTableRow({
 		setIsStakeIntended(true)
 	}
 
-	const tokenSymbol = pool.token_symbol || 'tokens'
+	// Get token symbol from the utility hooks
+	const vTokenSymbol = tokensInfo.vTokenInfo.symbol || 'tokens'
 
 	return (
 		<div className="w-full rounded-xl overflow-hidden backdrop-blur-xl bg-black/30 border border-white/10 shadow-xl overflow-hidden">
@@ -273,7 +218,7 @@ export default function LaunchpoolTableRow({
 									<PoolSelector
 										project={project}
 										onPoolSelected={onPoolSelected}
-										initialSelectedPoolAddress={pool.address}
+										initialSelectedPoolAddress={pool.id}
 									/>
 								</span>
 							</div>
@@ -316,7 +261,9 @@ export default function LaunchpoolTableRow({
 						<div className="flex justify-between text-sm">
 							<div className="text-gray-400">Ends in:</div>
 							<div className="font-bold text-white">
-								{pool?.duration || 0} days
+								{pool.durationSeconds
+									? formatTimeDuration(pool.durationSeconds * 1000)
+									: '0 seconds'}
 							</div>
 						</div>
 					</div>
@@ -359,14 +306,15 @@ export default function LaunchpoolTableRow({
 							<div className="flex flex-row justify-start items-center text-2xl font-bold font-orbitron mb text-white">
 								{/* This is to trim amount if too long */}
 								<span className="truncate block overflow-hidden whitespace-nowrap">
-									{formatReadContract(
-										formatUnits((claimables as bigint) ?? '0', 18),
-										readClaimablesStatus,
-										readClaimablesError
-									)}
+									{claimables
+										? formatUnits(
+												claimables,
+												tokensInfo.projectTokenInfo.decimals
+											)
+										: '0'}
 								</span>
 								<span className="text-sm text-gray-400 ml-1 flex-shrink-0">
-									{tokenSymbol}
+									{vTokenSymbol}
 								</span>
 							</div>
 						</div>
@@ -400,7 +348,7 @@ export default function LaunchpoolTableRow({
 								<div className="pl-6 mb-3">
 									<div className="font-medium text-cyan-300 text-sm">
 										{readEmissionRateStatus === 'success' ? (
-											`+${calculatePersonalEearningRate()} ${tokenSymbol}/block`
+											`+${calculatePersonalEearningRate()} ${vTokenSymbol}/block`
 										) : readEmissionRateStatus === 'pending' ? (
 											<Spinner heightWidth={4} />
 										) : (
@@ -438,30 +386,36 @@ export default function LaunchpoolTableRow({
 									<div className="flex justify-between text-xs">
 										<span className="text-gray-400">Your stake:</span>
 										<span className="text-white font-medium">
-											{readUserStakedStatus === 'success'
-												? formatUnits((userStake as bigint) ?? '0', 18) // TODO: implement real token decimals
+											{userStake
+												? formatUnits(
+														userStake,
+														tokensInfo.nativeTokenInfo.decimals
+													)
 												: '0.00'}{' '}
-											{tokenSymbol}
+											{vTokenSymbol}
 										</span>
 									</div>
 									<div className="flex justify-between text-xs">
 										<span className="text-gray-400">Pool total:</span>
 										<span className="text-white font-medium">
-											{readTotalStakedStatus === 'success'
-												? formatUnits((totalStaked as bigint) ?? '0', 18) // TODO: implement real token decimals
+											{totalStaked
+												? formatUnits(
+														totalStaked,
+														tokensInfo.nativeTokenInfo.decimals
+													)
 												: '0.00'}{' '}
-											{tokenSymbol}
+											{vTokenSymbol}
 										</span>
 									</div>
 									<div className="flex justify-between text-xs">
 										<span className="text-gray-400">Your share:</span>
 										<span className="text-cyan-300 font-bold">
-											{calculateStakePercentage()}%
+											{yourShare}%
 										</span>
 									</div>
 
 									<ProgressBar
-										index={calculateStakePercentage()}
+										index={yourShare}
 										total={100}
 										duration={1}
 										overrideClassName={true}
@@ -576,7 +530,7 @@ export default function LaunchpoolTableRow({
 											style={{ fontVariantNumeric: 'tabular-nums' }}
 										>
 											{readAllowanceStatus === 'success' ? (
-												`${formatUnits((allowance as bigint) ?? 0, 18)} ${tokenSymbol}`
+												`${formatUnits((allowance as bigint) ?? 0, 18)} ${vTokenSymbol}`
 											) : (
 												<span className="text-gray-400">Loading...</span>
 											)}
@@ -608,8 +562,8 @@ export default function LaunchpoolTableRow({
 											truncate block overflow-hidden whitespace-nowrap"
 											style={{ fontVariantNumeric: 'tabular-nums' }}
 										>
-											{readUserStakedStatus === 'success' ? (
-												`${formatUnits((userStake as bigint) ?? 0, 18)} ${tokenSymbol}`
+											{userStake ? (
+												`${formatUnits(userStake, tokensInfo.vTokenInfo.decimals)} ${vTokenSymbol}`
 											) : (
 												<span className="text-gray-400">Loading...</span>
 											)}

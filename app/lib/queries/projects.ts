@@ -1,4 +1,6 @@
+import "@/app/lib/superjson-init";
 import { EnrichedProject } from "@/app/types";
+import { parse } from "superjson";
 
 export interface ProjectsResponse {
 	projects: EnrichedProject[];
@@ -22,6 +24,6 @@ export const projectsApi = {
 		if (!response.ok) {
 			throw new Error("Failed to fetch projects");
 		}
-		return response.json();
+		return parse(await response.json());
 	},
 };

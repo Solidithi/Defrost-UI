@@ -1,4 +1,4 @@
-import { ChevronDown, Zap, Rocket, Sprout } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import {
 	Dialog,
 	DialogContent,
@@ -6,36 +6,15 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/app/components/UI/shadcn/Dialog'
-import { EnrichedProject, UnifiedPool } from '@/app/types'
+import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { useState } from 'react'
-import Spinner from '@/app/components/UI/effect/Spinner'
-import { formatUnits } from 'ethers'
 import { PoolCard } from '@/app/components/UI/card/PoolCard'
-
-export const formatReadContract = (
-	data: string,
-	status: 'idle' | 'pending' | 'success' | 'error',
-	error: unknown,
-	loadingComponent?: React.ReactNode
-) => {
-	if (!loadingComponent) {
-		loadingComponent = <Spinner heightWidth={5} />
-	}
-
-	if (status === 'success') {
-		return data
-	} else if (status === 'error') {
-		console.error('Error :', error)
-		return '0'
-	} else if (status === 'pending') {
-		return loadingComponent
-	}
-}
 
 export interface PoolSelectorProps {
 	project: EnrichedProject
 	initialSelectedPoolAddress?: string
-	onPoolSelected: (pool: UnifiedPool) => void
+	onPoolSelected: (pool: EnrichedLaunchpool) => void
 }
 
 export function PoolSelector({
@@ -43,14 +22,12 @@ export function PoolSelector({
 	initialSelectedPoolAddress,
 	onPoolSelected,
 }: PoolSelectorProps) {
-	const [selectedPoolAddress, setSelectedPoolId] = useState<string | null>(
+	const [selectedPoolAddress, setSelectedPoolAddress] = useState<string | null>(
 		initialSelectedPoolAddress ?? null
 	)
-	const [claimables, setClaimables] = useState<bigint | null>(BigInt(0))
 
-	const selectedPool = project.unifiedPools.find(
-		(pool) => pool.address === selectedPoolAddress
-	)
+	// Get all pools from the project (for now just launchpools)
+	const allPools = project.launchpools || []
 
 	return (
 		<Dialog>
@@ -67,13 +44,14 @@ export function PoolSelector({
 					</DialogTitle>
 				</DialogHeader>
 				<div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
-					{project.unifiedPools.map((pool) => {
-						const isSelected = selectedPoolAddress === pool.address
+					{allPools.map((pool) => {
+						const isSelected = selectedPoolAddress === pool.id
 						return (
 							<PoolCard
-								key={pool.address}
-								isSelected={isSelected}
+								key={pool.id}
 								pool={pool}
+								isSelected={isSelected}
+								tokenSymbol={project.token_symbol || 'Token'}
 								onClick={() => onPoolSelected(pool)}
 							/>
 						)
