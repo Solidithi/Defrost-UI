@@ -1,10 +1,14 @@
 import { useMemo } from 'react'
-import { useStakingStore } from '@/app/store/staking'
 import { useChainId } from 'wagmi'
 import chains from '@/app/config/chains.json'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 
-export function useVTokenData() {
-	const { pools } = useStakingStore()
+interface useVTokenDataProps {
+	launchpools: EnrichedLaunchpool[]
+	// add other pool types later
+}
+
+export function useVTokenMetrics({ launchpools }: useVTokenDataProps) {
 	const chainId = useChainId()
 
 	const availableVTokens = useMemo(() => {
@@ -18,7 +22,7 @@ export function useVTokenData() {
 	const poolCountByVToken = useMemo(() => {
 		const counts: Record<string, number> = {}
 
-		pools.launchpools.forEach((pool) => {
+		launchpools.forEach((pool) => {
 			const vTokenAddress = pool.v_asset_address?.toLowerCase()
 			if (vTokenAddress) {
 				counts[vTokenAddress] = (counts[vTokenAddress] || 0) + 1
@@ -26,13 +30,13 @@ export function useVTokenData() {
 		})
 
 		return counts
-	}, [pools.launchpools])
+	}, [launchpools])
 
 	// Calculate total staked by vToken (mock data for now)
 	const totalStakedByVToken = useMemo(() => {
 		const staked: Record<string, string> = {}
 
-		pools.launchpools.forEach((pool) => {
+		launchpools.forEach((pool) => {
 			const vTokenAddress = pool.v_asset_address?.toLowerCase()
 			if (vTokenAddress) {
 				// Mock calculation - replace with real staking data
@@ -42,7 +46,7 @@ export function useVTokenData() {
 		})
 
 		return staked
-	}, [pools.launchpools])
+	}, [launchpools])
 
 	return {
 		availableVTokens,

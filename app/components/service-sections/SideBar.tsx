@@ -1,8 +1,9 @@
 import { permanentMarker } from '@/app/lib/font'
 import { ChevronLeft } from 'lucide-react'
-import { useEffect, useState, useMemo } from 'react'
-import { useVTokenData } from '@/app/hooks/staking/useVTokenData'
+import { useEffect, useState } from 'react'
+import { useVTokenMetrics } from '@/app/hooks/staking/useVTokenMetrics'
 import { TokenInfo, useAveragePoolAPYByStakingToken } from '@/app/store/staking'
+import { useStakingStore } from '@/app/store/staking'
 import Link from 'next/link'
 import Image from 'next/image'
 import SocialLinks from '../UI/shared/SocialLinks'
@@ -28,7 +29,10 @@ interface SideBarProps {
 }
 
 const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
-	const { availableVTokens, poolCountByVToken } = useVTokenData()
+	const { pools } = useStakingStore()
+	const { availableVTokens, poolCountByVToken } = useVTokenMetrics({
+		launchpools: pools.launchpools,
+	})
 
 	// Only show socials if they exist and aren't empty strings
 	const hasSocialLinks =
