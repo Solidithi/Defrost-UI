@@ -84,6 +84,44 @@ body {
 	}
 }
 
+/* Spinner Animations */
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.3;
+		transform: scale(0.95);
+	}
+}
+
+@keyframes shimmer {
+	0% {
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+/* Enhanced spinner glow effects */
+.spinner-glow {
+	filter: drop-shadow(0 0 2px rgba(66, 127, 246, 0.5))
+		drop-shadow(0 0 4px rgba(171, 84, 242, 0.4))
+		drop-shadow(0 0 6px rgba(232, 73, 158, 0.3));
+}
+
 /* Grid background */
 .grid-bg {
 	background-image:

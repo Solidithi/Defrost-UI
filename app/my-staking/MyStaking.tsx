@@ -17,6 +17,7 @@ import { useAccount, useReadContract } from 'wagmi'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json' // @TODO: optimize this later
 import { useNavBarControl } from '../provider/navbar-control'
 import Button from '../components/UI/button/Button'
+import Spinner from '@/app/components/UI/effect/Spinner'
 
 export function MyStakingPage() {
 	const {
@@ -302,7 +303,7 @@ export function MyStakingPage() {
 				{/* Loading State */}
 				{isLoading ? (
 					<div className="flex justify-center items-center py-20">
-						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+						<Spinner />
 					</div>
 				) : (
 					<>
