@@ -8,10 +8,14 @@ import ScrollFloat from '../components/UI/effect/ScrollFloat'
 import SwitchTableOrCard from '../components/UI/button/SwitchTableOrCard'
 import SectionComponent from '../components/UI/effect/SectionComponent'
 import DataTable from '../components/UI/shared/DataTable'
-import { Column } from '../components/UI/shared/DataTable'
 import Image from 'next/image'
-import { shortenStr } from '@/app/utils/display'
+import Particles from '../components/UI/background/Particles'
+import CarouselWithProgress from '../components/UI/carousel/Carousel'
+import AllProjectCard from '../components/UI/card/AllProjectCard'
 import LaunchpoolTableRow from '@/app/components/pool-specific-rows/LaunchpoolTableRow'
+import AnimatedBlobs from '../components/UI/background/AnimatedBlobs'
+import { Column } from '../components/UI/shared/DataTable'
+import { shortenStr } from '@/app/utils/display'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import { UnifiedPool } from '@/app/types/extended-models/unified-pool'
@@ -19,11 +23,7 @@ import { useProjects } from '@/app/hooks/queries/useProjects'
 import { usePlatformMetrics } from '@/app/hooks/queries/useStats'
 import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll'
 import { debounce } from '@/app/utils/timing'
-import Particles from '../components/UI/background/Particles'
-import CarouselWithProgress from '../components/UI/carousel/Carousel'
-import AllProjectCard from '../components/UI/card/AllProjectCard'
 import { StatCard, StatCardSkeleton } from '../components/UI/card/StatCard'
-import AnimatedBlobs from '../components/UI/background/AnimatedBlobs'
 
 // Stable gradient arrays - defined outside component to prevent re-renders
 const HEAD_SECTION_GRADIENTS = [
@@ -82,7 +82,8 @@ const AllProject = () => {
 
 	// Flatten all projects from all pages
 	const allProjects =
-		projectsData?.pages.flatMap((page: any) => page.projects) || []
+		projectsData?.pages.flatMap((page: any) => page.projects) ||
+		([] as EnrichedProject[])
 
 	// Filter projects based on debounced search query
 	const filteredProjects = allProjects.filter((project: EnrichedProject) => {
@@ -322,7 +323,7 @@ const AllProject = () => {
 				<Particles
 					particleColors={['#ffffff', '#7f7f7f']}
 					particleCount={250}
-					particleSpread={8}
+					particleSpread={7}
 					speed={0.02}
 					particleBaseSize={100}
 					moveParticlesOnHover={false}

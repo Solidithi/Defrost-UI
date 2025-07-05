@@ -8,7 +8,6 @@ import {
 } from '@/app/store/staking'
 import { useProjectStore } from '@/app/store/project'
 import { useEffect } from 'react'
-import {} from '@/app/hooks/staking/useVTokenData'
 import Button from '@/app/components/UI/button/Button'
 import { LaunchpoolCard } from '../UI/card/LaunchpoolCard'
 

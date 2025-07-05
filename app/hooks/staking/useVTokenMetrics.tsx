@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
-import chains from '@/app/config/chains.json'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
+import chains from '@/app/config/chains.json'
 
 interface useVTokenDataProps {
 	launchpools: EnrichedLaunchpool[]

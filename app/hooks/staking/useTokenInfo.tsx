@@ -2,17 +2,15 @@
 
 import { useEffect, useMemo, useRef } from 'react'
 import { useReadContract, useAccount } from 'wagmi'
-import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
-// Import other pool types when available
-// import { EnrichedFarm } from '@/app/types/extended-models/enriched-farm'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool' // Import other pool types when available
 import { useStakingStore } from '@/app/store/staking'
 import { getTokenInfoFromConfig } from '@/app/utils/chain'
 import { formatTokenAmount } from '@/app/utils/display'
 import { formatUnits } from 'ethers'
 import {
-	PoolTokenInfo,
+	// PoolTokenInfo,
+	// FarmTokenInfo,
 	LaunchpoolTokenInfo,
-	FarmTokenInfo,
 } from '@/app/store/staking'
 
 // Standard ERC20 ABI fragments we need
@@ -45,8 +43,7 @@ const erc20AbiFragment = [
  * This handles v_asset, native_asset, and project_token
  */
 export function useLaunchpoolTokenInfo(pool: EnrichedLaunchpool) {
-	const { tokensInfo, setTokensInfo, setPoolClaimableRewardsFormatted } =
-		useStakingStore()
+	const { tokensInfo, setPoolClaimableRewardsFormatted } = useStakingStore()
 	const account = useAccount()
 
 	// Check if we already have token info in the store

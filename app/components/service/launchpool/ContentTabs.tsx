@@ -9,7 +9,6 @@ import {
 import { useProjectStore } from '@/app/store/project'
 import { useEffect } from 'react'
 import { LaunchpoolCard } from '../../UI/card/LaunchpoolCard'
-import {} from '@/app/hooks/staking/useVTokenData'
 import Button from '@/app/components/UI/button/Button'
 
 interface PoolTabProps {

@@ -1,9 +1,4 @@
-// app/hooks/queries/useProjects.ts
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { projectsApi } from "@/app/lib/queries/projects";
 
 // Query keys for consistent caching

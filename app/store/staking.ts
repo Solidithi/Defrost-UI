@@ -14,7 +14,6 @@ import { parse } from "superjson";
 import { useMemo } from "react";
 import { AbiEventSignatureEmptyTopicsError, Address } from "viem";
 import { normalizeAddress } from "../utils/address";
-import { APP_PATH_ROUTES_MANIFEST } from "next/dist/shared/lib/constants";
 
 // Base token information
 export interface TokenInfo {

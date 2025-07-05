@@ -4,12 +4,10 @@ import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchp
 import { useAccount, useReadContract } from 'wagmi'
 import { useMemo } from 'react'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
-import { useStakingStore } from '@/app/store/staking'
 
 const REFRESH_INTERVAL_MS = 6000
 
 export function useLaunchpoolStakingInfo(pool: EnrichedLaunchpool) {
-	// Always call hooks at the top level
 	const { address } = useAccount()
 
 	// Contract reads with Wagmi's built-in caching

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronDown, Info, Zap, BarChart3, Flame } from 'lucide-react'
+import { Info, Zap, BarChart3, Flame } from 'lucide-react'
 import {
 	Tooltip,
 	TooltipContent,
@@ -19,11 +19,13 @@ import {
 import { abi as launchpoolABI } from '@/abi/Launchpool.json'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 import { parseUnits, formatUnits } from 'ethers'
-import AlertInfo from '../UI/shared/AlertInfo'
 import { UnifiedPool, EnrichedProject } from '@/app/types'
 import { PoolSelector } from '../UI/selector/PoolSelector'
 import { PoolCard } from '../UI/card/PoolCard'
+import { useStakingStore } from '@/app/store/staking'
+import { useLaunchpoolTokenInfo } from '@/app/hooks/staking'
 import ProgressBar from '../UI/project-progress/ProgressBar'
+import AlertInfo from '../UI/shared/AlertInfo'
 
 export interface LaunchpoolTableRowProps {
 	project: EnrichedProject
@@ -45,9 +47,12 @@ export default function LaunchpoolTableRow({
 	onPoolSelected,
 }: LaunchpoolTableRowProps) {
 	const account = useAccount()
+	const { fetchPools } = useStakingStore()
+	const { tokensInfo } = useLaunchpoolTokenInfo()
+	const poolAddress = pool.address as `0x${string}`
+
 	const [stakeAmount, setStakeAmount] = useState<string>('')
 	const [isStakeInteded, setIsStakeIntended] = useState(false)
-	const poolAddress = pool.address as `0x${string}`
 
 	// Contract read operations
 	const {
@@ -434,7 +439,7 @@ export default function LaunchpoolTableRow({
 										<span className="text-gray-400">Your stake:</span>
 										<span className="text-white font-medium">
 											{readUserStakedStatus === 'success'
-												? formatUnits((userStake as bigint) ?? '0', 18)
+												? formatUnits((userStake as bigint) ?? '0', 18) // TODO: implement real token decimals
 												: '0.00'}{' '}
 											{tokenSymbol}
 										</span>
@@ -443,7 +448,7 @@ export default function LaunchpoolTableRow({
 										<span className="text-gray-400">Pool total:</span>
 										<span className="text-white font-medium">
 											{readTotalStakedStatus === 'success'
-												? formatUnits((totalStaked as bigint) ?? '0', 18)
+												? formatUnits((totalStaked as bigint) ?? '0', 18) // TODO: implement real token decimals
 												: '0.00'}{' '}
 											{tokenSymbol}
 										</span>
