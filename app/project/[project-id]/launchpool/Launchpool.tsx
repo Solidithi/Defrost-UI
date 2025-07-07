@@ -1,5 +1,10 @@
 'use client'
 import { useState } from 'react'
+import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
+import { StatCard } from '@/app/components/UI/card/StatCard'
+import { ProjectDetail } from '@/app/types'
+import { TokenInfo } from '@/app/store/staking'
+import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
 import LineChart from '@/app/components/charts/LineChart'
@@ -7,10 +12,6 @@ import StakedAmountChart from '@/app/components/charts/StatLineChart'
 import SideBar from '@/app/components/service-sections/SideBar'
 import Tabs from '@/app/components/UI/shared/Tabs'
 import Logo from '@/public/Logo.png'
-import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
-import { StatCard } from '@/app/components/UI/card/StatCard'
-import { ProjectDetail } from '@/app/types'
-import { TokenInfo } from '@/app/store/staking'
 
 const Launchpool = () => {
 	// vToken filtering state (kept local as requested)
@@ -143,7 +144,7 @@ const Launchpool = () => {
 			title: 'Analytics',
 			value: 'analytics',
 			content: (
-				<div className="">
+				<div>
 					<div className="grid grid-cols-3 gap-8 w-full mx-auto mt-10 mb-24">
 						{statCardItems.map((item, index) => (
 							<StatCard
@@ -188,7 +189,8 @@ const Launchpool = () => {
 	]
 
 	return (
-		<div className="mt-24 px-4 mb-8">
+		<div className="mt-24 px-4 mb-8 z-10">
+			<SubtleBackLight />
 			<div className="flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
 					<SideBar

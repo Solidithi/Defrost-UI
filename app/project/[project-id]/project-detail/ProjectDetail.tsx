@@ -1,13 +1,6 @@
 'use client'
-import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
-import SideBar from '@/app/components/service-sections/SideBar'
 import { AcernityCarousel } from '@/app/components/UI/carousel/AcernityCarousel'
-import Logo from '@/public/Logo.png'
-import Tabs from '@/app/components/UI/shared/Tabs'
-import Button from '@/app/components/UI/button/Button'
 import { LaunchpoolSection } from '@/app/components/project-detail-sections/LaunchpoolSection'
-import CarouselWithProgress from '@/app/components/UI/carousel/Carousel'
-import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useProjectStore } from '@/app/store/project'
@@ -15,6 +8,15 @@ import { usePoolStore } from '@/app/store/launchpool'
 import { useStakingStore } from '@/app/store/staking'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { project } from '@prisma/client'
+import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
+import CarouselWithProgress from '@/app/components/UI/carousel/Carousel'
+import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
+import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
+import SideBar from '@/app/components/service-sections/SideBar'
+import Logo from '@/public/Logo.png'
+import Tabs from '@/app/components/UI/shared/Tabs'
+import Button from '@/app/components/UI/button/Button'
+
 interface ProjectDetailProps {
 	launchpools: EnrichedLaunchpool[] | undefined
 	project: project | null
@@ -96,7 +98,8 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 	]
 
 	return (
-		<div className="my-36 px-16   text-white">
+		<div className="my-36 px-16 text-white">
+			<SubtleBackLight />
 			<AnimatedBlobs />
 			<div className="flex items-start justify-start gap-6 min-h-screen relative z-10">
 				<div className="sticky self-start">

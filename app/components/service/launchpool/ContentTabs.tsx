@@ -1,6 +1,5 @@
 'use client'
 
-// import { ProjectDetail, TokenPool } from '@/app/types'
 import {
 	useStakingStore,
 	TokenInfo,
@@ -42,7 +41,7 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 		selectedVToken && filteredPoolsByVToken.launchpools.length === 0
 
 	return (
-		<div className="">
+		<div>
 			<div className="flex justify-between items-center my-10">
 				{selectedVToken && (
 					<div className="flex items-center gap-3">
@@ -70,7 +69,6 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 					{/* <Plus size={16} /> */}
 				</Button>
 			</div>
-
 			{/* Show empty state when vToken selected but no pools */}
 			{showEmptyState ? (
 				<div className="glass-enhanced text-white mt-10 p-12 rounded-lg text-center">
