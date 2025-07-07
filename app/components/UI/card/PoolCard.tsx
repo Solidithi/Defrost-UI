@@ -5,30 +5,30 @@ export const getPoolColors = (type: string) => {
 	switch (type) {
 		case 'launchpool':
 			return {
-				bg: 'from-blue-500/10 to-blue-600/5',
-				border: 'border-blue-500/20',
-				highlight: 'bg-blue-500/10',
+				bg: 'from-blue-500/12 to-purple-600/8',
+				border: 'border-blue-500/25',
+				highlight: 'bg-blue-500/15',
 				text: 'text-blue-400',
 			}
 		case 'launchpad':
 			return {
-				bg: 'from-purple-500/10 to-purple-600/5',
-				border: 'border-purple-500/20',
-				highlight: 'bg-purple-500/10',
+				bg: 'from-purple-500/12 to-pink-600/8',
+				border: 'border-purple-500/25',
+				highlight: 'bg-purple-500/15',
 				text: 'text-purple-400',
 			}
 		case 'farm':
 			return {
-				bg: 'from-green-500/10 to-green-600/5',
+				bg: 'from-green-500/10 to-emerald-600/6',
 				border: 'border-green-500/20',
-				highlight: 'bg-green-500/10',
+				highlight: 'bg-green-500/12',
 				text: 'text-green-400',
 			}
 		default:
 			return {
-				bg: 'from-blue-500/10 to-blue-600/5',
-				border: 'border-blue-500/20',
-				highlight: 'bg-blue-500/10',
+				bg: 'from-blue-500/12 to-purple-600/8',
+				border: 'border-blue-500/25',
+				highlight: 'bg-blue-500/15',
 				text: 'text-blue-400',
 			}
 	}

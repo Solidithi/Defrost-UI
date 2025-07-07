@@ -273,8 +273,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 					return {
 						text: 'Stake Now',
 						icon: <Plus size={16} />,
-						className:
-							'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600',
+						className: 'warm-cool-bg hover:from-blue-600 hover:to-purple-600',
 					}
 				}
 			// return {
@@ -317,34 +316,46 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 				inactiveZone={0.01}
 				className="absolute inset-0 rounded-2xl"
 			/>
+			{/* Gradient border effect */}
+			<div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-50 rounded-xl" />
+
 			<div className="rounded-xl overflow-hidden relative group">
-				{/* Card content with glassmorphism */}
-				<div className="glass-enhanced relative m-[1px] rounded-xl bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:bg-gradient-to-br hover:from-gray-800/95 hover:to-black/95 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
+				{/* Card content with blue-tinted glassmorphism */}
+				<div
+					className="relative m-[1px] rounded-xl bg-gradient-to-br 
+				from-gray-900/90 to-black/90 backdrop-blur-xl overflow-hidden transition-all 
+				duration-300 hover:bg-gradient-to-br 
+				hover:shadow-2xl hover:shadow-blue-500/20"
+					// hover:scale-[1.005]
+				>
+					{/* Subtle blue accent overlay */}
+					<div className="absolute inset-0 bg-gradient-to-br from-blue-500/3 via-transparent to-blue-600/2 pointer-events-none"></div>
+
 					{/* Top section with logo and APR */}
 					<div
 						className="relative p-4 cursor-pointer transition-all duration-300"
 						onClick={handleCardBodyClick}
 					>
 						<div className="flex justify-between items-start">
-							<div className="relative h-20 w-20 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md flex items-center justify-center transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-purple-500/30">
+							<div className="relative h-20 w-20 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500/20 to-slate-600/15 backdrop-blur-md flex items-center justify-center transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-slate-600/25 accent-blue-glow">
 								<Image
 									src={tokensInfo.vTokenInfo.icon || ''}
 									alt={'Token image'}
 									width={80}
 									height={80}
-									className="object-cover transition-transform duration-300 group-hover:scale-110"
+									className="object-cover transition-transform duration-300 group-hover:scale-105"
 								/>
 
 								{/* Token pair badge */}
-								<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-500/80 to-purple-500/80 backdrop-blur-md p-1 text-xs text-center font-medium transition-all duration-300 group-hover:from-blue-600/90 group-hover:to-purple-600/90">
+								<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-500/85 to-slate-600/80 backdrop-blur-md p-1 text-xs text-center font-medium transition-all duration-300 group-hover:from-blue-600/95 group-hover:to-slate-700/90">
 									{tokensInfo.vTokenInfo.symbol} →{' '}
 									{tokensInfo.projectTokenInfo.symbol}
 								</div>
 							</div>
 
-							<div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-md rounded-lg p-2 text-center min-w-[100px] transition-all duration-300 group-hover:from-blue-500/20 group-hover:to-purple-500/20 group-hover:scale-105">
-								<div className="text-xs text-gray-300">APR</div>
-								<div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-pink-500 bg-clip-text text-transparent transition-all duration-300 group-hover:from-blue-300 group-hover:to-pink-400">
+							<div className="bg-gradient-to-r from-blue-500/12 to-slate-600/8 backdrop-blur-md rounded-lg p-2 text-center min-w-[100px] transition-all duration-300 accent-blue-glow">
+								<div className="text-xs text-slate-300">APR</div>
+								<div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-slate-300 bg-clip-text text-transparent transition-all duration-300 group-hover:from-blue-300 group-hover:to-slate-200">
 									{launchpool.staker_apy.toFixed(2)}%
 								</div>
 							</div>
@@ -356,17 +367,15 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 						className="p-4 pt-0 cursor-pointer transition-all duration-300"
 						onClick={handleCardBodyClick}
 					>
-						<h3 className="text-xl font-bold mb-2 transition-colors duration-300 group-hover:text-white">
-							{name}
-						</h3>
-						<p className="text-sm text-gray-400 mb-4 line-clamp-2 transition-colors duration-300 group-hover:text-gray-300">
+						<h3 className="text-xl font-bold text-white mb-2">{name}</h3>
+						<p className="text-sm text-white mb-4 line-clamp-2 duration-300">
 							{description}
 						</p>
 
 						{/* Progress bar - only show when wallet is connected */}
 						{account.isConnected && (
 							<div className="mb-4">
-								<div className="flex justify-between text-xs text-gray-400 mb-1 transition-colors duration-300 group-hover:text-gray-300">
+								<div className="flex justify-between text-xs text-slate-400 mb-1 transition-colors duration-300">
 									<span>Progress</span>
 									<span>{timeRemaining} left</span>
 								</div>
@@ -374,16 +383,16 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									index={millisecsRemaining / 1000}
 									total={launchpool.durationSeconds}
 									overrideClassName={true}
-									barClassName="h2 bg-gray-800 transition-colors duration-300 group-hover:bg-gray-700"
-									colorClassName="bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 group-hover:from-blue-400 group-hover:to-purple-400"
+									barClassName="h2 bg-slate-800 transition-colors duration-300"
+									colorClassName="bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
 								/>
 							</div>
 						)}
 
-						{/* Stats row */}
+						{/* Professional stats row */}
 						<div className="grid grid-cols-2 gap-2 mb-4">
-							<div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-md rounded-lg p-2 transition-all duration-300 group-hover:from-blue-500/20 group-hover:to-purple-500/20 group-hover:scale-105">
-								<div className="flex items-center gap-1 text-xs text-gray-400 mb-1 transition-colors duration-300 group-hover:text-gray-300">
+							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/8 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
+								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1 transition-colors duration-300">
 									<Clock size={12} />
 									<span>Duration</span>
 								</div>
@@ -391,8 +400,8 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									{formatTimeDuration(launchpool.durationSeconds * 1000)}
 								</div>
 							</div>
-							<div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-md rounded-lg p-2 transition-all duration-300 group-hover:from-blue-500/20 group-hover:to-purple-500/20 group-hover:scale-105">
-								<div className="flex items-center gap-1 text-xs text-gray-400 mb-1 transition-colors duration-300 group-hover:text-gray-300">
+							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
+								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1 accent-blue-glow">
 									<BarChart3 size={12} />
 									<span>Total Staked</span>
 								</div>
@@ -405,27 +414,27 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 						{/* User stats - only show when wallet is connected */}
 						{account.isConnected && (
 							<div className="grid grid-cols-2 gap-2 mb-4">
-								<div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-md rounded-lg p-2 transition-all duration-300 group-hover:from-blue-500/20 group-hover:to-purple-500/20 group-hover:scale-105">
-									<div className="text-xs text-gray-400 mb-1 transition-colors duration-300 group-hover:text-gray-300">
+								<div className="bg-gradient-to-r from-blue-500/12 to-slate-600/10 backdrop-blur-md rounded-lg p-2 transition-all duration-300 accent-blue-glow">
+									<div className="text-xs text-slate-300 mb-1 accent-blue-glow">
 										Your Stake
 									</div>
-									<div className="text-sm font-medium transition-colors duration-300 group-hover:text-white">
+									<div className="text-sm font-medium text-white">
 										{formattedWithdrawableVTokens}
 									</div>
 								</div>
 								<div
-									className={`${stakingInfo.claimableReward > BigInt(0) ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 group-hover:from-green-500/30 group-hover:to-emerald-500/30' : 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 group-hover:from-blue-500/20 group-hover:to-purple-500/20'} backdrop-blur-md rounded-lg p-2 relative transition-all duration-300 group-hover:scale-105`}
+									className={`${stakingInfo.claimableReward > BigInt(0) ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/12 group-hover:from-emerald-500/20 group-hover:to-green-500/18' : 'bg-gradient-to-r from-blue-500/8 to-slate-600/6 group-hover:from-blue-500/12 group-hover:to-slate-600/10'} backdrop-blur-md rounded-lg p-2 relative accent-blue-glow`}
 								>
-									<div className="text-xs text-gray-400 mb-1 transition-colors duration-300 group-hover:text-gray-300">
+									<div className="text-xs text-slate-300 mb-1 accent-blue-glow">
 										Your Rewards
 									</div>
-									<div className="text-sm font-medium transition-colors duration-300 group-hover:text-white">
+									<div className="text-sm font-medium text-white">
 										{formattedClaimableRewards}
 									</div>
 
 									{/* Notification badge for available rewards */}
 									{showRewardsBadge && (
-										<div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full w-5 h-5 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-green-500/50">
+										<div className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full w-5 h-5 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:shadow-emerald-500/50">
 											<Check size={12} />
 										</div>
 									)}
@@ -448,17 +457,17 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 
 					{/* Expandable details section */}
 					<div
-						className="border-t border-gray-800 p-4 cursor-pointer transition-all duration-200 group-hover:border-gray-700"
+						className="border-t border-slate-600/60 p-4 cursor-pointer transition-all accent-blue-glow"
 						onClick={(e) => {
 							e.stopPropagation() // Prevent card body click when expanding details
 							setIsExpanded(!isExpanded)
 						}}
 					>
 						<div className="flex items-center justify-between">
-							<span className="text-sm font-medium transition-colors duration-300 group-hover:text-white">
+							<span className="text-sm font-medium text-slate-300 transition-colors duration-300 group-hover:text-white">
 								Details
 							</span>
-							<div className="transition-transform duration-300 group-hover:scale-110">
+							<div className="transition-transform duration-300 group-hover:scale-110 text-blue-400">
 								{isExpanded ? (
 									<ChevronUp size={16} />
 								) : (
@@ -470,54 +479,54 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 
 					{/* Expanded content */}
 					{isExpanded && (
-						<div className="p-4 border-t border-gray-800 bg-gradient-to-br from-blue-900/10 to-purple-900/10 backdrop-blur-md transition-all duration-300 group-hover:from-blue-900/20 group-hover:to-purple-900/20 group-hover:border-gray-700">
+						<div className="p-4 border-t border-slate-700/50 bg-gradient-to-br from-blue-900/8 to-slate-800/10 backdrop-blur-md transition-all duration-300 group-hover:from-blue-900/12 group-hover:to-slate-800/15 group-hover:border-slate-600/60">
 							<div className="space-y-3">
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
+									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
 										Start Date
 									</span>
-									<span className="text-sm transition-colors duration-300 group-hover:text-white">
+									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
 										{formattedDates.startDate}
 									</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
+									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
 										End Date
 									</span>
-									<span className="text-sm transition-colors duration-300 group-hover:text-white">
+									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
 										{formattedDates.endDate}
 									</span>
 								</div>
 								{account.isConnected && (
 									<>
 										<div className="flex justify-between items-center">
-											<span className="text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
+											<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
 												Your Share
 											</span>
-											<span className="text-sm transition-colors duration-300 group-hover:text-white">
+											<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
 												{formattedValues.yourShare}
 											</span>
 										</div>
 									</>
 								)}
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
+									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
 										Reward Token
 									</span>
-									<span className="text-sm transition-colors duration-300 group-hover:text-white">
+									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
 										{tokensInfo.projectTokenInfo.symbol}
 									</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
+									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
 										Stake Token
 									</span>
-									<span className="text-sm transition-colors duration-300 group-hover:text-white">
+									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
 										{tokensInfo.vTokenInfo.symbol}
 									</span>
 								</div>
 								{launchpool.status === 'ended' && (
-									<div className="mt-4 p-2 bg-amber-500/20 rounded-lg flex items-center gap-2 transition-all duration-300 group-hover:bg-amber-500/30">
+									<div className="mt-4 p-2 bg-amber-500/20 rounded-lg flex items-center gap-2 transition-all duration-300 group-hover:bg-amber-500/30 accent-blue-border">
 										<AlertCircle size={16} className="text-amber-400" />
 										<span className="text-sm text-amber-400">
 											This pool has ended. Withdraw your stake and rewards.

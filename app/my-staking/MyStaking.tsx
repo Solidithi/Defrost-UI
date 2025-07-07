@@ -138,10 +138,14 @@ export function MyStakingPage() {
 			{/* Grid background */}
 			<div className="absolute inset-0 grid-bg opacity-20 pointer-events-none"></div>
 
-			{/* Gradient orbs */}
+			{/* Gradient orbs with heated effects */}
 			<div className="absolute top-20 left-1/4 w-96 h-96 rounded-full bg-blue-500/15 filter blur-[100px] pointer-events-none"></div>
 			<div className="absolute bottom-40 right-1/4 w-96 h-96 rounded-full bg-pink-500/15 filter blur-[100px] pointer-events-none"></div>
 			<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-purple-500/10 filter blur-[120px] pointer-events-none"></div>
+
+			{/* Subtle frosty accents */}
+			<div className="absolute top-1/3 right-1/4 w-24 h-24 rounded-full bg-cyan-400/5 filter blur-[50px] pointer-events-none"></div>
+			<div className="absolute bottom-1/3 left-1/4 w-16 h-16 rounded-full bg-cyan-400/4 filter blur-[40px] pointer-events-none"></div>
 
 			{/* Header */}
 			{/* Filler */}
@@ -243,7 +247,7 @@ export function MyStakingPage() {
 						<input
 							type="text"
 							placeholder="Search pools..."
-							className="w-full pl-10 pr-4 py-3 rounded-xl glossy-input text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+							className="w-full pl-10 pr-4 py-3 rounded-xl glass-heated text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:glass-heated"
 						/>
 					</div>
 
