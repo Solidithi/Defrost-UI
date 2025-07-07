@@ -189,7 +189,7 @@ const Launchpool = () => {
 	]
 
 	return (
-		<div className="mt-24 px-4 mb-8 z-10">
+		<div className="mt-24 px-4 mb-8">
 			<SubtleBackLight />
 			<div className="flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
