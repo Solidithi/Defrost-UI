@@ -1,9 +1,6 @@
 'use client'
 
-import {
-	EnrichedLaunchpool,
-	LaunchpoolStatus,
-} from '@/app/types/extended-models/enriched-launchpool'
+import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { useState, useMemo, useCallback } from 'react'
 import { useAccount } from 'wagmi'
 import {
@@ -18,9 +15,7 @@ import {
 	Check,
 	AlertCircle,
 } from 'lucide-react'
-import { useStakingStore } from '@/app/store/staking'
 import { useLaunchpoolTokenInfo } from '@/app/hooks/staking/useTokenInfo'
-import { PoolsTab } from '../../project-detail-sections/ContentTab'
 import { formatTimeDuration, formatTokenAmount } from '@/app/utils/display'
 import { useLaunchpoolNameAndDescription } from '@/app/hooks/staking/usePoolNameAndDescription'
 import { useLaunchpoolStakingInfo } from '@/app/hooks/staking'
@@ -33,28 +28,6 @@ import {
 	ClaimRewardModal,
 	WithdrawModal,
 } from '../modal/launchpool-service-modals'
-import { Address } from 'viem'
-
-// interface LaunchpoolCardProps {
-// 	projectName: string
-// 	tokenPair: {
-// 		stake: string
-// 		reward: string
-// 	}
-// 	apr: number
-// 	description: string
-// 	duration: string
-// 	totalStaked: string
-// 	yourStake: string
-// 	yourRewards?: string
-// 	logo: string
-// 	state: PoolState
-// 	account.isConnected: boolean
-// 	onStake: () => void
-// 	timeRemaining: string
-// 	progress: number
-// 	yourShare?: string
-// }
 
 interface LaunchpoolCardProps {
 	launchpool: EnrichedLaunchpool
@@ -328,9 +301,6 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 				hover:shadow-2xl hover:shadow-blue-500/20"
 					// hover:scale-[1.005]
 				>
-					{/* Subtle blue accent overlay */}
-					<div className="absolute inset-0 bg-gradient-to-br from-blue-500/3 via-transparent to-blue-600/2 pointer-events-none"></div>
-
 					{/* Top section with logo and APR */}
 					<div
 						className="relative p-4 cursor-pointer transition-all duration-300"
@@ -364,13 +334,11 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 
 					{/* Launchpool info */}
 					<div
-						className="p-4 pt-0 cursor-pointer transition-all duration-300"
+						className="p-4 pt-0 cursor-pointer"
 						onClick={handleCardBodyClick}
 					>
 						<h3 className="text-xl font-bold text-white mb-2">{name}</h3>
-						<p className="text-sm text-white mb-4 line-clamp-2 duration-300">
-							{description}
-						</p>
+						<p className="text-sm text-white mb-4">{description}</p>
 
 						{/* Progress bar - only show when wallet is connected */}
 						{account.isConnected && (
@@ -391,8 +359,8 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 
 						{/* Professional stats row */}
 						<div className="grid grid-cols-2 gap-2 mb-4">
-							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/8 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
-								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1 transition-colors duration-300">
+							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
+								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1">
 									<Clock size={12} />
 									<span>Duration</span>
 								</div>
@@ -401,7 +369,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 								</div>
 							</div>
 							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
-								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1 accent-blue-glow">
+								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1">
 									<BarChart3 size={12} />
 									<span>Total Staked</span>
 								</div>
@@ -414,18 +382,20 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 						{/* User stats - only show when wallet is connected */}
 						{account.isConnected && (
 							<div className="grid grid-cols-2 gap-2 mb-4">
-								<div className="bg-gradient-to-r from-blue-500/12 to-slate-600/10 backdrop-blur-md rounded-lg p-2 transition-all duration-300 accent-blue-glow">
-									<div className="text-xs text-slate-300 mb-1 accent-blue-glow">
-										Your Stake
-									</div>
+								<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
+									<div className="text-xs text-slate-300 mb-1">Your Stake</div>
 									<div className="text-sm font-medium text-white">
 										{formattedWithdrawableVTokens}
 									</div>
 								</div>
 								<div
-									className={`${stakingInfo.claimableReward > BigInt(0) ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/12 group-hover:from-emerald-500/20 group-hover:to-green-500/18' : 'bg-gradient-to-r from-blue-500/8 to-slate-600/6 group-hover:from-blue-500/12 group-hover:to-slate-600/10'} backdrop-blur-md rounded-lg p-2 relative accent-blue-glow`}
+									className={`${
+										stakingInfo.claimableReward > BigInt(0)
+											? 'bg-gradient-to-r from-emerald-500/15 to-green-500/12 group-hover:from-emerald-500/20 group-hover:to-green-500/18'
+											: 'bg-gradient-to-r from-blue-500/15 to-slate-600/12'
+									} backdrop-blur-md rounded-lg p-2 relative accent-blue-glow`}
 								>
-									<div className="text-xs text-slate-300 mb-1 accent-blue-glow">
+									<div className="text-xs text-slate-300 mb-1">
 										Your Rewards
 									</div>
 									<div className="text-sm font-medium text-white">
@@ -467,7 +437,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 							<span className="text-sm font-medium text-slate-300 transition-colors duration-300 group-hover:text-white">
 								Details
 							</span>
-							<div className="transition-transform duration-300 group-hover:scale-110 text-blue-400">
+							<div className="text-blue-400 transition-transform duration-300 group-hover:scale-105">
 								{isExpanded ? (
 									<ChevronUp size={16} />
 								) : (

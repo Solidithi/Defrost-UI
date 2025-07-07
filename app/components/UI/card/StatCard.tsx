@@ -75,28 +75,28 @@ export const StatCard = ({
 				className="absolute inset-0 rounded-2xl"
 			/>
 
-			{/* Main Card */}
-			<div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 group-hover:shadow-3xl group-hover:border-white/20">
-				{/* Background Pattern */}
-				<div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-50" />
+			{/* Main Card with enhanced heated glassmorphism */}
+			<div className="relative overflow-hidden rounded-2xl glass-heated transition-all duration-300 group-hover:glass-heated">
+				{/* Enhanced background pattern with heated effects */}
+				<div className="absolute inset-0 bg-gradient-to-br from-purple-500/8 via-pink-500/5 to-cyan-400/3 opacity-60" />
 
 				{/* Content */}
 				<div className="relative p-6">
 					{/* Header with Icon and Trend */}
 					<div className="flex items-start justify-between mb-4">
 						<div className="relative">
-							{/* Outer rotating border */}
-							<div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 via-cyan-400 via-yellow-400 to-pink-500 p-0.5 opacity-60">
+							{/* Enhanced heated border effect */}
+							<div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 via-cyan-400 to-purple-500 p-0.5 opacity-70">
 								<div className="w-full h-full bg-black/20 rounded-xl" />
 							</div>
 
-							{/* Pulsing glow ring */}
-							<div className="absolute inset-0 rounded-xl bg-gradient-to-r from-fuchsia-500/40 via-pink-500/40 via-purple-500/40 to-cyan-400/40 animate-pulse blur-sm scale-110" />
+							{/* Enhanced pulsing glow ring */}
+							<div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/40 via-pink-500/40 to-cyan-400/30 animate-pulse blur-sm scale-110" />
 
-							{/* Main container */}
-							<div className="relative p-3 rounded-xl bg-gradient-to-br from-fuchsia-600/30 via-pink-500/25 via-purple-600/30 via-violet-500/25 via-indigo-600/30 to-cyan-500/25 backdrop-blur-sm border border-white/20 shadow-2xl overflow-hidden">
-								{/* Animated gradient overlay with blockchain colors */}
-								<div className="absolute inset-0 bg-gradient-to-tr from-pink-400/30 via-fuchsia-500/25 via-purple-500/30 via-violet-400/25 to-cyan-400/30 animate-pulse opacity-90" />
+							{/* Main container with heated effects */}
+							<div className="relative p-3 rounded-xl bg-gradient-to-br from-purple-600/35 via-pink-500/30 via-purple-600/35 via-violet-500/30 via-indigo-600/35 to-cyan-500/20 backdrop-blur-sm border border-white/25 shadow-2xl overflow-hidden">
+								{/* Enhanced animated gradient overlay */}
+								<div className="absolute inset-0 bg-gradient-to-tr from-purple-400/35 via-pink-500/30 via-purple-500/35 via-violet-400/30 to-cyan-400/25 animate-pulse opacity-95" />
 
 								{/* Secondary animated layer */}
 								<div
