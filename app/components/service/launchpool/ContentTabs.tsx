@@ -8,6 +8,10 @@ import {
 import { useProjectStore } from '@/app/store/project'
 import { useEffect } from 'react'
 import { LaunchpoolCard } from '../../UI/card/LaunchpoolCard'
+import { useAccount } from 'wagmi'
+import { normalizeAddress } from '@/app/utils/address'
+import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
+import { Address } from 'viem'
 import Button from '@/app/components/UI/button/Button'
 
 interface PoolTabProps {
@@ -18,6 +22,14 @@ interface PoolTabProps {
 export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 	const { currentProject } = useProjectStore()
 	const { fetchPoolsOfProject } = useStakingStore()
+	// Wallet connection
+	const account = useAccount()
+
+	// Check if current user is project owner
+	const isProjectOwner =
+		account.address &&
+		normalizeAddress(account.address) ===
+			normalizeAddress(currentProject?.owner_id as Address)
 
 	// Apply vToken filtering
 	const filteredPoolsByVToken = useFilteredPoolByStakingToken(
@@ -94,6 +106,7 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 			) : (
 				/* The tab inside the launchpool page that shows all project's launchpool */
 				<div className="glass-enhanced text-white mt-10 p-6 rounded-lg">
+					<ProjectOwnerIndicator />
 					<div className="grid grid-cols-3 gap-8 w-full mx-auto mb-24">
 						{filteredPoolsByVToken.launchpools.map((launchpool, index) => {
 							return (

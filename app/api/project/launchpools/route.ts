@@ -15,6 +15,11 @@ export async function GET(req: NextRequest) {
 		},
 		skip: offset,
 		take: limit,
+		include: {
+			project: {
+				select: { owner_id: true },
+			},
+		},
 	});
 	console.log("Launchpools fetched from db:", launchpools);
 

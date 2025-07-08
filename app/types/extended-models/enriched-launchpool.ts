@@ -1,5 +1,5 @@
 import { getChainName } from "@/app/utils/chain";
-import { launchpool } from "@prisma/client";
+import { launchpool, project } from "@prisma/client";
 
 export type LaunchpoolStatus = "upcoming" | "active" | "ended";
 
@@ -9,6 +9,7 @@ export interface EnrichedLaunchpool extends launchpool {
 	durationSeconds: number; // @TODO: should add this to db
 	description: string;
 	status: LaunchpoolStatus;
+	project?: project;
 }
 
 export interface LaunchpoolMetrics {}

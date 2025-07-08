@@ -1,15 +1,18 @@
 'use client'
 import Image, { StaticImageData } from 'next/image'
 interface ProjectHeaderProps {
-	projectDetail: {
-		id: number
-		name: string
-		short_description: string
-		logo: StaticImageData | string
-		// status: string
-	}
+	id: number
+	name: string
+	short_description: string
+	logo: StaticImageData | string
+	// status: string
 }
-const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
+const ProjectHeader = ({
+	id,
+	name,
+	short_description,
+	logo,
+}: ProjectHeaderProps) => {
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
 			case 'upcoming':
@@ -30,7 +33,7 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 					<div className="flex flex-row gap-5">
 						<div className=" w-32">
 							<Image
-								src={projectDetail.logo}
+								src={logo}
 								alt="Project Logo"
 								width={64}
 								height={64}
@@ -40,9 +43,7 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 
 						<div className="flex flex-col">
 							<div className="flex ">
-								<span className="text-2xl font-orbitron font-bold">
-									{projectDetail.name}
-								</span>
+								<span className="text-2xl font-orbitron font-bold">{name}</span>
 
 								{/* <div
 									className={`flex ml-14 justify-center items-center rounded-xl
@@ -56,7 +57,7 @@ const ProjectHeader = (projectDetail: ProjectHeaderProps) => {
 							</div>
 
 							<div className="text-[#CACACA] font-comfortaa w-2/3  mt-2">
-								{projectDetail.short_description}
+								{short_description}
 							</div>
 						</div>
 					</div>

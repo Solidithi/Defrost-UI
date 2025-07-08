@@ -31,10 +31,7 @@ import Spinner from '../effect/Spinner'
 import { toast, ToastContainer } from 'react-toastify'
 import { useLaunchpoolNameAndDescription } from '@/app/hooks/staking/usePoolNameAndDescription'
 import { useLaunchpoolTokenInfo } from '@/app/hooks/staking/useTokenInfo'
-
-function getFunctionAbiFromIface(factory: any, functionName: string): any {
-	return [factory.abi.find((f: any) => f.name === functionName)]
-}
+import { getFunctionAbiFromIface } from '@/app/utils/abi'
 
 interface LaunchppolStakingDetailsModalProps {
 	pool: EnrichedLaunchpool

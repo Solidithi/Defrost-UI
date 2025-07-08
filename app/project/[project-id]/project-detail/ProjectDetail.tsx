@@ -1,11 +1,8 @@
 'use client'
 import { AcernityCarousel } from '@/app/components/UI/carousel/AcernityCarousel'
 import { LaunchpoolSection } from '@/app/components/project-detail-sections/LaunchpoolSection'
-import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { useProjectStore } from '@/app/store/project'
-import { usePoolStore } from '@/app/store/launchpool'
-import { useStakingStore } from '@/app/store/staking'
+import { useAccount } from 'wagmi'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { project } from '@prisma/client'
 import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
@@ -15,7 +12,7 @@ import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeade
 import SideBar from '@/app/components/service-sections/SideBar'
 import Logo from '@/public/Logo.png'
 import Tabs from '@/app/components/UI/shared/Tabs'
-import Button from '@/app/components/UI/button/Button'
+import { Crown } from 'lucide-react'
 
 interface ProjectDetailProps {
 	launchpools: EnrichedLaunchpool[] | undefined
@@ -48,6 +45,15 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 
 	const params = useParams()
 	const projectId = params['project-id']
+
+	// Wallet connection
+	const account = useAccount()
+
+	// Check if current user is project owner
+	const isProjectOwner =
+		account.address &&
+		project?.owner_id &&
+		account.address.toLowerCase() === project.owner_id.toLowerCase()
 	// const [projectDetails, setProjectDetails] = useState()
 	// const { project } = useProjectStore()
 
@@ -110,15 +116,34 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 						{/* <ProjectHeader projectDetail={project} /> */}
 						{project && (
 							<ProjectHeader
-								projectDetail={{
-									id: Number(project.id),
-									name: project.name ?? 'Unnamed',
-									short_description: project.short_description ?? '',
-									logo: project.logo ?? '/placeholder.png',
-								}}
+								id={Number(project.id)}
+								name={project.name ?? 'Unnamed'}
+								short_description={project.short_description ?? ''}
+								logo={project.logo ?? '/placeholder.png'}
 							/>
 						)}
 					</div>
+
+					{/* Project Owner Indicator */}
+					{account.isConnected && isProjectOwner && (
+						<div className="w-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-4 glass-enhanced">
+							<div className="flex items-center gap-3">
+								<div className="p-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg">
+									<Crown size={20} className="text-white" />
+								</div>
+								<div>
+									<h3 className="text-amber-400 font-bold text-lg">
+										Project Owner
+									</h3>
+									<p className="text-amber-200/80 text-sm">
+										You own this project and have administrative access to all
+										features, including claiming interest from ended
+										launchpools.
+									</p>
+								</div>
+							</div>
+						</div>
+					)}
 					<div className="h-auto w-full ">
 						{/* <AcernityCarousel slides={slideData} /> */}
 						{/* <CarouselWithProgress images={project.images} /> */}

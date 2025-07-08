@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useVTokenMetrics } from '@/app/hooks/staking/useVTokenMetrics'
 import { TokenInfo, useAveragePoolAPYByStakingToken } from '@/app/store/staking'
 import { useStakingStore } from '@/app/store/staking'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import SocialLinks from '../UI/shared/SocialLinks'
@@ -33,6 +34,8 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 	const { availableVTokens, poolCountByVToken } = useVTokenMetrics({
 		launchpools: pools.launchpools,
 	})
+	const params = useParams()
+	const projectId = params['project-id'] as string
 
 	// Only show socials if they exist and aren't empty strings
 	const hasSocialLinks =
@@ -296,7 +299,7 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 				<div className="">
 					{sections.map((section) => (
 						<Link
-							href={`/${section.name.toLowerCase()}`}
+							href={`/project/${projectId}/${section.name.toLowerCase()}`}
 							key={section.id}
 							className={`text-white font-orbitron font-bold text-base hover:bg-white/10 p-2 rounded-xl flex items-center ${isExpanded ? 'mt-14' : 'mt-4'}`}
 						>

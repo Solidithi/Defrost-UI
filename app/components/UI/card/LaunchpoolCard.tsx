@@ -2,7 +2,7 @@
 
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { useState, useMemo, useCallback } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import {
 	ChevronDown,
 	ChevronUp,
@@ -17,40 +17,33 @@ import {
 } from 'lucide-react'
 import { useLaunchpoolTokenInfo } from '@/app/hooks/staking/useTokenInfo'
 import { formatTimeDuration, formatTokenAmount } from '@/app/utils/display'
+import { Address } from 'viem'
+import { normalizeAddress } from '@/app/utils/address'
 import { useLaunchpoolNameAndDescription } from '@/app/hooks/staking/usePoolNameAndDescription'
 import { useLaunchpoolStakingInfo } from '@/app/hooks/staking'
 import { GlowingEffect } from '../effect/GlowingEffect'
-import Image from 'next/image'
-import ProgressBar from '../project-progress/ProgressBar'
 import {
 	StakingModal,
 	ManageStakeModal,
 	ClaimRewardModal,
 	WithdrawModal,
+	ClaimOwnerInterestModal,
 } from '../modal/launchpool-service-modals'
+import Image from 'next/image'
+import ProgressBar from '../project-progress/ProgressBar'
+import { getFunctionAbiFromIface } from '@/app/utils/abi'
+import { Launchpool__factory } from '@/app/types/typechain'
 
 interface LaunchpoolCardProps {
 	launchpool: EnrichedLaunchpool
 }
 
 export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
-	// projectName,
-	// tokenPair,
-	// apr,
-	// description,
-	// duration,
-	// totalStaked,
-	// yourStake,
-	// yourRewards = '0',
-	// logo,
-	// state,
-	// account.isConnected,
-	// onStake,
-	// timeRemaining,
-	// progress,
-	// yourShare = '0%',
-	// }: LaunchpoolCardProps) {
 	const [isExpanded, setIsExpanded] = useState(false)
+
+	const {} = useReadContract({
+		abi: getFunctionAbiFromIface(Launchpool__factory, ''),
+	})
 
 	/* ---------------------- Wallet connection state ---------------------- */
 	const account = useAccount()
@@ -71,8 +64,32 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	/* ---------------------- Use staking info ---------------------- */
 	const stakingInfo = useLaunchpoolStakingInfo(launchpool)
 
+	/* ---------------------- Check if current user is project owner ---------------------- */
+	const isProjectOwner = useMemo(() => {
+		console.log(
+			'Checking if user is project owner...',
+			account.address,
+			'|',
+			launchpool.project?.owner_id
+		)
+		return (
+			account.address &&
+			launchpool.project?.owner_id &&
+			normalizeAddress(account.address) ===
+				normalizeAddress(launchpool.project.owner_id as Address)
+		)
+	}, [account.address, launchpool.project?.owner_id])
+
+	console.log('Is project owner:', isProjectOwner)
+
 	/* ---------------------- Modal states ---------------------- */
-	type ActiveModal = 'stake' | 'manageStake' | 'withdraw' | 'claimReward' | null
+	type ActiveModal =
+		| 'stake'
+		| 'manageStake'
+		| 'withdraw'
+		| 'claimReward'
+		| 'claimInterest'
+		| null
 	const [activeModal, setActiveModal] = useState<ActiveModal>(null)
 
 	/* ---------------------- Modal handlers ---------------------- */
@@ -95,7 +112,9 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 				return
 
 			case 'active':
-				if (stakingInfo.claimableReward > BigInt(0)) {
+				if (isProjectOwner) {
+					handleOpenModal('claimInterest')
+				} else if (stakingInfo.claimableReward > BigInt(0)) {
 					handleOpenModal('claimReward')
 				} else if (stakingInfo.yourShare > 0) {
 					handleOpenModal('manageStake')
@@ -105,7 +124,11 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 				break
 
 			case 'ended':
-				handleOpenModal('withdraw')
+				if (isProjectOwner) {
+					handleOpenModal('claimInterest')
+				} else {
+					handleOpenModal('withdraw')
+				}
 				break
 
 			default:
@@ -117,6 +140,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		launchpool.status,
 		stakingInfo.claimableReward,
 		stakingInfo.yourShare,
+		isProjectOwner,
 		handleOpenModal,
 	])
 
@@ -228,7 +252,14 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 						'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 cursor-not-allowed',
 				}
 			case 'active':
-				if (stakingInfo.claimableReward > BigInt(0)) {
+				if (isProjectOwner) {
+					return {
+						text: 'Claim Interest',
+						icon: <Award size={16} />,
+						className:
+							'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+					}
+				} else if (stakingInfo.claimableReward > BigInt(0)) {
 					return {
 						text: 'Claim Rewards',
 						icon: <Award size={16} />,
@@ -256,11 +287,20 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 			// 		'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
 			// }
 			case 'ended':
-				return {
-					text: 'Withdraw All',
-					icon: <ArrowRight size={16} />,
-					className:
-						'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+				if (isProjectOwner) {
+					return {
+						text: 'Claim Interest',
+						icon: <Award size={16} />,
+						className:
+							'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+					}
+				} else {
+					return {
+						text: 'Withdraw All',
+						icon: <ArrowRight size={16} />,
+						className:
+							'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+					}
 				}
 			default:
 				return {
@@ -331,6 +371,18 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 							</div>
 						</div>
 					</div>
+
+					{/* Project Owner Badge */}
+					{isProjectOwner && (
+						<div className="mx-4 mb-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-lg p-2">
+							<div className="flex items-center gap-2">
+								<div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+								<span className="text-amber-400 font-medium text-xs">
+									Project Owner
+								</span>
+							</div>
+						</div>
+					)}
 
 					{/* Launchpool info */}
 					<div
@@ -519,69 +571,100 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 				)}
 
 			{/* Render modals conditionally */}
-			{activeModal === 'stake' && (
-				<StakingModal
-					open={true}
-					onClose={handleCloseModal}
-					tokenPair={{
-						stake: tokensInfo.vTokenInfo,
-						reward: tokensInfo.projectTokenInfo,
-					}}
-					apr={launchpool.staker_apy.toNumber()}
-					balance="1,250 vDOT"
-					projectName={name}
-					poolAddress={launchpool.id}
-				/>
-			)}
+			{(() => {
+				switch (activeModal) {
+					case 'stake':
+						return (
+							<StakingModal
+								open={true}
+								onClose={handleCloseModal}
+								tokenPair={{
+									stake: tokensInfo.vTokenInfo,
+									reward: tokensInfo.projectTokenInfo,
+								}}
+								apr={launchpool.staker_apy.toNumber()}
+								balance="1,250 vDOT"
+								projectName={name}
+								poolAddress={launchpool.id}
+							/>
+						)
 
-			{activeModal === 'manageStake' && (
-				<ManageStakeModal
-					open={true}
-					onClose={handleCloseModal}
-					tokenPair={{
-						stake: tokensInfo.vTokenInfo,
-						reward: tokensInfo.projectTokenInfo,
-					}}
-					apr={launchpool.staker_apy.toNumber()}
-					staked={formattedValues.withdrawableVTokens}
-					rewards={formattedValues.claimableRewards}
-					balance="750 vKSM"
-					projectName={name}
-					poolAddress={launchpool.id}
-					withdrawableVTokens={stakingInfo.withdrawableVTokens || BigInt(0)}
-				/>
-			)}
+					case 'manageStake':
+						return (
+							<ManageStakeModal
+								open={true}
+								onClose={handleCloseModal}
+								tokenPair={{
+									stake: tokensInfo.vTokenInfo,
+									reward: tokensInfo.projectTokenInfo,
+								}}
+								apr={launchpool.staker_apy.toNumber()}
+								staked={formattedValues.withdrawableVTokens}
+								rewards={formattedValues.claimableRewards}
+								balance="750 vKSM"
+								projectName={name}
+								poolAddress={launchpool.id}
+								withdrawableVTokens={
+									stakingInfo.withdrawableVTokens || BigInt(0)
+								}
+							/>
+						)
 
-			{activeModal === 'claimReward' && (
-				<ClaimRewardModal
-					open={true}
-					onClose={handleCloseModal}
-					tokenPair={{
-						stake: tokensInfo.vTokenInfo,
-						reward: tokensInfo.projectTokenInfo,
-					}}
-					staked={formattedValues.withdrawableVTokens}
-					rewards={formattedValues.claimableRewards}
-					projectName={name}
-					poolAddress={launchpool.id}
-				/>
-			)}
+					case 'claimReward':
+						return (
+							<ClaimRewardModal
+								open={true}
+								onClose={handleCloseModal}
+								tokenPair={{
+									stake: tokensInfo.vTokenInfo,
+									reward: tokensInfo.projectTokenInfo,
+								}}
+								staked={formattedValues.withdrawableVTokens}
+								rewards={formattedValues.claimableRewards}
+								projectName={name}
+								poolAddress={launchpool.id}
+							/>
+						)
 
-			{activeModal === 'withdraw' && (
-				<WithdrawModal
-					open={true}
-					onClose={handleCloseModal}
-					tokenPair={{
-						stake: tokensInfo.vTokenInfo,
-						reward: tokensInfo.projectTokenInfo,
-					}}
-					staked={formattedValues.withdrawableVTokens}
-					rewards={formattedValues.claimableRewards}
-					projectName={name}
-					poolAddress={launchpool.id}
-					withdrawableVTokens={stakingInfo.withdrawableVTokens || BigInt(0)}
-				/>
-			)}
+					case 'withdraw':
+						return (
+							<WithdrawModal
+								open={true}
+								onClose={handleCloseModal}
+								tokenPair={{
+									stake: tokensInfo.vTokenInfo,
+									reward: tokensInfo.projectTokenInfo,
+								}}
+								staked={formattedValues.withdrawableVTokens}
+								rewards={formattedValues.claimableRewards}
+								projectName={name}
+								poolAddress={launchpool.id}
+								withdrawableVTokens={
+									stakingInfo.withdrawableVTokens || BigInt(0)
+								}
+							/>
+						)
+
+					case 'claimInterest':
+						return (
+							<ClaimOwnerInterestModal
+								open={true}
+								onClose={handleCloseModal}
+								tokenPair={{
+									stake: tokensInfo.vTokenInfo,
+									reward: tokensInfo.projectTokenInfo,
+								}}
+								totalStaked={formattedValues.totalVTokenStake}
+								claimableInterest="0 vDOT" // This should be calculated from actual contract data
+								projectName={name}
+								poolAddress={launchpool.id}
+							/>
+						)
+
+					default:
+						return null
+				}
+			})()}
 		</div>
 	)
 }

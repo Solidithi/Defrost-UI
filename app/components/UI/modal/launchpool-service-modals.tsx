@@ -20,15 +20,10 @@ import { parseUnits, formatUnits } from 'ethers'
 import { Launchpool__factory } from '@/app/types/typechain'
 import { useApproveAndeDepositToken } from '@/app/hooks/useApproveAndSendToken'
 import { toast, ToastContainer } from 'react-toastify'
-import Spinner from '../effect/Spinner'
 import { cn } from '@/app/lib/utils'
-
-export function getFunctionAbiFromIface(
-	factory: any,
-	functionName: string
-): any {
-	return [factory.abi.find((f: any) => f.name === functionName)]
-}
+import { getFunctionAbiFromIface } from '@/app/utils/abi'
+import Spinner from '../effect/Spinner'
+import Image from 'next/image'
 
 interface StakingModalProps {
 	open: boolean
@@ -1010,6 +1005,200 @@ export function WithdrawModal({
 								</>
 							) : (
 								'Withdraw All'
+							)}
+						</span>
+					</button>
+				</DialogFooter>
+			</DialogContent>
+			<ToastContainer />
+		</Dialog>
+	)
+}
+
+// Claim Interest Dialog Component (for Project Owners)
+interface ClaimInterestModalProps {
+	open: boolean
+	onClose: () => void
+	tokenPair: {
+		stake: TokenInfo
+		reward: TokenInfo
+	}
+	totalStaked: string
+	claimableInterest: string
+	projectName: string
+	poolAddress: string
+}
+
+export function ClaimOwnerInterestModal({
+	open,
+	onClose,
+	tokenPair,
+	totalStaked,
+	claimableInterest,
+	projectName,
+	poolAddress,
+}: ClaimInterestModalProps) {
+	const {
+		writeContract: claimInterest,
+		status: claimInterestStatus,
+		data: claimInterestTxHash,
+	} = useWriteContract()
+
+	const { status: claimInterestConfirmStatus } = useWaitForTransactionReceipt({
+		hash: claimInterestTxHash,
+	})
+
+	const handleClaimOwnerInterest = () => {
+		claimInterest({
+			abi: getFunctionAbiFromIface(Launchpool__factory, 'claimOwnerInterest'),
+			address: poolAddress as `0x${string}`,
+			functionName: 'withdrawAccruedStakeTokenInterest',
+			args: [],
+		})
+	}
+
+	useEffect(() => {
+		if (claimInterestConfirmStatus === 'success') {
+			toast.success('Interest claiming successful!', {
+				position: 'top-right',
+				autoClose: 5000,
+			})
+			onClose()
+		} else if (claimInterestConfirmStatus === 'error') {
+			toast.error('Interest claiming failed!', {
+				position: 'top-right',
+				autoClose: 5000,
+			})
+		}
+	}, [claimInterestConfirmStatus, onClose])
+
+	const isClaimButtonDisabled = useMemo(() => {
+		return (
+			parseFloat(claimableInterest.replace(/[^0-9.]/g, '')) <= 0 ||
+			claimInterestStatus === 'pending' ||
+			(claimInterestTxHash && claimInterestConfirmStatus === 'pending')
+		)
+	}, [
+		claimableInterest,
+		claimInterestStatus,
+		claimInterestConfirmStatus,
+		claimInterestTxHash,
+	])
+
+	return (
+		<Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+			<DialogContent className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 text-white max-w-md">
+				<DialogHeader>
+					<div className="flex items-center gap-2 mb-2">
+						<div className="p-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500">
+							<Award size={20} className="text-white" />
+						</div>
+						<div>
+							<DialogTitle className="text-xl font-bold text-white">
+								Claim Interest
+							</DialogTitle>
+							<DialogDescription className="text-gray-400">
+								Project Owner • {projectName}
+							</DialogDescription>
+						</div>
+					</div>
+				</DialogHeader>
+
+				<div className="space-y-4">
+					{/* Owner Badge */}
+					<div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-lg p-3">
+						<div className="flex items-center gap-2 mb-1">
+							<div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+							<span className="text-amber-400 font-medium text-sm">
+								Project Owner
+							</span>
+						</div>
+						<p className="text-gray-300 text-xs">
+							You can claim accrued interest from the total staked tokens in
+							this pool.
+						</p>
+					</div>
+
+					{/* Pool Stats */}
+					<div className="grid grid-cols-2 gap-3">
+						<div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+							<div className="text-xs text-gray-400 mb-1">Total Pool Stake</div>
+							<div className="text-sm font-semibold text-white">
+								{totalStaked}
+							</div>
+						</div>
+						<div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg p-3 border border-amber-500/20">
+							<div className="text-xs text-amber-400 mb-1">Your Interest</div>
+							<div className="text-sm font-semibold text-amber-400">
+								{claimableInterest}
+							</div>
+						</div>
+					</div>
+
+					{/* Token Pair Info */}
+					<div className="bg-slate-800/30 rounded-lg p-3 border border-slate-700/30">
+						<div className="text-xs text-gray-400 mb-2">Interest Token</div>
+						<div className="flex items-center gap-2">
+							{tokenPair.stake.icon ? (
+								<Image
+									src={tokenPair.stake.icon}
+									width={24}
+									height={24}
+									alt="Token Icon"
+									className="w-6 h-6 rounded-full"
+								/>
+							) : (
+								<div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+									{tokenPair.stake.symbol.charAt(0)}
+								</div>
+							)}
+							<span className="text-white font-medium">
+								{tokenPair.stake.symbol}
+							</span>
+						</div>
+					</div>
+
+					{parseFloat(claimableInterest.replace(/[^0-9.]/g, '')) <= 0 && (
+						<div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
+							<AlertCircle size={16} className="text-amber-400" />
+							<span className="text-amber-400 text-sm">
+								No interest available to claim at this time.
+							</span>
+						</div>
+					)}
+				</div>
+
+				<DialogFooter>
+					<button
+						onClick={onClose}
+						className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+					>
+						Cancel
+					</button>
+					<button
+						onClick={handleClaimOwnerInterest}
+						disabled={isClaimButtonDisabled}
+						className={cn(
+							'px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2',
+							isClaimButtonDisabled
+								? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+								: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white hover:scale-105 hover:shadow-lg active:scale-95'
+						)}
+					>
+						<span>
+							{claimInterestStatus === 'pending' ? (
+								<>
+									Processing...&emsp;
+									<Spinner heightWidth={4} />
+								</>
+							) : claimInterestStatus === 'success' &&
+							  claimInterestConfirmStatus === 'pending' ? (
+								<>
+									Confirming...&emsp;
+									<Spinner heightWidth={4} />
+								</>
+							) : (
+								'Claim Interest'
 							)}
 						</span>
 					</button>

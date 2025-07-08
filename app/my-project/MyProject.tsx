@@ -6,6 +6,7 @@ import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import { Column } from '@/app/components/UI/shared/DataTable'
 import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
 import { parse } from 'superjson'
+import { useRouter } from 'next/navigation'
 import '@/app/lib/superjson-init'
 import SwitchTableOrCard from '@/app/components/UI/button/SwitchTableOrCard'
 import DataTable from '@/app/components/UI/shared/DataTable'
@@ -20,6 +21,8 @@ export default function MyProject() {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [isLoading, setIsLoading] = useState(true)
 	const [isCardView, setIsCardView] = useState(true)
+
+	const router = useRouter()
 
 	const fetchProjects = async () => {
 		setIsLoading(true)
@@ -142,10 +145,16 @@ export default function MyProject() {
 	// Define actions for DataTable rows
 	const renderTableActions = (project: EnrichedProject) => (
 		<div className="flex justify-end space-x-2">
-			<button className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]">
+			<button
+				className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]"
+				onClick={() => router.push(`/project/${project.id}/project-detail`)}
+			>
 				View
 			</button>
-			<button className="warm-cool-bg rounded-full px-3 py-1 text-xs font-bold">
+			<button
+				className="warm-cool-bg rounded-full px-3 py-1 text-xs font-bold"
+				onClick={() => router.push(`/project/${project.id}/edit`)}
+			>
 				Edit
 			</button>
 		</div>
