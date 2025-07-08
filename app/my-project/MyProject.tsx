@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { shortenStr } from '@/app/utils/display'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import { Column } from '@/app/components/UI/shared/DataTable'
-import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
+import { BackLight } from '@/app/components/UI/shared/SubtleBackLight'
 import { parse } from 'superjson'
 import { useRouter } from 'next/navigation'
 import '@/app/lib/superjson-init'
@@ -163,7 +163,7 @@ export default function MyProject() {
 	return (
 		<div className="min-h-screen relative">
 			{/* Background layer - fixed position */}
-			<SubtleBackLight />
+			<BackLight />
 
 			{/* Content layer - with padding/margin for offset */}
 			<div className="relative z-10 min-h-screen text-white mt-44 mb-16">

@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi'
 import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
 import { StatCard } from '@/app/components/UI/card/StatCard'
 import { TokenInfo } from '@/app/store/staking'
-import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
+import { BackLight } from '@/app/components/UI/shared/SubtleBackLight'
 import { useProjectStore } from '@/app/store/project'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
@@ -109,19 +109,24 @@ const Launchpool = () => {
 
 	return (
 		<div className="mt-24 px-4 mb-8">
-			<SubtleBackLight />
+			<BackLight
+				backgroundColor="#020203"
+				overlayColor="#8B5CF6"
+				opacity={0.1}
+			/>
 			<div className="flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
 					<SideBar
 						selectedVToken={selectedVToken}
 						onVTokenSelect={setSelectedVToken}
-						socials={{
-							website: currentProject?.website || '',
-							twitter: currentProject?.twitter || '',
-							telegram: currentProject?.telegram || '',
-							discord: currentProject?.discord || '',
-							github: currentProject?.github || '',
-						}}
+						// socials={{
+						// 	website: currentProject?.website || '',
+						// 	twitter: currentProject?.twitter || '',
+						// 	telegram: currentProject?.telegram || '',
+						// 	discord: currentProject?.discord || '',
+						// 	github: currentProject?.github || '',
+						// }}
+						socials={mockSocials}
 					/>
 				</div>
 				<div className="flex-1">

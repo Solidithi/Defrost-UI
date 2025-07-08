@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { project } from '@prisma/client'
-import { SubtleBackLight } from '@/app/components/UI/shared/SubtleBackLight'
+import { BackLight } from '@/app/components/UI/shared/SubtleBackLight'
 import CarouselWithProgress from '@/app/components/UI/carousel/Carousel'
 import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
@@ -105,7 +105,7 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 
 	return (
 		<div className="my-36 px-16 text-white">
-			<SubtleBackLight />
+			<BackLight />
 			<AnimatedBlobs />
 			<div className="flex items-start justify-start gap-6 min-h-screen relative z-10">
 				<div className="sticky self-start">

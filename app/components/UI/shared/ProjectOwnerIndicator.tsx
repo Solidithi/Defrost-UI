@@ -11,7 +11,7 @@ export const ProjectOwnerIndicator = ({
 }: ProjectOwnerIndicatorProps) => {
 	const defaultTitlte = 'Project Owner.'
 	const defaultSubtitle =
-		'You can manage all launchpools, claim interests generated from pools.'
+		'You can manage all launchpools and claim interests generated from those pools on regular basis.'
 	return (
 		<div
 			className={`${containerClassName} mb-6 bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-400/20 rounded-xl p-4 glass-enhanced`}

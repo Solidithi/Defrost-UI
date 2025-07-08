@@ -2,9 +2,7 @@ import Launchpool from './Launchpool'
 
 const LaunchpoolPage = () => {
 	return (
-		<div className="flex flex-col gap-4">
-			<h1 className="text-2xl font-bold">Launchpool</h1>
-			<p>Coming soon...</p>
+		<div className="flex flex-col gap-4 pt-24">
 			<Launchpool />
 		</div>
 	)
