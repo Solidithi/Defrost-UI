@@ -41,3 +41,24 @@ export function getTokenInfoFromConfig(
 	);
 	return token;
 }
+
+export function openTransactionInExplorerOfChain(
+	chainID: number,
+	txHash: string
+): void {
+	const chain = getChainFromConfig(chainID);
+	if (chain && chain.explorerUrl) {
+		let explorerUrl = chain.explorerUrl;
+		if (!explorerUrl.endsWith("/")) {
+			explorerUrl = explorerUrl.slice(0, -1);
+		}
+		let txExplorerUrl = "";
+		switch (chainID) {
+			default:
+				txExplorerUrl = `${chain.explorerUrl}/tx/${txHash}`;
+		}
+		window.open(txExplorerUrl, "_blank");
+	} else {
+		console.error("Chain not found or explorer URL is not defined.");
+	}
+}

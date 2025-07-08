@@ -4,23 +4,27 @@ import Spinner from '@/app/components/UI/effect/Spinner'
 import { motion } from 'framer-motion'
 
 /* ---------------------- UI component to display transacation status ---------------------- */
-export const TransactionStatusModal = ({
-	isOpen,
-	onClose,
-	isTransactionPending,
-	isWaitingForIndexer,
-	isLaunchpoolCreated,
-	finalError,
-	txHash,
-}: {
+interface TransactionStatusModalProps {
 	isOpen: boolean
 	onClose: () => void
+	onAction: () => void
 	isTransactionPending: boolean
 	isWaitingForIndexer: boolean
 	isLaunchpoolCreated: boolean
 	finalError: string | null
 	txHash: string | null
-}) => {
+}
+
+export const TransactionStatusModal = ({
+	isOpen,
+	onClose,
+	onAction,
+	isTransactionPending,
+	isWaitingForIndexer,
+	isLaunchpoolCreated,
+	finalError,
+	txHash,
+}: TransactionStatusModalProps) => {
 	return (
 		<Modal
 			className="w-[600px] relative overflow-hidden backdrop-blur-lg rounded-xl bg-opacity-80 bg-gradient-to-r from-transparent via-blue-900/50 to-transparent border border-blue-800/40 shadow-2xl animate-pulse-slow shadow-[0_0_15px_rgba(30,64,175,0.5),0_0_40px_rgba(30,64,175,0.3)]"
@@ -134,10 +138,10 @@ export const TransactionStatusModal = ({
 									</div>
 								)}
 								<Button
-									onClick={onClose}
+									onClick={onAction}
 									className="mt-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
 								>
-									<span className="font-bold">View My Launchpools</span>
+									<span className="font-bold">View Transaction</span>
 								</Button>
 							</motion.div>
 						)}

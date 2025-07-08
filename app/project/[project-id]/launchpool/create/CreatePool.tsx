@@ -31,7 +31,11 @@ import { useParams } from 'next/navigation'
 import Spinner from '../../../../components/UI/effect/Spinner'
 import chains from '@/app/config/chains.json'
 import { debounce } from '@/app/utils/timing'
-import { getChainName, getTokenInfoFromConfig } from '@/app/utils/chain'
+import {
+	getChainName,
+	getTokenInfoFromConfig,
+	openTransactionInExplorerOfChain,
+} from '@/app/utils/chain'
 import { normalizeAddress, isValidAddressFormat } from '@/app/utils/address'
 import { getAvailableVTokensOfChain } from '@/app/utils/token'
 import { useProjectStore } from '@/app/store/project'
@@ -861,7 +865,7 @@ export default function CreatePool() {
 			readProjectTokenMetadata.data[0].status === 'success' &&
 			readProjectTokenMetadata.data[1].status === 'success'
 		) {
-			setTokenValidationMessage(`Token validated successfully.`)
+			setTokenValidationMessage(`Token validated`)
 			setIsTokenValid(true)
 			setIsValidatingToken(false)
 		}
@@ -945,7 +949,7 @@ export default function CreatePool() {
 
 			{/* --------------------------------------Title & Subtitle----------------------------------------------------- */}
 			<div className=" text-center z-20">
-				<SplitText
+				{/* <SplitText
 					text="Unleash Your Web3-Native Launchpool"
 					className="title-text"
 					delay={50}
@@ -953,7 +957,8 @@ export default function CreatePool() {
 					animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
 					threshold={0.2}
 					rootMargin="-50px"
-				/>
+				/> */}
+				<p className="title-text">Unleash Your Web3-Native Launchpool</p>
 			</div>
 			<div className="mt-[30px] text-center max-w-5xl mx-auto z-20">
 				<SplitText
@@ -1014,11 +1019,11 @@ export default function CreatePool() {
 														<p className="text-sm mt-1">
 															Token Symbol:{' '}
 															<span className="font-medium">
-																{projectTokenMetadata.decimals}
+																{projectTokenMetadata.symbol}
 															</span>{' '}
 															| Decimals:{' '}
 															<span className="font-medium">
-																{projectTokenMetadata.symbol}
+																{projectTokenMetadata.decimals}
 															</span>
 														</p>
 													)}
@@ -1050,8 +1055,8 @@ export default function CreatePool() {
 
 					<Step>
 						<div className="glass-enhanced w-full h--full p-10 rounded-xl text-white flex flex-col gap-5">
-							<span className="text-xl font-orbitron  flex justify-start w-full">
-								Select staking token
+							<span className="text-xl font-orbitron flex justify-start w-full">
+								Add launchpools
 							</span>
 							<Button
 								onClick={handleAddPool}
@@ -1287,9 +1292,12 @@ export default function CreatePool() {
 														/>
 													</svg>
 													<div className="absolute w-64 -left-[127px] top-1/2 -translate-y-28 ml-2 bg-white text-black text-xs px-3 py-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 font-comfortaa pointer-events-none">
-														Lorem Ipsum is simply dummy text of the printing and
-														typesetting industry. Lorem Ipsum has been the
-														industry standard dummy text ever since the 1500s.
+														Project owners can define multiple emission phases
+														with different token rates. Higher emission rates in
+														early phases attract early stakers, while lower
+														rates in later phases reward long-term commitment.
+														Strategic planning of these rates can significantly
+														impact investor participation and staking behavior.
 													</div>
 												</div>
 											</span>
@@ -1326,7 +1334,7 @@ export default function CreatePool() {
 					<Step>
 						<div className="flex flex-col items-center justify-center w-full gap-8">
 							<span className="text-3xl font-orbitron text-white mb-4">
-								Launch Your Pool
+								Deploy Your Launcpools
 							</span>
 
 							<div className="glass-enhanced p-8 rounded-2xl w-3/4">
@@ -1511,7 +1519,7 @@ export default function CreatePool() {
 															): string => {
 																switch (status) {
 																	case 'ready':
-																		return 'Ready to create launchpool'
+																		return 'Ready to deploy launchpools'
 																	case 'needs-approval':
 																		return 'Token approval required before proceeding'
 																	case 'approving':
@@ -1621,14 +1629,14 @@ export default function CreatePool() {
 											onClick={() =>
 												handleOpenConfirmModal(phase.id.toString(), 'phase')
 											}
-											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-enhanced px-2 sm:px-3 py-1 text-sm sm:text-base"
+											className="absolute top-3 sm:top-6 right-2 sm:right-5 glass-enhanced px-2 sm:px-3 py-1 text-sm sm:text-base z-10"
 										>
 											X
 										</Button>
-										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
-											<span className="font-orbitron text-base sm:text-lg">
-												Emitted tokens for this period
-											</span>
+										<span className="absolute top-4 sm:top-5 left-4 sm:left-7 font-orbitron text-sm sm:text-lg max-w-[82%]">
+											The amount of tokens emitted for this period
+										</span>
+										<div className="w-full flex flex-col gap-2 mt-12 sm:gap-3 p-1 sm:p-2">
 											<div className="relative w-full">
 												<input
 													type="number"
@@ -1641,12 +1649,9 @@ export default function CreatePool() {
 															e.target.value
 														)
 													}
-													placeholder="Enter emission rate"
-													className="p-2 sm:p-3   rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
+													placeholder="Enter amount of tokens"
+													className="p-2 sm:p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-xs sm:text-sm"
 												/>
-												{/* <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-xs sm:text-sm">
-													%
-												</span> */}
 											</div>
 										</div>
 										<div className="w-full flex flex-col gap-2 sm:gap-3 p-1 sm:p-2">
@@ -1732,6 +1737,9 @@ export default function CreatePool() {
 			<TransactionStatusModal
 				isOpen={isTransactionStatusModalOpen}
 				onClose={() => setIsTransactionStatusModalOpen(false)}
+				onAction={() => {
+					openTransactionInExplorerOfChain(chainId, selfMultiCallHash || '')
+				}}
 				isTransactionPending={selfMultiCallReceiptStatus === 'pending'}
 				isWaitingForIndexer={false}
 				isLaunchpoolCreated={selfMultiCallReceiptStatus === 'success'}

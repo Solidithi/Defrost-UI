@@ -10,7 +10,8 @@
 		},
 		"blockTime": 12,
 		"tokens": [],
-		"isTestnet": false
+		"isTestnet": false,
+		"explorerUrl": "https://etherscan.io"
 	},
 	"1287": {
 		"chainID": 1287,
@@ -42,7 +43,8 @@
 				"icon": "/token-logos/DOT.png"
 			}
 		],
-		"isTestnet": true
+		"isTestnet": true,
+		"explorerUrl": "https://moonbase.moonscan.io"
 	},
 	"11155111": {
 		"chainID": 11155111,
@@ -56,6 +58,7 @@
 		},
 		"tokens": [],
 		"indexFromBlock": 1,
-		"isTestnet": true
+		"isTestnet": true,
+		"explorerUrl": "https://sepolia.etherscan.io"
 	}
 }

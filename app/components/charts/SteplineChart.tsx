@@ -4,15 +4,18 @@ import React, { useEffect, useState } from 'react'
 import ApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
 import { usePoolStore } from '@/app/store/launchpool'
+import { formatTokenAmount } from '@/app/utils/display'
 
 interface SteplineChartProps {
 	poolId?: string // Optional poolId prop
 	projectTokenName?: string
+	projectTokenSymbol?: string
 }
 
 const SteplineChart: React.FC<SteplineChartProps> = ({
 	poolId,
 	projectTokenName,
+	projectTokenSymbol,
 }) => {
 	const { pool, poolData } = usePoolStore()
 	const [chartData, setChartData] = useState<
@@ -489,8 +492,8 @@ const SteplineChart: React.FC<SteplineChartProps> = ({
 			{/* Token supply info */}
 			<div className="mb-4">
 				<span className="font-orbitron text-base sm:text-sm">
-					Total Supply: {poolData[selectedPool].tokenSupply.toLocaleString()}{' '}
-					tokens
+					Total Supply: {formatTokenAmount(poolData[selectedPool].tokenSupply)}{' '}
+					{projectTokenSymbol || 'Tokens'}
 				</span>
 				{/* <span className="font-orbitron text-base sm:text-sm ml-4">
 					Chain: {poolData[selectedPool].chain || 'Not specified'}
