@@ -24,7 +24,7 @@
 		},
 		"tokens": [
 			{
-				"type": "vtoken",
+				"type": "vToken",
 				"alias": "MockVDot",
 				"address": "0xd02d73e05b002cb8eb7bef9df8ed68ed39752465",
 				"symbol": "vDOT",

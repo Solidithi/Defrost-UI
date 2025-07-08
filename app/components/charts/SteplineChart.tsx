@@ -1,21 +1,27 @@
+'use client'
+
 import React, { useEffect, useState } from 'react'
 import ApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
 import { usePoolStore } from '@/app/store/launchpool'
 
 interface SteplineChartProps {
-	poolId?: number // Optional poolId prop
+	poolId?: string // Optional poolId prop
+	projectTokenName?: string
 }
 
-const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
+const SteplineChart: React.FC<SteplineChartProps> = ({
+	poolId,
+	projectTokenName,
+}) => {
 	const { pool, poolData } = usePoolStore()
 	const [chartData, setChartData] = useState<
-		Record<number, { x: Date; y: number }[]>
+		Record<string, { x: Date; y: number }[]>
 	>({})
 	const [formattedDates, setFormattedDates] = useState<
-		Record<number, string[]>
+		Record<string, string[]>
 	>({})
-	const [selectedPool, setSelectedPool] = useState<number | null>(null)
+	const [selectedPool, setSelectedPool] = useState<string | null>(null)
 
 	// Use the provided poolId if available, otherwise use the store's selected pool
 	useEffect(() => {
@@ -42,8 +48,8 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	useEffect(() => {
 		if (pool.length === 0) return
 
-		const newChartData: Record<number, { x: Date; y: number }[]> = {}
-		const newFormattedDates: Record<number, string[]> = {}
+		const newChartData: Record<string, { x: Date; y: number }[]> = {}
+		const newFormattedDates: Record<string, string[]> = {}
 
 		// If poolId is provided, only process that specific pool
 		const poolsToProcess = poolId !== undefined ? [poolId] : pool
@@ -188,7 +194,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 
 			sortedPhases.forEach((phase) => {
 				// Now use emissionRate directly as token amount instead of percentage
-				const phaseAmount = phase.emissionRate
+				const phaseAmount = phase.tokenAmount
 				phaseTokens.push(phaseAmount)
 				totalAllocatedToPhases += Number(phaseAmount)
 			})
@@ -261,7 +267,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	}
 
 	// Get options for the selected pool
-	const getOptions = (poolId: number): ApexOptions => {
+	const getOptions = (poolId: string): ApexOptions => {
 		return {
 			chart: {
 				type: 'line',
@@ -305,7 +311,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 				},
 			},
 			title: {
-				text: `Token Emission Schedule - ${poolData[poolId]?.token || 'Pool ' + poolId}`,
+				text: `Token Emission Schedule - ${projectTokenName || 'Pool ' + poolId}`,
 				align: 'left',
 				style: {
 					color: '#fff',
@@ -410,10 +416,10 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 	}
 
 	// Get series for the selected pool
-	const getSeries = (poolId: number) => {
+	const getSeries = (poolId: string) => {
 		return [
 			{
-				name: `${poolData[poolId]?.token || 'Pool ' + poolId} Token Allocation`,
+				name: `${'Pool ' + poolId} Token Allocation`,
 				data: chartData[poolId]?.map((point) => point.y) || [],
 			},
 		]
@@ -469,12 +475,11 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 						id="pool-selector"
 						className="bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-sm font-comfortaa"
 						value={selectedPool || ''}
-						onChange={(e) => setSelectedPool(Number(e.target.value))}
+						onChange={(e) => e.target.value}
 					>
 						{pool.map((poolId) => (
 							<option key={poolId} value={poolId}>
-								{poolData[poolId]?.token || `Pool ${poolId}`} -{' '}
-								{poolData[poolId]?.chain || 'Unknown Chain'}
+								{poolData[poolId]?.vTokenSymbol || `Pool ${poolId}`} -{' '}
 							</option>
 						))}
 					</select>
@@ -487,9 +492,9 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 					Total Supply: {poolData[selectedPool].tokenSupply.toLocaleString()}{' '}
 					tokens
 				</span>
-				<span className="font-orbitron text-base sm:text-sm ml-4">
+				{/* <span className="font-orbitron text-base sm:text-sm ml-4">
 					Chain: {poolData[selectedPool].chain || 'Not specified'}
-				</span>
+				</span> */}
 			</div>
 
 			{/* Chart */}
@@ -512,7 +517,7 @@ const SteplineChart: React.FC<SteplineChartProps> = ({ poolId }) => {
 							className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 shadow-sm text-xs text-white"
 						>
 							<div className="font-bold text-cyan-400">Phase {index + 1}</div>
-							<div>{phase.emissionRate?.toLocaleString() || 0} tokens</div>
+							<div>{phase.tokenAmount?.toLocaleString() || 0} tokens</div>
 							<div className="opacity-70">
 								{new Date(phase.from).toLocaleDateString()} –{' '}
 								{new Date(phase.to).toLocaleDateString()}

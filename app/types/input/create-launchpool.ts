@@ -47,3 +47,9 @@ export interface LaunchpoolData {
 	pools: string[];
 	poolData: PoolDataType;
 }
+
+export interface ProjectTokenMetadata {
+	symbol: string;
+	name: string;
+	decimals: number;
+}

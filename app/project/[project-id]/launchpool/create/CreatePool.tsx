@@ -15,6 +15,7 @@ import { usePoolStore } from '@/app/store/launchpool'
 import { useEffect, useState, useMemo } from 'react'
 import {
 	useAccount,
+	useChainId,
 	useReadContract,
 	useWriteContract,
 	useWaitForTransactionReceipt,
@@ -29,18 +30,21 @@ import { AccessLockedModal } from '@/app/components/UI/shared/AccessLockedModal'
 import { useParams } from 'next/navigation'
 import Spinner from '../../../../components/UI/effect/Spinner'
 import chains from '@/app/config/chains.json'
-import { getChainName, getTokenInfoFromConfig } from '@/app/utils/chain'
-import Link from 'next/link'
-import { normalizeAddress, isValidAddressFormat } from '@/app/utils/address'
-import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 import { debounce } from '@/app/utils/timing'
+import { getChainName, getTokenInfoFromConfig } from '@/app/utils/chain'
+import { normalizeAddress, isValidAddressFormat } from '@/app/utils/address'
+import { getAvailableVTokensOfChain } from '@/app/utils/token'
 import { useProjectStore } from '@/app/store/project'
 import { TransactionStatusModal } from '@/app/components/UI/shared/TransactionStatusModal'
 import { useOnChainTime } from '@/app/hooks/useOnChainTime'
 import {
 	PhaseDataType,
-	FormDataType,
+	PoolDataType,
+	ProjectTokenMetadata,
 } from '@/app/types/input/create-launchpool'
+import { Address } from 'viem'
+import Link from 'next/link'
+import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 
 export default function CreatePool() {
 	/* ---------------------- Project data states ---------------------- */
@@ -80,7 +84,7 @@ export default function CreatePool() {
 		if (
 			account.isConnected &&
 			normalizeAddress(account.address) ===
-				normalizeAddress(currentProject?.owner_id || undefined)
+				normalizeAddress((currentProject?.owner_id as Address) || undefined)
 		) {
 			setIsProjectOwner(true)
 		}
@@ -115,7 +119,8 @@ export default function CreatePool() {
 		status: approveTokenStatus,
 	} = useWriteContract({})
 
-	const chainIdStr = account?.chainId?.toString() || ''
+	const chainId = useChainId()
+	const chainIdStr = useMemo(() => chainId.toString(), [chainId])
 	const projectHubProxyAddress = chains[chainIdStr as keyof typeof chains]
 		?.deployedContracts.ProjectHubUpgradeableProxy as `0x${string}`
 
@@ -353,7 +358,7 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Add phase ---------------------- */
-	const handleAddPhase = (poolId: number) => {
+	const handleAddPhase = (poolId: string) => {
 		if (!poolId) return
 
 		// Get current phases for this pool
@@ -376,7 +381,7 @@ export default function CreatePool() {
 				removePool(isConfirming.id)
 			} else if (isConfirming.type === 'phase') {
 				if (selectedPoolId) {
-					removePhase(selectedPoolId, isConfirming.id)
+					removePhase(selectedPoolId, Number(isConfirming.id))
 				}
 			}
 		}
@@ -384,7 +389,7 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Validate Pool Dates ---------------------- */
-	const validatePoolDates = (poolId: number, field: string, value: string) => {
+	const validatePoolDates = (poolId: string, field: string, value: string) => {
 		const now = new Date()
 		const fromDate =
 			field === 'from'
@@ -408,7 +413,7 @@ export default function CreatePool() {
 
 	/* ---------------------- Validate Phase Dates ---------------------- */
 	const validatePhaseDates = (
-		poolId: number,
+		poolId: string,
 		phaseId: number,
 		field: string,
 		value: string
@@ -470,7 +475,7 @@ export default function CreatePool() {
 
 	/* ---------------------- Find mistakes in emission rate number when changed ---------------------- */
 	const findMistakesInEmissionRate = (
-		poolId: number,
+		poolId: string,
 		phaseId: number,
 		newEmissionRate: number
 	): { mistake: string | null } => {
@@ -500,7 +505,7 @@ export default function CreatePool() {
 	}
 
 	const findMistakesInTokenSupply = (
-		poolId: number,
+		poolId: string,
 		newTokenSupply: string
 	): { mistake: string | null } => {
 		const parsedTokenSupply = parseFloat(newTokenSupply)
@@ -523,8 +528,8 @@ export default function CreatePool() {
 
 	/* ---------------------- Handle Change Pool ---------------------- */
 	const handleChangePool = (
-		poolId: number,
-		field: keyof FormDataType,
+		poolId: string,
+		field: keyof PoolDataType,
 		value: string
 	) => {
 		if (field === 'from' || field === 'to') {
@@ -544,7 +549,7 @@ export default function CreatePool() {
 
 	/* ---------------------- Handle Change EmissionRate ---------------------- */
 	const handleChangeEmissionRate = (
-		poolId: number,
+		poolId: string,
 		phaseId: number,
 		field: keyof PhaseDataType,
 		value: string
@@ -574,8 +579,8 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Open and Close Confirm Modal ---------------------- */
-	const handleOpenConfirmModal = (id: number, type: 'pool' | 'phase') => {
-		setIsConfirming({ open: true, id, type })
+	const handleOpenConfirmModal = (id: string, type: 'pool' | 'phase') => {
+		setIsConfirming({ open: true, id: id, type })
 	}
 
 	const handleCloseConfirmModal = () => {
@@ -768,7 +773,7 @@ export default function CreatePool() {
 		}
 	}, [projectTokenAddress])
 
-	const readTokenDecimalsAndSymbol = useReadContracts({
+	const readProjectTokenMetadata = useReadContracts({
 		contracts: [
 			{
 				...tokenContract,
@@ -778,41 +783,40 @@ export default function CreatePool() {
 				...tokenContract,
 				functionName: 'symbol',
 			},
+			{
+				...tokenContract,
+				functionName: 'name',
+			},
 		],
+		query: {
+			enabled: !!tokenContract,
+			refetchInterval: 10000,
+		},
 	})
 
 	const projectTokenMetadata = useMemo(() => {
 		if (
 			!isTokenValid ||
-			!readTokenDecimalsAndSymbol ||
-			readTokenDecimalsAndSymbol.status !== 'success'
+			!readProjectTokenMetadata ||
+			readProjectTokenMetadata.status !== 'success'
 		) {
 			return {
 				decimals: undefined,
 				symbol: undefined,
+				name: undefined,
 			}
 		}
 
-		console.log('token decimals: ', readTokenDecimalsAndSymbol.data[0].result)
-		console.log('token symbol: ', readTokenDecimalsAndSymbol.data[1].result)
-		return {
-			decimals: Number(readTokenDecimalsAndSymbol.data[0].result),
-			symbol: String(readTokenDecimalsAndSymbol.data[1].result),
-		}
-	}, [readTokenDecimalsAndSymbol, isTokenValid])
+		const decimals = Number(readProjectTokenMetadata.data[0].result)
+		const symbol = String(readProjectTokenMetadata.data[1].result)
+		const name = String(readProjectTokenMetadata.data[2].result)
 
-	// const readTokenDecimals = useReadContract({
-	// 	address: tokenAddress as `0x${string}`,
-	// 	abi: ERC20MetadataABI,
-	// 	functionName: 'decimals',
-	// })
+		console.log('token decimals: ', decimals)
+		console.log('token symbol: ', symbol)
+		console.log('token name: ', name)
 
-	// // Attempt to read token symbol as well (read from ZeroAddress if isValidatingToken is false)
-	// const readTokenSymbol = useReadContract({
-	// 	address: tokenAddress as `0x${string}`,
-	// 	abi: ERC20MetadataABI,
-	// 	functionName: 'symbol',
-	// })
+		return { decimals, symbol, name } as ProjectTokenMetadata
+	}, [readProjectTokenMetadata, isTokenValid])
 
 	// 500ms debounce before calling startValidatingToken()
 	useEffect(() => {
@@ -842,32 +846,32 @@ export default function CreatePool() {
 			return
 		}
 
-		if (readTokenDecimalsAndSymbol.error) {
+		if (readProjectTokenMetadata.error) {
 			setTokenValidationMessage(
 				"Sorry, we tried our best to discover your project's token information without any luck"
 			)
-			console.log('read token error: ', readTokenDecimalsAndSymbol.error)
+			console.log('read token error: ', readProjectTokenMetadata.error)
 			setIsTokenValid(false)
 			setIsValidatingToken(false)
 			return
 		}
 
 		if (
-			readTokenDecimalsAndSymbol.status === 'success' &&
-			readTokenDecimalsAndSymbol.data[0].status === 'success' &&
-			readTokenDecimalsAndSymbol.data[1].status === 'success'
+			readProjectTokenMetadata.status === 'success' &&
+			readProjectTokenMetadata.data[0].status === 'success' &&
+			readProjectTokenMetadata.data[1].status === 'success'
 		) {
 			setTokenValidationMessage(`Token validated successfully.`)
 			setIsTokenValid(true)
 			setIsValidatingToken(false)
 		}
-	}, [readTokenDecimalsAndSymbol, isValidatingToken])
+	}, [readProjectTokenMetadata, isValidatingToken])
 
-	/* ---------------------- currentChainConfig ---------------------- */
-	const currentChainConfig = useMemo(() => {
-		if (!account.isConnected) return null
-		return chains[chainIdStr as keyof typeof chains]
-	}, [account.chainId])
+	/* ---------------------- Get available vTokens of the current chain ---------------------- */
+	const availableVTokens = useMemo(() => {
+		if (!chainId) return []
+		return getAvailableVTokensOfChain(chainId)
+	}, [chainId])
 
 	/* ---------------------- Debug: Log store when poolData or phaseData changes ---------------------- */
 	// useEffect(() => {
@@ -1076,7 +1080,7 @@ export default function CreatePool() {
 							</Button>
 
 							<div className="flex flex-wrap gap-3 w-full">
-								{pool.map((poolId, index) => (
+								{pool.map((poolId) => (
 									<motion.div
 										key={poolId}
 										initial={{ opacity: 0, y: 50 }}
@@ -1139,9 +1143,12 @@ export default function CreatePool() {
 														<option value="" disabled>
 															Select staking token
 														</option>
-														{currentChainConfig?.tokens.map((token) => (
-															<option key={token.address} value={token.address}>
-																{token.symbol}
+														{availableVTokens.map((vToken) => (
+															<option
+																key={vToken.address}
+																value={vToken.address}
+															>
+																{vToken.symbol}
 															</option>
 														))}
 													</select>
@@ -1566,7 +1573,12 @@ export default function CreatePool() {
 			>
 				<div className="h-full w-full p-3 sm:p-5 text-white overflow-y-auto max-h-[80vh]">
 					<div>
-						{selectedPoolId && <SteplineChart poolId={selectedPoolId} />}
+						{selectedPoolId && (
+							<SteplineChart
+								poolId={selectedPoolId}
+								projectTokenName={projectTokenMetadata.name}
+							/>
+						)}
 					</div>
 					<div className="flex flex-col gap-3 sm:gap-5 mt-3 sm:mt-5">
 						<Button
@@ -1606,7 +1618,9 @@ export default function CreatePool() {
 										className="glass-enhanced h-auto p-3 sm:p-4 pt-8 sm:pt-10 rounded-xl flex items-center justify-center flex-col gap-2 relative w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)]"
 									>
 										<Button
-											onClick={() => handleOpenConfirmModal(phase.id, 'phase')}
+											onClick={() =>
+												handleOpenConfirmModal(phase.id.toString(), 'phase')
+											}
 											className="absolute top-2 sm:top-5 right-2 sm:right-5 glass-enhanced px-2 sm:px-3 py-1 text-sm sm:text-base"
 										>
 											X

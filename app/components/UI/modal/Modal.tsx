@@ -36,7 +36,7 @@ const Modal: React.FC<ModalProps> = ({
 			onClick={onClose}
 		>
 			<div
-				className={`bg-black p-6 rounded-lg shadow-lg transform 	 ${animateClass} ${className}`}
+				className={`bg-black p-6 rounded-2xl shadow-lg transform 	 ${animateClass} ${className}`}
 				onClick={(e) => e.stopPropagation()}
 			>
 				{children}

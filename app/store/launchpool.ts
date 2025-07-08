@@ -197,8 +197,11 @@
 // }));
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { project, launchpool } from "@prisma/client";
-import { PhaseDataType, PoolDataType } from "../types/input/create-launchpool";
+import {
+	PhaseDataType,
+	PoolDataType,
+	ProjectTokenMetadata,
+} from "../types/input/create-launchpool";
 
 // interface PhaseDataType {
 // 	id: number;
@@ -228,8 +231,9 @@ import { PhaseDataType, PoolDataType } from "../types/input/create-launchpool";
 interface PoolStore {
 	// Pool data
 	projectTokenAddress: string;
-	pool: string[];
-	poolData: PoolDataType[];
+	projectTokenMetadata: null | ProjectTokenMetadata;
+	pool: string[]; // list of pool IDs
+	poolData: Record<string, PoolDataType>; // Changed from PoolDataType[] to Record<string, PoolDataType>
 	lastFetchedTime: number | null;
 
 	// Loading states
@@ -242,8 +246,9 @@ interface PoolStore {
 
 	// Basic actions
 	setTokenAddress: (value: string) => void;
+	setProjectTokenMetadata: (metadata: ProjectTokenMetadata) => void;
 	setPool: (data: string[]) => void;
-	setPoolData: (data: PoolDataType[]) => void;
+	setPoolData: (data: Record<string, PoolDataType>) => void; // Updated parameter type
 	setIsConfirming: (confirm: {
 		open: boolean;
 		id: string | null;
@@ -296,8 +301,9 @@ export const usePoolStore = create<PoolStore>()(
 		(set, get) => ({
 			// Initial state
 			projectTokenAddress: "0x96b6d28df53641a47be72f44be8c626bf07365a8",
+			projectTokenMetadata: null,
 			pool: [],
-			poolData: [],
+			poolData: {}, // Changed from [] to {}
 			lastFetchedTime: null,
 			isLoading: false,
 			error: null,
@@ -306,8 +312,12 @@ export const usePoolStore = create<PoolStore>()(
 
 			// Basic setters
 			setTokenAddress: (value) => set({ projectTokenAddress: value }),
+			setProjectTokenMetadata: (metadata) => {
+				console.log("Setting project token metadata:", metadata);
+				set({ projectTokenMetadata: metadata });
+			},
 			setPool: (data) => set({ pool: data }),
-			setPoolData: (data) => set({ poolData: Object.values(data) }),
+			setPoolData: (data) => set({ poolData: data }), // Removed Object.values() wrapper
 			setIsConfirming: (confirm) => set({ isConfirming: confirm }),
 			setIsOpenEmissionRate: (open) => set({ isOpenEmissionRate: open }),
 			setIsLoading: (isLoading) => set({ isLoading }),
@@ -382,7 +392,7 @@ export const usePoolStore = create<PoolStore>()(
 							data.launchpools[0]?.project_token_address ||
 							state.projectTokenAddress,
 						pool: poolIds,
-						poolData: Object.values(transformedPoolData),
+						poolData: transformedPoolData, // Changed from Object.values() to the record itself
 						lastFetchedTime: now,
 						isLoading: false,
 						error: null,
@@ -403,7 +413,7 @@ export const usePoolStore = create<PoolStore>()(
 				set({
 					projectTokenAddress: "",
 					pool: [],
-					poolData: [],
+					poolData: {}, // Changed from [] to {}
 					lastFetchedTime: null,
 					error: null,
 					isConfirming: { open: false, id: null, type: null },
@@ -441,6 +451,7 @@ export const usePoolStore = create<PoolStore>()(
 				});
 			},
 
+			// removePool now works correctly with the record type
 			removePool: (id) => {
 				const state = get();
 				const { [id]: _, ...rest } = state.poolData;
