@@ -38,7 +38,6 @@ export function LaunchpoolStakingCard({
 	const {
 		setTokensInfo,
 		setPoolClaimableRewardsFormatted: setUserClaimableRewards,
-		stakingInfo,
 	} = useStakingStore()
 	// let poolStakingInfo = stakingInfo[pool.id as `0x${string}`]
 

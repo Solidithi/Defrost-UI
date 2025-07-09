@@ -24,6 +24,7 @@ import { cn } from '@/app/lib/utils'
 import { getFunctionAbiFromIface } from '@/app/utils/abi'
 import Spinner from '../effect/Spinner'
 import Image from 'next/image'
+import { formatTokenAmount } from '@/app/utils/display'
 
 interface StakingModalProps {
 	open: boolean
@@ -32,7 +33,7 @@ interface StakingModalProps {
 		stake: TokenInfo
 		reward: TokenInfo
 	}
-	apr: number
+	apy: number
 	balance: string
 	projectName: string
 	poolAddress: string
@@ -42,7 +43,7 @@ export function StakingModal({
 	open,
 	onClose,
 	tokenPair,
-	apr,
+	apy,
 	balance,
 	projectName,
 	poolAddress,
@@ -153,9 +154,9 @@ export function StakingModal({
 
 				<div className="space-y-4 py-4">
 					<div className="flex justify-between items-center">
-						<span className="text-sm text-gray-400">APR</span>
+						<span className="text-sm text-gray-400">APY</span>
 						<span className="font-bold text-lg bg-gradient-to-r from-blue-400 to-pink-500 bg-clip-text text-transparent">
-							{apr}%
+							{apy}%
 						</span>
 					</div>
 
@@ -195,7 +196,7 @@ export function StakingModal({
 							<span className="text-sm text-gray-400">Estimated Rewards</span>
 							<span>
 								{amount
-									? `${((Number.parseFloat(amount.replace(/,/g, '')) * apr) / 100).toFixed(2)} ${tokenPair.reward.symbol}`
+									? `${((Number.parseFloat(amount.replace(/,/g, '')) * apy) / 100).toFixed(2)} ${tokenPair.reward.symbol}`
 									: `0 ${tokenPair.reward.symbol}`}
 							</span>
 						</div>
@@ -1024,7 +1025,7 @@ interface ClaimInterestModalProps {
 		reward: TokenInfo
 	}
 	totalStaked: string
-	claimableInterest: string
+	claimableInterests: bigint
 	projectName: string
 	poolAddress: string
 }
@@ -1034,7 +1035,7 @@ export function ClaimOwnerInterestModal({
 	onClose,
 	tokenPair,
 	totalStaked,
-	claimableInterest,
+	claimableInterests,
 	projectName,
 	poolAddress,
 }: ClaimInterestModalProps) {
@@ -1074,12 +1075,12 @@ export function ClaimOwnerInterestModal({
 
 	const isClaimButtonDisabled = useMemo(() => {
 		return (
-			parseFloat(claimableInterest.replace(/[^0-9.]/g, '')) <= 0 ||
+			claimableInterests <= BigInt(0) ||
 			claimInterestStatus === 'pending' ||
 			(claimInterestTxHash && claimInterestConfirmStatus === 'pending')
 		)
 	}, [
-		claimableInterest,
+		claimableInterests,
 		claimInterestStatus,
 		claimInterestConfirmStatus,
 		claimInterestTxHash,
@@ -1130,7 +1131,10 @@ export function ClaimOwnerInterestModal({
 						<div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg p-3 border border-amber-500/20">
 							<div className="text-xs text-amber-400 mb-1">Your Interest</div>
 							<div className="text-sm font-semibold text-amber-400">
-								{claimableInterest}
+								{formatTokenAmount(claimableInterests, {
+									decimals: tokenPair.stake.decimals,
+									symbol: tokenPair.stake.symbol,
+								})}
 							</div>
 						</div>
 					</div>
@@ -1158,7 +1162,7 @@ export function ClaimOwnerInterestModal({
 						</div>
 					</div>
 
-					{parseFloat(claimableInterest.replace(/[^0-9.]/g, '')) <= 0 && (
+					{claimableInterests <= BigInt(0) && (
 						<div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
 							<AlertCircle size={16} className="text-amber-400" />
 							<span className="text-amber-400 text-sm">

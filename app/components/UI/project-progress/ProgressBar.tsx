@@ -39,17 +39,15 @@ const ProgressBar = ({
 			<div
 				className={
 					overrideClassName && barClassName
-						? barClassName
-						: `w-1/2 m-6
-       glass-enhanced rounded-lg h-1 relative overflow-hidden w-full ${barClassName}`
+						? `w-full h-2 relative overflow-hidden rounded-lg ${barClassName}`
+						: `w-1/2 m-6 glass-enhanced rounded-lg h-1 relative overflow-hidden w-full ${barClassName}`
 				}
 			>
 				<div
 					className={
 						overrideClassName && colorClassName
 							? colorClassName
-							: `warm-cool-bg
-           h-full transition-all ease-out duration-700 ${colorClassName}`
+							: `warm-cool-bg h-full transition-all ease-out duration-700 ${colorClassName}`
 					}
 					style={{ width: `${progress}%` }}
 				/>

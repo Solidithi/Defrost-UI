@@ -1,7 +1,7 @@
 'use client'
 
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import {
 	ChevronDown,
@@ -41,10 +41,6 @@ interface LaunchpoolCardProps {
 export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	const [isExpanded, setIsExpanded] = useState(false)
 
-	const {} = useReadContract({
-		abi: getFunctionAbiFromIface(Launchpool__factory, ''),
-	})
-
 	/* ---------------------- Wallet connection state ---------------------- */
 	const account = useAccount()
 
@@ -52,11 +48,17 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	const { tokensInfo } = useLaunchpoolTokenInfo(launchpool)
 
 	/* ---------------------- Calculate remaining time ---------------------- */
-	const millisecsRemaining = Math.min(
-		(launchpool.end_date.getTime() - Date.now()) / 1000,
-		0
-	)
-	const timeRemaining = formatTimeDuration(millisecsRemaining)
+	console.log('launchpool end date: ', launchpool.end_date.getTime())
+	const launchpoolRemainingTime = useMemo(() => {
+		const inMiliseconds = Math.max(
+			launchpool.end_date.getTime() - Date.now(),
+			0
+		)
+		return {
+			inMiliseconds: inMiliseconds,
+			inNaturalLanguage: formatTimeDuration(inMiliseconds),
+		}
+	}, [launchpool.end_date])
 
 	/* ---------------------- Use launchpool name and description ---------------------- */
 	const { name, description } = useLaunchpoolNameAndDescription(launchpool)
@@ -66,21 +68,33 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 
 	/* ---------------------- Check if current user is project owner ---------------------- */
 	const isProjectOwner = useMemo(() => {
-		console.log(
-			'Checking if user is project owner...',
-			account.address,
-			'|',
-			launchpool.project?.owner_id
-		)
+		if (!account.address || !launchpool.project?.owner_id) {
+			return false
+		}
+
 		return (
-			account.address &&
-			launchpool.project?.owner_id &&
 			normalizeAddress(account.address) ===
-				normalizeAddress(launchpool.project.owner_id as Address)
+			normalizeAddress(launchpool.project.owner_id as Address)
 		)
 	}, [account.address, launchpool.project?.owner_id])
 
-	console.log('Is project owner:', isProjectOwner)
+	/* ---------------------- Read project owner's claimable interests (if is connected account project owner) ---------------------- */
+	const { data: ownerInterests } = useReadContract({
+		abi: getFunctionAbiFromIface(
+			Launchpool__factory,
+			'getPlatformAndOwnerClaimableVAssets'
+		),
+		address: launchpool.id as Address,
+		functionName: 'getPlatformAndOwnerClaimableVAssets',
+		query: {
+			enabled: !!launchpool.id && isProjectOwner,
+		},
+	})
+
+	useEffect(
+		() => console.log('ownerInterests changed: ', ownerInterests),
+		[ownerInterests]
+	)
 
 	/* ---------------------- Modal states ---------------------- */
 	type ActiveModal =
@@ -169,17 +183,6 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		stakingInfo.totalVTokenStake,
 		tokensInfo.vTokenInfo.decimals,
 		tokensInfo.vTokenInfo.symbol,
-	])
-
-	const formattedYourNativeStake = useMemo(() => {
-		return formatTokenAmount(stakingInfo.yourNativeStake, {
-			decimals: tokensInfo.nativeTokenInfo.decimals,
-			symbol: tokensInfo.nativeTokenInfo.symbol,
-		})
-	}, [
-		stakingInfo.yourNativeStake,
-		tokensInfo.nativeTokenInfo.decimals,
-		tokensInfo.nativeTokenInfo.symbol,
 	])
 
 	const formattedWithdrawableVTokens = useMemo(() => {
@@ -397,10 +400,15 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 							<div className="mb-4">
 								<div className="flex justify-between text-xs text-slate-400 mb-1 transition-colors duration-300">
 									<span>Progress</span>
-									<span>{timeRemaining} left</span>
+									<span>{launchpoolRemainingTime.inNaturalLanguage} left</span>
 								</div>
 								<ProgressBar
-									index={millisecsRemaining / 1000}
+									index={
+										1 -
+										launchpoolRemainingTime.inMiliseconds /
+											(launchpool.start_date.getTime() -
+												launchpool.end_date.getTime())
+									}
 									total={launchpool.durationSeconds}
 									overrideClassName={true}
 									barClassName="h2 bg-slate-800 transition-colors duration-300"
@@ -582,7 +590,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									stake: tokensInfo.vTokenInfo,
 									reward: tokensInfo.projectTokenInfo,
 								}}
-								apr={launchpool.staker_apy.toNumber()}
+								apy={launchpool.staker_apy.toNumber()}
 								balance="1,250 vDOT"
 								projectName={name}
 								poolAddress={launchpool.id}
@@ -655,7 +663,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									reward: tokensInfo.projectTokenInfo,
 								}}
 								totalStaked={formattedValues.totalVTokenStake}
-								claimableInterest="0 vDOT" // This should be calculated from actual contract data
+								claimableInterests={ownerInterests} // This should be calculated from actual contract data
 								projectName={name}
 								poolAddress={launchpool.id}
 							/>

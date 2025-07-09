@@ -29,6 +29,10 @@ export function useApproveAndeDepositToken({
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false)
 	const [isDepositStarted, setIsDepositStarted] = useState(false)
 
+	useEffect(() => {
+		console.log('isApprovalNeeded changed: ', isApprovalNeeded)
+	}, [isApprovalNeeded])
+
 	const {
 		data: allowance,
 		status: readAllowanceStatus,
@@ -38,6 +42,9 @@ export function useApproveAndeDepositToken({
 		address: tokenAddress,
 		functionName: 'allowance',
 		args: [userAddress, recipientAddress],
+		query: {
+			refetchInterval: 5000,
+		},
 	})
 
 	// Effect to check if approval is needed
@@ -46,14 +53,10 @@ export function useApproveAndeDepositToken({
 
 		console.log('Allowance:', allowance)
 		console.log('Requested amount:', amount)
-		if (readAllowanceStatus === 'success' && allowance) {
-			if ((allowance as bigint) < amount) {
-				setIsApprovalNeeded(true)
-			} else {
-				setIsApprovalNeeded(false)
-			}
+		if (allowance != undefined) {
+			setIsApprovalNeeded(BigInt(allowance as bigint) < amount)
 		}
-	}, [readAllowanceStatus, allowance, amount, userAddress])
+	}, [readAllowanceStatus, allowance, amount, userAddress, setIsApprovalNeeded])
 
 	// Define write contract actions
 	const {

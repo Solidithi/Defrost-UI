@@ -951,14 +951,14 @@ export default function CreatePool() {
 			{currentProject && (
 				<div className="flex items-center text-sm mb-6 text-gray-400">
 					<Link
-						href={`/project/${currentProject.id}/project-detail`}
+						href={'/my-project'}
 						className="hover:text-cyan-400 transition-colors"
 					>
 						My Projects
 					</Link>
 					<span className="mx-2">›</span>
 					<Link
-						href={`/project/${projectID}`}
+						href={`/project/${currentProject.id}/project-detail`}
 						className="hover:text-cyan-400 transition-colors"
 					>
 						{currentProject.name || 'Project'}
