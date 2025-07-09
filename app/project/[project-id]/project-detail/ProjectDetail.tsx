@@ -12,7 +12,7 @@ import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeade
 import SideBar from '@/app/components/service-sections/SideBar'
 import Logo from '@/public/Logo.png'
 import Tabs from '@/app/components/UI/shared/Tabs'
-import { Crown } from 'lucide-react'
+import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
 
 interface ProjectDetailProps {
 	launchpools: EnrichedLaunchpool[] | undefined
@@ -126,23 +126,7 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 
 					{/* Project Owner Indicator */}
 					{account.isConnected && isProjectOwner && (
-						<div className="w-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-4 glass-enhanced">
-							<div className="flex items-center gap-3">
-								<div className="p-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg">
-									<Crown size={20} className="text-white" />
-								</div>
-								<div>
-									<h3 className="text-amber-400 font-bold text-lg">
-										Project Owner
-									</h3>
-									<p className="text-amber-200/80 text-sm">
-										You own this project and have administrative access to all
-										features, including claiming interest from ended
-										launchpools.
-									</p>
-								</div>
-							</div>
-						</div>
+						<ProjectOwnerIndicator containerClassName="w-full" />
 					)}
 					<div className="h-auto w-full ">
 						{/* <AcernityCarousel slides={slideData} /> */}
