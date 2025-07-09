@@ -7,27 +7,6 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { abi as ERC20ABI } from '@/abi/ERC20.json'
 
-const defaultState = {
-	approval: {
-		approve: () => {},
-		isApprovalNeeded: false,
-		approveStatus: 'idle',
-		approveError: null,
-		approveTxHash: null,
-		isConfirmingApproval: false,
-		allowance: null,
-		readAllowanceStatus: 'idle',
-		readAllowanceError: null,
-	},
-	deposit: {
-		deposit: () => {},
-		depositStatus: 'idle',
-		depositError: null,
-		depositTxHash: null,
-		isDepositStarted: false,
-	},
-}
-
 export function useApproveAndeDepositToken({
 	depositFunctionABI,
 	depositFunctionName,
