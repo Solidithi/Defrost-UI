@@ -97,7 +97,7 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 				images: currentProject.images || [],
 				shortDescription: currentProject.short_description || "",
 				longDescription: currentProject.long_description || "",
-				targetAudience: currentProject.target_audience || "",
+				targetAudience: "",
 				socials: {
 					twitter: currentProject.twitter || "",
 					telegram: currentProject.telegram || "",

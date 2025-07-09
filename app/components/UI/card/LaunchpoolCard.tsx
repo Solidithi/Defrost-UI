@@ -663,7 +663,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									reward: tokensInfo.projectTokenInfo,
 								}}
 								totalStaked={formattedValues.totalVTokenStake}
-								claimableInterests={ownerInterests} // This should be calculated from actual contract data
+								claimableInterests={ownerInterests as bigint} // This should be calculated from actual contract data
 								projectName={name}
 								poolAddress={launchpool.id}
 							/>

@@ -11,7 +11,7 @@ import { useMemo } from 'react'
 
 export const LaunchpoolSection = () => {
 	const { pools } = useStakingStore()
-	const launchpool = useMemo(() => {
+	const launchpools = useMemo(() => {
 		if (!pools || !pools.launchpools || !pools.launchpools.length) {
 			return undefined
 		}
@@ -28,7 +28,7 @@ export const LaunchpoolSection = () => {
 
 	return (
 		<>
-			{launchpool ? (
+			{launchpools ? (
 				<div className="mt-10 flex flex-col gap-10 ">
 					<div className="flex flex-col gap-10 items-center">
 						<span className="title-text font-orbitron">Launchpool</span>

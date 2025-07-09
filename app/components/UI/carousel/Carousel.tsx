@@ -37,7 +37,7 @@ interface CarouselWithProgressProps {
 
 const CarouselWithProgress = ({ images }: CarouselWithProgressProps) => {
 	const [index, setIndex] = useState(0)
-	const ref = useRef<Splide>(null)
+	const ref = useRef<any>(null)
 
 	useEffect(() => {
 		if (ref.current && ref.current.splide) {

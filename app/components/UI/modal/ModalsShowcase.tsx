@@ -61,7 +61,17 @@ export function ModalsShowcase() {
 		// You could add additional actions here
 	}
 
-	const Card = ({ title, icon, children, className = '' }) => (
+	const Card = ({
+		title,
+		icon,
+		children,
+		className = '',
+	}: {
+		title: string
+		icon: React.ReactNode
+		children: React.ReactNode
+		className?: string
+	}) => (
 		<div
 			className={`bg-gray-900/60 backdrop-blur-sm p-6 rounded-xl border border-gray-700/50 ${className}`}
 		>
@@ -73,14 +83,28 @@ export function ModalsShowcase() {
 		</div>
 	)
 
-	const FormField = ({ label, children }) => (
+	const FormField = ({
+		label,
+		children,
+	}: {
+		label: string
+		children: React.ReactNode
+	}) => (
 		<div className="mb-4">
 			<label className="block text-sm text-gray-400 mb-1">{label}</label>
 			{children}
 		</div>
 	)
 
-	const Input = ({ value, onChange, placeholder = '' }) => (
+	const Input = ({
+		value,
+		onChange,
+		placeholder = '',
+	}: {
+		value: string
+		onChange: (value: string) => void
+		placeholder?: string
+	}) => (
 		<input
 			type="text"
 			value={value}
@@ -90,7 +114,15 @@ export function ModalsShowcase() {
 		/>
 	)
 
-	const Select = ({ value, onChange, options }) => (
+	const Select = ({
+		value,
+		onChange,
+		options,
+	}: {
+		value: string
+		onChange: (value: string) => void
+		options: { value: string; label: string }[]
+	}) => (
 		<select
 			value={value}
 			onChange={(e) => onChange(e.target.value)}
