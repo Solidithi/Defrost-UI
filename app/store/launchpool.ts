@@ -230,7 +230,7 @@ import {
 
 interface PoolStore {
 	// Pool data
-	projectTokenAddress: string;
+	projectTokenAddress: null | string;
 	projectTokenMetadata: null | ProjectTokenMetadata;
 	pool: string[]; // list of pool IDs
 	poolData: Record<string, PoolDataType>; // Changed from PoolDataType[] to Record<string, PoolDataType>
@@ -300,7 +300,7 @@ export const usePoolStore = create<PoolStore>()(
 	persist(
 		(set, get) => ({
 			// Initial state
-			projectTokenAddress: "0x96b6d28df53641a47be72f44be8c626bf07365a8",
+			projectTokenAddress: null,
 			projectTokenMetadata: null,
 			pool: [],
 			poolData: {}, // Changed from [] to {}

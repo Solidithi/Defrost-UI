@@ -12,6 +12,8 @@ import { useAccount } from 'wagmi'
 import { normalizeAddress } from '@/app/utils/address'
 import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
 import { Address } from 'viem'
+import { CircleArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import Button from '@/app/components/UI/button/Button'
 
 interface PoolTabProps {
@@ -22,7 +24,6 @@ interface PoolTabProps {
 export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 	const { currentProject } = useProjectStore()
 	const { fetchPoolsOfProject } = useStakingStore()
-	// Wallet connection
 	const account = useAccount()
 
 	// Check if current user is project owner
@@ -52,6 +53,8 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 	const showEmptyState =
 		selectedVToken && filteredPoolsByVToken.launchpools.length === 0
 
+	const handleCreatePoolClick = () => {}
+
 	return (
 		<div>
 			<div className="flex justify-between items-center my-10">
@@ -71,15 +74,6 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 						</div>
 					</div>
 				)}
-				<Button
-					className="bg-[#59A1EC] text-white font-orbitron font-bold  hover:bg-[#59A1EC]/80  py-4 rounded-2xl flex items-center ml-auto"
-					onClick={() => {
-						// Handle button click
-					}}
-				>
-					<span className="">Create New Pool</span>
-					{/* <Plus size={16} /> */}
-				</Button>
 			</div>
 			{/* Show empty state when vToken selected but no pools */}
 			{showEmptyState ? (
@@ -106,7 +100,25 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 			) : (
 				/* The tab inside the launchpool page that shows all project's launchpool */
 				<div className="glass-enhanced text-white mt-10 p-6 rounded-lg">
-					<ProjectOwnerIndicator />
+					{isProjectOwner && (
+						<div className="flex flex-row items-center justify-between mb-6">
+							<ProjectOwnerIndicator containerClassName="max-w-xl" />
+							<Button
+								className="warm-cool-bg text-white font-orbitron font-bold hover:bg-[#59A1EC]/80 py-4 rounded-2xl flex items-center ml-auto mx-4"
+								onClick={handleCreatePoolClick}
+							>
+								<Link
+									href={`/project/${currentProject?.id}/launchpool/create`}
+									className="flex items-center gap-2"
+								>
+									<span className="text-white bg-clip-text font-semibold">
+										Create Pool
+									</span>
+									<CircleArrowRight size={17} className="font-semibold" />
+								</Link>
+							</Button>
+						</div>
+					)}
 					<div className="grid grid-cols-3 gap-8 w-full mx-auto mb-24">
 						{filteredPoolsByVToken.launchpools.map((launchpool, index) => {
 							return (

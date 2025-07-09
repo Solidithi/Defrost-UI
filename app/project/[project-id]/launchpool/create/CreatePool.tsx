@@ -12,7 +12,7 @@ import Stepper, {
 	Step,
 } from '../../../../components/UI/project-progress/Stepper'
 import { usePoolStore } from '@/app/store/launchpool'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
 	useAccount,
 	useChainId,
@@ -110,17 +110,127 @@ export default function CreatePool() {
 		}
 	}, [currentProject, account.chainId])
 
+	/* ---------------------- Project token validation ---------------------- */
+	const [isTokenValid, setIsTokenValid] = useState<boolean | undefined>(
+		undefined
+	)
+	const [isValidatingToken, setIsValidatingToken] = useState(false)
+	const [tokenValidationMessage, setTokenValidationMessage] = useState('')
+
+	// Attempt to read token decimals (read from ZeroAddress if isValidatingToken is false)
+	const tokenContract = useMemo(() => {
+		if (!projectTokenAddress) return
+		return {
+			address: projectTokenAddress as `0x${string}`,
+			abi: [...ERC20MetadataABI, ...ERC20ABI],
+		}
+	}, [projectTokenAddress])
+
+	const readProjectTokenMetadata = useReadContracts({
+		contracts: [
+			{
+				...tokenContract,
+				functionName: 'decimals',
+			},
+			{
+				...tokenContract,
+				functionName: 'symbol',
+			},
+			{
+				...tokenContract,
+				functionName: 'name',
+			},
+		],
+		query: {
+			enabled: !!tokenContract,
+			refetchInterval: 10000,
+		},
+	})
+
+	const projectTokenMetadata = useMemo(() => {
+		if (
+			!isTokenValid ||
+			!readProjectTokenMetadata ||
+			readProjectTokenMetadata.status !== 'success'
+		) {
+			return {
+				decimals: undefined,
+				symbol: undefined,
+				name: undefined,
+			}
+		}
+
+		const decimals = Number(readProjectTokenMetadata.data[0].result)
+		const symbol = String(readProjectTokenMetadata.data[1].result)
+		const name = String(readProjectTokenMetadata.data[2].result)
+
+		console.log('token decimals: ', decimals)
+		console.log('token symbol: ', symbol)
+		console.log('token name: ', name)
+
+		return { decimals, symbol, name } as ProjectTokenMetadata
+	}, [readProjectTokenMetadata, isTokenValid])
+
+	// 500ms debounce before calling startValidatingToken()
+	useEffect(() => {
+		startValidatingTokenDebounced()
+	}, [projectTokenAddress])
+
+	// This function decide to set `isValidatingToken` to true or not, which will trigger token validation side effects (see useEffect below
+	const startValidatingTokenDebounced = debounce(() => {
+		// Abort early if tokenAddress empty, or its format is invalid
+		if (
+			!projectTokenAddress ||
+			!isValidAddressFormat(projectTokenAddress as `0x${string}`)
+		) {
+			setIsTokenValid(undefined)
+			setIsValidatingToken(false)
+			setTokenValidationMessage('')
+			return
+		}
+
+		setIsValidatingToken(true)
+		setTokenValidationMessage('')
+	}, 500) // add 500ms debounce before executing
+
+	// Start validating token if done reading token decimals & symbol from contract, and isValidatingToken is set to true
+	useEffect(() => {
+		if (!isValidatingToken) {
+			return
+		}
+
+		if (readProjectTokenMetadata.error) {
+			setTokenValidationMessage(
+				"Sorry, we tried our best to discover your project's token information without any luck"
+			)
+			console.log('read token error: ', readProjectTokenMetadata.error)
+			setIsTokenValid(false)
+			setIsValidatingToken(false)
+			return
+		}
+
+		if (
+			readProjectTokenMetadata.status === 'success' &&
+			readProjectTokenMetadata.data[0].status === 'success' &&
+			readProjectTokenMetadata.data[1].status === 'success'
+		) {
+			setTokenValidationMessage(`Token validated`)
+			setIsTokenValid(true)
+			setIsValidatingToken(false)
+		}
+	}, [readProjectTokenMetadata, isValidatingToken])
+
 	/* ---------------------- Contract interaction: create launchpool ---------------------- */
 	const {
 		writeContractAsync: selfMultiCall,
-		data: selfMultiCallHash,
+		data: selfMultiCallTxHash,
 		status: selfMultiCallStatus,
 	} = useWriteContract({})
 
 	const {
 		writeContractAsync: approveTokenAsync,
-		data: approveTokenHash,
-		status: approveTokenStatus,
+		data: approveTxHash,
+		status: approveStatus,
 	} = useWriteContract({})
 
 	const chainId = useChainId()
@@ -129,16 +239,28 @@ export default function CreatePool() {
 		?.deployedContracts.ProjectHubUpgradeableProxy as `0x${string}`
 
 	const { status: selfMultiCallReceiptStatus } = useWaitForTransactionReceipt({
-		hash: selfMultiCallHash,
+		hash: selfMultiCallTxHash,
 	})
 
 	const { data: approveTokenReceipt, status: approveTokenReceiptStatus } =
 		useWaitForTransactionReceipt({
-			hash: approveTokenHash,
+			hash: approveTxHash,
 		})
 
-	// Project token constants
-	const projectTokenAmount = ethers.parseUnits('10', 18)
+	// Amount of project token to approve for the project hub
+	// This is equal to the sum of all pools' token supply
+	const totalProjectTokenSupply = useMemo(() => {
+		if (!poolData || !projectTokenMetadata.decimals) return BigInt(0)
+
+		let supplySum = BigInt(0)
+		Object.values(poolData).forEach((pool) => {
+			supplySum += ethers.parseUnits(
+				pool.tokenSupply.toString(),
+				projectTokenMetadata.decimals
+			)
+		})
+		return supplySum
+	}, [poolData])
 
 	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
 	const [finalError, setFinalError] = useState<string | null>(null)
@@ -171,9 +293,9 @@ export default function CreatePool() {
 
 			await approveTokenAsync({
 				abi: ERC20ABI,
-				address: projectTokenAddress as `0x${string}`,
+				address: projectTokenAddress as Address,
 				functionName: 'approve',
-				args: [projectHubProxyAddress, projectTokenAmount],
+				args: [projectHubProxyAddress, totalProjectTokenSupply],
 			})
 
 			// Note: The success handling is done in the useEffect that monitors approveTokenReceiptStatus
@@ -187,10 +309,10 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Transaction state management ---------------------- */
-	const getTransactionState = () => {
+	const getTransactionState = useCallback(() => {
 		// Check approval states first
 		if (isApprovalNeeded && !isApprovalComplete) {
-			if (approveTokenStatus === 'pending') {
+			if (approveStatus === 'pending') {
 				return {
 					status: 'approving',
 					buttonText: 'Approving Tokens...',
@@ -230,7 +352,7 @@ export default function CreatePool() {
 
 		if (
 			selfMultiCallReceiptStatus === 'pending' &&
-			selfMultiCallStatus !== 'idle'
+			selfMultiCallStatus === 'success'
 		) {
 			return {
 				status: 'confirming',
@@ -285,16 +407,25 @@ export default function CreatePool() {
 			approvalButtonDisabled: isApprovalComplete,
 			showApprovalSpinner: false,
 		}
-	}
+	}, [
+		isApprovalNeeded,
+		isApprovalComplete,
+		approveStatus,
+		selfMultiCallStatus,
+		selfMultiCallReceiptStatus,
+		isWaitingForIndexer,
+		finalError,
+		account.isConnected,
+	])
 
 	/* ---------------------- Transaction lifecycle management ---------------------- */
 	useEffect(() => {
 		// When transaction is signed (after user has signed with MetaMask)
-		if (selfMultiCallStatus === 'success' && selfMultiCallHash) {
-			console.log('Transaction submitted! Hash:', selfMultiCallHash)
+		if (selfMultiCallStatus === 'success' && selfMultiCallTxHash) {
+			console.log('Transaction submitted! Hash:', selfMultiCallTxHash)
 			setIsTransactionStatusModalOpen(true) // Only show modal after transaction is signed
 		}
-	}, [selfMultiCallStatus, selfMultiCallHash])
+	}, [selfMultiCallStatus, selfMultiCallTxHash])
 
 	// Read the token allowance between user and project hub
 	const {
@@ -315,10 +446,10 @@ export default function CreatePool() {
 		if (tokenAllowanceStatus === 'success' && tokenAllowance !== undefined) {
 			const currentAllowance = BigInt(tokenAllowance?.toString() ?? '0')
 			console.log('Current allowance:', currentAllowance.toString())
-			console.log('Required amount:', projectTokenAmount.toString())
-			setIsApprovalNeeded(currentAllowance < projectTokenAmount)
+			console.log('Required amount:', totalProjectTokenSupply.toString())
+			setIsApprovalNeeded(currentAllowance < totalProjectTokenSupply)
 		}
-	}, [tokenAllowanceStatus, tokenAllowance, projectTokenAmount])
+	}, [tokenAllowanceStatus, tokenAllowance, totalProjectTokenSupply])
 
 	// Handle approval confirmation
 	useEffect(() => {
@@ -761,116 +892,6 @@ export default function CreatePool() {
 		}
 	}
 
-	/* ---------------------- Token validation ---------------------- */
-	const [isTokenValid, setIsTokenValid] = useState<boolean | undefined>(
-		undefined
-	)
-	const [isValidatingToken, setIsValidatingToken] = useState(false)
-	const [tokenValidationMessage, setTokenValidationMessage] = useState('')
-
-	// Attempt to read token decimals (read from ZeroAddress if isValidatingToken is false)
-	const tokenContract = useMemo(() => {
-		if (!projectTokenAddress) return
-		return {
-			address: projectTokenAddress as `0x${string}`,
-			abi: [...ERC20MetadataABI, ...ERC20ABI],
-		}
-	}, [projectTokenAddress])
-
-	const readProjectTokenMetadata = useReadContracts({
-		contracts: [
-			{
-				...tokenContract,
-				functionName: 'decimals',
-			},
-			{
-				...tokenContract,
-				functionName: 'symbol',
-			},
-			{
-				...tokenContract,
-				functionName: 'name',
-			},
-		],
-		query: {
-			enabled: !!tokenContract,
-			refetchInterval: 10000,
-		},
-	})
-
-	const projectTokenMetadata = useMemo(() => {
-		if (
-			!isTokenValid ||
-			!readProjectTokenMetadata ||
-			readProjectTokenMetadata.status !== 'success'
-		) {
-			return {
-				decimals: undefined,
-				symbol: undefined,
-				name: undefined,
-			}
-		}
-
-		const decimals = Number(readProjectTokenMetadata.data[0].result)
-		const symbol = String(readProjectTokenMetadata.data[1].result)
-		const name = String(readProjectTokenMetadata.data[2].result)
-
-		console.log('token decimals: ', decimals)
-		console.log('token symbol: ', symbol)
-		console.log('token name: ', name)
-
-		return { decimals, symbol, name } as ProjectTokenMetadata
-	}, [readProjectTokenMetadata, isTokenValid])
-
-	// 500ms debounce before calling startValidatingToken()
-	useEffect(() => {
-		startValidatingTokenDebounced()
-	}, [projectTokenAddress])
-
-	// This function decide to set `isValidatingToken` to true or not, which will trigger token validation side effects (see useEffect below
-	const startValidatingTokenDebounced = debounce(() => {
-		// Abort early if tokenAddress empty, or its format is invalid
-		if (
-			!projectTokenAddress ||
-			!isValidAddressFormat(projectTokenAddress as `0x${string}`)
-		) {
-			setIsTokenValid(undefined)
-			setIsValidatingToken(false)
-			setTokenValidationMessage('')
-			return
-		}
-
-		setIsValidatingToken(true)
-		setTokenValidationMessage('')
-	}, 500) // add 500ms debounce before executing
-
-	// Start validating token if done reading token decimals & symbol from contract, and isValidatingToken is set to true
-	useEffect(() => {
-		if (!isValidatingToken) {
-			return
-		}
-
-		if (readProjectTokenMetadata.error) {
-			setTokenValidationMessage(
-				"Sorry, we tried our best to discover your project's token information without any luck"
-			)
-			console.log('read token error: ', readProjectTokenMetadata.error)
-			setIsTokenValid(false)
-			setIsValidatingToken(false)
-			return
-		}
-
-		if (
-			readProjectTokenMetadata.status === 'success' &&
-			readProjectTokenMetadata.data[0].status === 'success' &&
-			readProjectTokenMetadata.data[1].status === 'success'
-		) {
-			setTokenValidationMessage(`Token validated`)
-			setIsTokenValid(true)
-			setIsValidatingToken(false)
-		}
-	}, [readProjectTokenMetadata, isValidatingToken])
-
 	/* ---------------------- Get available vTokens of the current chain ---------------------- */
 	const availableVTokens = useMemo(() => {
 		if (!chainId) return []
@@ -906,7 +927,7 @@ export default function CreatePool() {
 					<div className="flex items-center gap-4">
 						{currentProject.logo ? (
 							<img
-								src={`data:image/png;base64,${currentProject.logo}`}
+								src={currentProject.logo}
 								alt={currentProject.name || 'project logo'}
 								className="w-16 h-16 rounded-full object-cover"
 							/>
@@ -930,7 +951,7 @@ export default function CreatePool() {
 			{currentProject && (
 				<div className="flex items-center text-sm mb-6 text-gray-400">
 					<Link
-						href="/project-detail" // add the correct path to when we got project detail page
+						href={`/project/${currentProject.id}/project-detail`}
 						className="hover:text-cyan-400 transition-colors"
 					>
 						My Projects
@@ -995,7 +1016,7 @@ export default function CreatePool() {
 							<div className="relative w-full">
 								<input
 									id="projectName"
-									value={projectTokenAddress}
+									value={projectTokenAddress || '0x'}
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
 									className={`p-4 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full`}
@@ -1352,9 +1373,9 @@ export default function CreatePool() {
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Token Address:</span>
 											<span className="font-mono text-blue-400">
-												{projectTokenAddress.substring(0, 12)}...
-												{projectTokenAddress.substring(
-													projectTokenAddress.length - 6
+												{projectTokenAddress?.substring(0, 12)}...
+												{projectTokenAddress?.substring(
+													projectTokenAddress?.length - 6
 												)}
 											</span>
 										</div>
@@ -1738,13 +1759,13 @@ export default function CreatePool() {
 				isOpen={isTransactionStatusModalOpen}
 				onClose={() => setIsTransactionStatusModalOpen(false)}
 				onAction={() => {
-					openTransactionInExplorerOfChain(chainId, selfMultiCallHash || '')
+					openTransactionInExplorerOfChain(chainId, selfMultiCallTxHash || '')
 				}}
 				isTransactionPending={selfMultiCallReceiptStatus === 'pending'}
 				isWaitingForIndexer={false}
 				isLaunchpoolCreated={selfMultiCallReceiptStatus === 'success'}
 				finalError={finalError}
-				txHash={selfMultiCallHash || ''}
+				txHash={selfMultiCallTxHash || ''}
 			/>
 
 			{/* --------------------------------------Access Control Modal - Only PO is allowed to use this page----------------------------------------------------- */}
