@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { useAccount } from 'wagmi'
 import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
 import { StatCard } from '@/app/components/UI/card/StatCard'
 import { TokenInfo } from '@/app/store/staking'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
-import { useProjectStore } from '@/app/store/project'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
 import LineChart from '@/app/components/charts/LineChart'
@@ -16,8 +14,6 @@ import Tabs from '@/app/components/UI/shared/Tabs'
 const Launchpool = () => {
 	// vToken filtering state (kept local as requested)
 	const [selectedVToken, setSelectedVToken] = useState<TokenInfo | null>(null)
-
-	const { currentProject } = useProjectStore()
 
 	const mockSocials = {
 		website: 'https://www.example.com',

@@ -202,6 +202,31 @@ export default function MyProject() {
 						</div>
 					</div> */}
 
+					{/* Create New Project Section */}
+					<div className="glass-enhanced rounded-2xl p-6 mb-8 mx-auto select-none">
+						<div className="absolute inset-0 border-[0.5px] border-white border-opacity-20 rounded-2xl pointer-events-none"></div>
+
+						<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+							<div className="flex-1">
+								<h3 className="text-lg font-orbitron font-bold mb-2">
+									Ready to Launch Your Project?
+								</h3>
+								<p className="text-sm text-gray-400">
+									Create a new project and start building your DeFi ecosystem
+									with launchpools and staking opportunities.
+								</p>
+							</div>
+							<div className="flex-shrink-0">
+								<button
+									className="warm-cool-bg rounded-full px-6 py-3 text-sm font-bold font-comfortaa hover:scale-105 transition-transform"
+									onClick={() => router.push('/project/create')}
+								>
+									Create New Project
+								</button>
+							</div>
+						</div>
+					</div>
+
 					{/* Project Control Panel */}
 					<div className="glass-enhanced rounded-2xl p-3 mb-8 mx-auto select-none">
 						{/* White stroke */}
@@ -339,7 +364,10 @@ export default function MyProject() {
 									<div className="text-sm text-gray-400 mb-6">
 										Create your first project or adjust your search criteria
 									</div>
-									<button className="warm-cool-bg rounded-full px-6 py-2 text-sm font-bold">
+									<button
+										className="warm-cool-bg rounded-full px-6 py-2 text-sm font-bold"
+										onClick={() => router.push('/project/create')}
+									>
 										Create New Project
 									</button>
 								</div>

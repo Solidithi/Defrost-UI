@@ -48,7 +48,6 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	const { tokensInfo } = useLaunchpoolTokenInfo(launchpool)
 
 	/* ---------------------- Calculate remaining time ---------------------- */
-	console.log('launchpool end date: ', launchpool.end_date.getTime())
 	const launchpoolRemainingTime = useMemo(() => {
 		const inMiliseconds = Math.max(
 			launchpool.end_date.getTime() - Date.now(),
@@ -79,7 +78,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	}, [account.address, launchpool.project?.owner_id])
 
 	/* ---------------------- Read project owner's claimable interests (if is connected account project owner) ---------------------- */
-	const { data: ownerInterests } = useReadContract({
+	const { data: ownerInterestAndPlatformFee } = useReadContract({
 		abi: getFunctionAbiFromIface(
 			Launchpool__factory,
 			'getPlatformAndOwnerClaimableVAssets'
@@ -91,10 +90,10 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		},
 	})
 
-	useEffect(
-		() => console.log('ownerInterests changed: ', ownerInterests),
-		[ownerInterests]
-	)
+	useEffect(() => {
+		console.log('launchpool address: ', launchpool.id)
+		console.log('ownerInterests changed: ', ownerInterestAndPlatformFee)
+	}, [ownerInterestAndPlatformFee])
 
 	/* ---------------------- Modal states ---------------------- */
 	type ActiveModal =
@@ -663,7 +662,9 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									reward: tokensInfo.projectTokenInfo,
 								}}
 								totalStaked={formattedValues.totalVTokenStake}
-								claimableInterests={ownerInterests} // This should be calculated from actual contract data
+								claimableInterests={
+									(ownerInterestAndPlatformFee as bigint[])[0]
+								} // This should be calculated from actual contract data
 								projectName={name}
 								poolAddress={launchpool.id}
 							/>

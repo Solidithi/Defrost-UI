@@ -43,6 +43,7 @@ export interface LaunchpoolInterface extends Interface {
 			| "endBlock"
 			| "getClaimableProjectToken"
 			| "getEmissionRate"
+			| "getPlatformAndOwnerClaimableVAssets"
 			| "getPoolInfo"
 			| "getStakerNativeAmount"
 			| "getStakingRange"
@@ -53,7 +54,7 @@ export interface LaunchpoolInterface extends Interface {
 			| "lastNativeExRateUpdateBlock"
 			| "lastProcessedChangeBlockIndex"
 			| "maxStakers"
-			| "maxVAssetPerStaker"
+			| "maxTokenPerStaker"
 			| "nativeExRateSampleCount"
 			| "owner"
 			| "ownerShareOfInterest"
@@ -79,8 +80,10 @@ export interface LaunchpoolInterface extends Interface {
 
 	getEvent(
 		nameOrSignatureOrTopic:
+			| "OwnerInterestsClaimed"
 			| "OwnershipTransferred"
 			| "Paused"
+			| "PlatformFeeClaimed"
 			| "ProjectTokensClaimed"
 			| "Staked"
 			| "Unpaused"
@@ -156,6 +159,10 @@ export interface LaunchpoolInterface extends Interface {
 		values?: undefined
 	): string;
 	encodeFunctionData(
+		functionFragment: "getPlatformAndOwnerClaimableVAssets",
+		values?: undefined
+	): string;
+	encodeFunctionData(
 		functionFragment: "getPoolInfo",
 		values?: undefined
 	): string;
@@ -196,7 +203,7 @@ export interface LaunchpoolInterface extends Interface {
 		values?: undefined
 	): string;
 	encodeFunctionData(
-		functionFragment: "maxVAssetPerStaker",
+		functionFragment: "maxTokenPerStaker",
 		values?: undefined
 	): string;
 	encodeFunctionData(
@@ -338,6 +345,10 @@ export interface LaunchpoolInterface extends Interface {
 		data: BytesLike
 	): Result;
 	decodeFunctionResult(
+		functionFragment: "getPlatformAndOwnerClaimableVAssets",
+		data: BytesLike
+	): Result;
+	decodeFunctionResult(
 		functionFragment: "getPoolInfo",
 		data: BytesLike
 	): Result;
@@ -378,7 +389,7 @@ export interface LaunchpoolInterface extends Interface {
 		data: BytesLike
 	): Result;
 	decodeFunctionResult(
-		functionFragment: "maxVAssetPerStaker",
+		functionFragment: "maxTokenPerStaker",
 		data: BytesLike
 	): Result;
 	decodeFunctionResult(
@@ -446,6 +457,32 @@ export interface LaunchpoolInterface extends Interface {
 	): Result;
 }
 
+export namespace OwnerInterestsClaimedEvent {
+	export type InputTuple = [
+		claimer: AddressLike,
+		ownerClaims: BigNumberish,
+		platformFee: BigNumberish,
+	];
+	export type OutputTuple = [
+		claimer: string,
+		ownerClaims: bigint,
+		platformFee: bigint,
+	];
+	export interface OutputObject {
+		claimer: string;
+		ownerClaims: bigint;
+		platformFee: bigint;
+	}
+	export type Event = TypedContractEvent<
+		InputTuple,
+		OutputTuple,
+		OutputObject
+	>;
+	export type Filter = TypedDeferredTopicFilter<Event>;
+	export type Log = TypedEventLog<Event>;
+	export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace OwnershipTransferredEvent {
 	export type InputTuple = [
 		previousOwner: AddressLike,
@@ -471,6 +508,23 @@ export namespace PausedEvent {
 	export type OutputTuple = [account: string];
 	export interface OutputObject {
 		account: string;
+	}
+	export type Event = TypedContractEvent<
+		InputTuple,
+		OutputTuple,
+		OutputObject
+	>;
+	export type Filter = TypedDeferredTopicFilter<Event>;
+	export type Log = TypedEventLog<Event>;
+	export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PlatformFeeClaimedEvent {
+	export type InputTuple = [claimer: AddressLike, platformFee: BigNumberish];
+	export type OutputTuple = [claimer: string, platformFee: bigint];
+	export interface OutputObject {
+		claimer: string;
+		platformFee: bigint;
 	}
 	export type Event = TypedContractEvent<
 		InputTuple,
@@ -634,6 +688,12 @@ export interface Launchpool extends BaseContract {
 
 	getEmissionRate: TypedContractMethod<[], [bigint], "view">;
 
+	getPlatformAndOwnerClaimableVAssets: TypedContractMethod<
+		[],
+		[[bigint, bigint] & { ownerClaims: bigint; platformFee: bigint }],
+		"view"
+	>;
+
 	getPoolInfo: TypedContractMethod<
 		[],
 		[[bigint, bigint, bigint, bigint]],
@@ -666,7 +726,7 @@ export interface Launchpool extends BaseContract {
 
 	maxStakers: TypedContractMethod<[], [bigint], "view">;
 
-	maxVAssetPerStaker: TypedContractMethod<[], [bigint], "view">;
+	maxTokenPerStaker: TypedContractMethod<[], [bigint], "view">;
 
 	nativeExRateSampleCount: TypedContractMethod<[], [bigint], "view">;
 
@@ -794,6 +854,13 @@ export interface Launchpool extends BaseContract {
 		nameOrSignature: "getEmissionRate"
 	): TypedContractMethod<[], [bigint], "view">;
 	getFunction(
+		nameOrSignature: "getPlatformAndOwnerClaimableVAssets"
+	): TypedContractMethod<
+		[],
+		[[bigint, bigint] & { ownerClaims: bigint; platformFee: bigint }],
+		"view"
+	>;
+	getFunction(
 		nameOrSignature: "getPoolInfo"
 	): TypedContractMethod<[], [[bigint, bigint, bigint, bigint]], "view">;
 	getFunction(
@@ -828,7 +895,7 @@ export interface Launchpool extends BaseContract {
 		nameOrSignature: "maxStakers"
 	): TypedContractMethod<[], [bigint], "view">;
 	getFunction(
-		nameOrSignature: "maxVAssetPerStaker"
+		nameOrSignature: "maxTokenPerStaker"
 	): TypedContractMethod<[], [bigint], "view">;
 	getFunction(
 		nameOrSignature: "nativeExRateSampleCount"
@@ -907,6 +974,13 @@ export interface Launchpool extends BaseContract {
 	): TypedContractMethod<[], [string], "view">;
 
 	getEvent(
+		key: "OwnerInterestsClaimed"
+	): TypedContractEvent<
+		OwnerInterestsClaimedEvent.InputTuple,
+		OwnerInterestsClaimedEvent.OutputTuple,
+		OwnerInterestsClaimedEvent.OutputObject
+	>;
+	getEvent(
 		key: "OwnershipTransferred"
 	): TypedContractEvent<
 		OwnershipTransferredEvent.InputTuple,
@@ -919,6 +993,13 @@ export interface Launchpool extends BaseContract {
 		PausedEvent.InputTuple,
 		PausedEvent.OutputTuple,
 		PausedEvent.OutputObject
+	>;
+	getEvent(
+		key: "PlatformFeeClaimed"
+	): TypedContractEvent<
+		PlatformFeeClaimedEvent.InputTuple,
+		PlatformFeeClaimedEvent.OutputTuple,
+		PlatformFeeClaimedEvent.OutputObject
 	>;
 	getEvent(
 		key: "ProjectTokensClaimed"
@@ -950,6 +1031,17 @@ export interface Launchpool extends BaseContract {
 	>;
 
 	filters: {
+		"OwnerInterestsClaimed(address,uint256,uint256)": TypedContractEvent<
+			OwnerInterestsClaimedEvent.InputTuple,
+			OwnerInterestsClaimedEvent.OutputTuple,
+			OwnerInterestsClaimedEvent.OutputObject
+		>;
+		OwnerInterestsClaimed: TypedContractEvent<
+			OwnerInterestsClaimedEvent.InputTuple,
+			OwnerInterestsClaimedEvent.OutputTuple,
+			OwnerInterestsClaimedEvent.OutputObject
+		>;
+
 		"OwnershipTransferred(address,address)": TypedContractEvent<
 			OwnershipTransferredEvent.InputTuple,
 			OwnershipTransferredEvent.OutputTuple,
@@ -970,6 +1062,17 @@ export interface Launchpool extends BaseContract {
 			PausedEvent.InputTuple,
 			PausedEvent.OutputTuple,
 			PausedEvent.OutputObject
+		>;
+
+		"PlatformFeeClaimed(address,uint256)": TypedContractEvent<
+			PlatformFeeClaimedEvent.InputTuple,
+			PlatformFeeClaimedEvent.OutputTuple,
+			PlatformFeeClaimedEvent.OutputObject
+		>;
+		PlatformFeeClaimed: TypedContractEvent<
+			PlatformFeeClaimedEvent.InputTuple,
+			PlatformFeeClaimedEvent.OutputTuple,
+			PlatformFeeClaimedEvent.OutputObject
 		>;
 
 		"ProjectTokensClaimed(address,uint256)": TypedContractEvent<

@@ -1053,7 +1053,7 @@ export function ClaimOwnerInterestModal({
 		claimInterest({
 			abi: getFunctionAbiFromIface(Launchpool__factory, 'claimOwnerInterest'),
 			address: poolAddress as `0x${string}`,
-			functionName: 'withdrawAccruedStakeTokenInterest',
+			functionName: 'claimOwnerInterest',
 			args: [],
 		})
 	}
@@ -1192,13 +1192,13 @@ export function ClaimOwnerInterestModal({
 						<span>
 							{claimInterestStatus === 'pending' ? (
 								<>
-									Processing...&emsp;
+									Claim pending...&emsp;
 									<Spinner heightWidth={4} />
 								</>
 							) : claimInterestStatus === 'success' &&
 							  claimInterestConfirmStatus === 'pending' ? (
 								<>
-									Confirming...&emsp;
+									Confirming transaction...&emsp;
 									<Spinner heightWidth={4} />
 								</>
 							) : (

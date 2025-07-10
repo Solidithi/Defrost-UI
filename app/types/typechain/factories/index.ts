@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export { ERC20__factory } from "./ERC20__factory";
+export { IERC20Metadata__factory } from "./IERC20Metadata__factory";
 export { Launchpool__factory } from "./Launchpool__factory";
 export { LaunchpoolLibrary__factory } from "./LaunchpoolLibrary__factory";
 export { ProjectHubUpgradeable__factory } from "./ProjectHubUpgradeable__factory";

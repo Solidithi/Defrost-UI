@@ -2,12 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { ERC20 } from "./ERC20";
+export type { IERC20Metadata } from "./IERC20Metadata";
 export type { Launchpool } from "./Launchpool";
 export type { LaunchpoolLibrary } from "./LaunchpoolLibrary";
 export type { ProjectHubUpgradeable } from "./ProjectHubUpgradeable";
 export type { ProjectLibrary } from "./ProjectLibrary";
 export * as factories from "./factories";
 export { ERC20__factory } from "./factories/ERC20__factory";
+export { IERC20Metadata__factory } from "./factories/IERC20Metadata__factory";
 export { Launchpool__factory } from "./factories/Launchpool__factory";
 export { LaunchpoolLibrary__factory } from "./factories/LaunchpoolLibrary__factory";
 export { ProjectHubUpgradeable__factory } from "./factories/ProjectHubUpgradeable__factory";
