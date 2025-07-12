@@ -123,13 +123,15 @@ export function useApproveAndeDepositToken({
 		} else {
 			setIsConfirmingApproval(false)
 
-			// IMPORTANNT: Call the deposit function in contract
-			callDeposit({
-				abi: depositFunctionABI,
-				address: recipientAddress,
-				functionName: depositFunctionName,
-				args: depositFunctionArgs,
-			})
+			// Call the deposit function in contract with 2 second delay
+			setTimeout(() => {
+				callDeposit({
+					abi: depositFunctionABI,
+					address: recipientAddress,
+					functionName: depositFunctionName,
+					args: depositFunctionArgs,
+				})
+			}, 2000)
 		}
 	}, [isDepositStarted, approveStatus, approveConfirmStatus])
 

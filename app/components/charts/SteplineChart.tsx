@@ -10,12 +10,14 @@ interface SteplineChartProps {
 	poolId?: string // Optional poolId prop
 	projectTokenName?: string
 	projectTokenSymbol?: string
+	projectTokenDecimals?: number
 }
 
 const SteplineChart: React.FC<SteplineChartProps> = ({
 	poolId,
 	projectTokenName,
 	projectTokenSymbol,
+	projectTokenDecimals,
 }) => {
 	const { pool, poolData } = usePoolStore()
 	const [chartData, setChartData] = useState<
@@ -492,12 +494,13 @@ const SteplineChart: React.FC<SteplineChartProps> = ({
 			{/* Token supply info */}
 			<div className="mb-4">
 				<span className="font-orbitron text-base sm:text-sm">
-					Total Supply: {formatTokenAmount(poolData[selectedPool].tokenSupply)}{' '}
-					{projectTokenSymbol || 'Tokens'}
+					Total Supply:{' '}
+					{formatTokenAmount(poolData[selectedPool].tokenSupply, {
+						decimals: 0, // 0 decimals because this number is already in human-readable format and not on-chain bigint format
+						maxDecimals: 8,
+						symbol: projectTokenSymbol,
+					})}{' '}
 				</span>
-				{/* <span className="font-orbitron text-base sm:text-sm ml-4">
-					Chain: {poolData[selectedPool].chain || 'Not specified'}
-				</span> */}
 			</div>
 
 			{/* Chart */}

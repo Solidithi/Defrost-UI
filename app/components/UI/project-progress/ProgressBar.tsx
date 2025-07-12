@@ -18,37 +18,32 @@ const ProgressBar = ({
 	colorClassName,
 }: ProgressBarProps) => {
 	const [progress, setProgress] = useState(0)
-	const [nowProgress, setNowProgress] = useState(0)
 
 	useEffect(() => {
-		const targetProgress = (index / total) * 100
-		const step = targetProgress / (duration / 10) // Adjust for smooth animation
+		// Ensure values are numbers before calculation
+		const numericIndex = Number(index)
+		const numericTotal = Number(total)
 
-		let currentProgress = progress
-		const interval = setInterval(() => {
-			currentProgress += step
-			setProgress(Math.min(currentProgress, targetProgress))
-			if (currentProgress >= targetProgress) clearInterval(interval)
-		}, 10)
+		if (!isNaN(numericIndex) && !isNaN(numericTotal) && numericTotal > 0) {
+			const targetProgress = (numericIndex / numericTotal) * 100
+			setProgress(targetProgress)
+		} else {
+			setProgress(0)
+		}
+	}, [index, total])
 
-		return () => clearInterval(interval)
-	}, [index, total, duration])
+	const barStyles = overrideClassName
+		? barClassName
+		: 'w-1/2 m-6 glass-enhanced rounded-lg h-1 relative overflow-hidden w-full'
+	const colorStyles = overrideClassName
+		? colorClassName
+		: 'warm-cool-bg h-full transition-all ease-out duration-700'
 
 	return (
 		<div className="flex justify-center">
-			<div
-				className={
-					overrideClassName && barClassName
-						? `w-full h-2 relative overflow-hidden rounded-lg ${barClassName}`
-						: `w-1/2 m-6 glass-enhanced rounded-lg h-1 relative overflow-hidden w-full ${barClassName}`
-				}
-			>
+			<div className={`relative overflow-hidden rounded-lg ${barStyles}`}>
 				<div
-					className={
-						overrideClassName && colorClassName
-							? colorClassName
-							: `warm-cool-bg h-full transition-all ease-out duration-700 ${colorClassName}`
-					}
+					className={`h-full ${colorStyles}`}
 					style={{ width: `${progress}%` }}
 				/>
 			</div>

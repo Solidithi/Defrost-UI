@@ -46,6 +46,7 @@ import {
 	PoolDataType,
 	ProjectTokenMetadata,
 } from '@/app/types/input/create-launchpool'
+import { ProjectTokenBalanceIndicator } from './ProjectTokenBalanceIndicator'
 import { Address } from 'viem'
 import Link from 'next/link'
 import AlertInfo from '@/app/components/UI/shared/AlertInfo'
@@ -111,9 +112,9 @@ export default function CreatePool() {
 	}, [currentProject, account.chainId])
 
 	/* ---------------------- Project token validation ---------------------- */
-	const [isTokenValid, setIsTokenValid] = useState<boolean | undefined>(
-		undefined
-	)
+	const [isProjectTokenValid, setIsProjectTokenValid] = useState<
+		boolean | undefined
+	>(undefined)
 	const [isValidatingToken, setIsValidatingToken] = useState(false)
 	const [tokenValidationMessage, setTokenValidationMessage] = useState('')
 
@@ -126,7 +127,7 @@ export default function CreatePool() {
 		}
 	}, [projectTokenAddress])
 
-	const readProjectTokenMetadata = useReadContracts({
+	const readProjectTokenInfo = useReadContracts({
 		contracts: [
 			{
 				...tokenContract,
@@ -140,6 +141,11 @@ export default function CreatePool() {
 				...tokenContract,
 				functionName: 'name',
 			},
+			{
+				...tokenContract,
+				functionName: 'balanceOf',
+				args: [account.address as Address],
+			},
 		],
 		query: {
 			enabled: !!tokenContract,
@@ -149,27 +155,23 @@ export default function CreatePool() {
 
 	const projectTokenMetadata = useMemo(() => {
 		if (
-			!isTokenValid ||
-			!readProjectTokenMetadata ||
-			readProjectTokenMetadata.status !== 'success'
+			!isProjectTokenValid ||
+			!readProjectTokenInfo ||
+			readProjectTokenInfo.status !== 'success'
 		) {
-			return {
-				decimals: undefined,
-				symbol: undefined,
-				name: undefined,
-			}
+			return undefined
 		}
 
-		const decimals = Number(readProjectTokenMetadata.data[0].result)
-		const symbol = String(readProjectTokenMetadata.data[1].result)
-		const name = String(readProjectTokenMetadata.data[2].result)
+		const decimals = Number(readProjectTokenInfo.data[0].result)
+		const symbol = String(readProjectTokenInfo.data[1].result)
+		const name = String(readProjectTokenInfo.data[2].result)
 
 		console.log('token decimals: ', decimals)
 		console.log('token symbol: ', symbol)
 		console.log('token name: ', name)
 
 		return { decimals, symbol, name } as ProjectTokenMetadata
-	}, [readProjectTokenMetadata, isTokenValid])
+	}, [readProjectTokenInfo, isProjectTokenValid])
 
 	// 500ms debounce before calling startValidatingToken()
 	useEffect(() => {
@@ -183,7 +185,7 @@ export default function CreatePool() {
 			!projectTokenAddress ||
 			!isValidAddressFormat(projectTokenAddress as `0x${string}`)
 		) {
-			setIsTokenValid(undefined)
+			setIsProjectTokenValid(undefined)
 			setIsValidatingToken(false)
 			setTokenValidationMessage('')
 			return
@@ -199,28 +201,33 @@ export default function CreatePool() {
 			return
 		}
 
-		if (readProjectTokenMetadata.error) {
+		if (readProjectTokenInfo.error) {
 			setTokenValidationMessage(
 				"Sorry, we tried our best to discover your project's token information without any luck"
 			)
-			console.log('read token error: ', readProjectTokenMetadata.error)
-			setIsTokenValid(false)
+			console.log('read token error: ', readProjectTokenInfo.error)
+			setIsProjectTokenValid(false)
 			setIsValidatingToken(false)
 			return
 		}
 
 		if (
-			readProjectTokenMetadata.status === 'success' &&
-			readProjectTokenMetadata.data[0].status === 'success' &&
-			readProjectTokenMetadata.data[1].status === 'success'
+			readProjectTokenInfo.status === 'success' &&
+			readProjectTokenInfo.data[0].status === 'success' &&
+			readProjectTokenInfo.data[1].status === 'success'
 		) {
 			setTokenValidationMessage(`Token validated`)
-			setIsTokenValid(true)
+			setIsProjectTokenValid(true)
 			setIsValidatingToken(false)
 		}
-	}, [readProjectTokenMetadata, isValidatingToken])
+	}, [readProjectTokenInfo, isValidatingToken])
 
 	/* ---------------------- Contract interaction: create launchpool ---------------------- */
+	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
+	const [finalError, setFinalError] = useState<string | null>(null)
+	const [isTransactionStatusModalOpen, setIsTransactionStatusModalOpen] =
+		useState(false)
+
 	const {
 		writeContractAsync: selfMultiCall,
 		data: selfMultiCallTxHash,
@@ -250,29 +257,40 @@ export default function CreatePool() {
 	// Amount of project token to approve for the project hub
 	// This is equal to the sum of all pools' token supply
 	const totalProjectTokenSupply = useMemo(() => {
-		if (!poolData || !projectTokenMetadata.decimals) return BigInt(0)
+		if (!poolData || !projectTokenMetadata?.decimals) return undefined
 
 		let supplySum = BigInt(0)
 		Object.values(poolData).forEach((pool) => {
 			supplySum += ethers.parseUnits(
-				pool.tokenSupply.toString(),
-				projectTokenMetadata.decimals
+				(pool.tokenSupply || 0).toString(),
+				projectTokenMetadata?.decimals
 			)
 		})
 		return supplySum
-	}, [poolData])
+	}, [poolData, projectTokenMetadata?.decimals])
 
-	const [isWaitingForIndexer, setIsWaitingForIndexer] = useState(false)
-	const [finalError, setFinalError] = useState<string | null>(null)
-	const [isTransactionStatusModalOpen, setIsTransactionStatusModalOpen] =
-		useState(false)
+	/* ---------------------- Check if the user has sufficient project token balance ---------------------- */
+	const projectTokenBalance = useMemo(() => {
+		if (
+			!readProjectTokenInfo.data ||
+			readProjectTokenInfo.status !== 'success'
+		) {
+			return undefined
+		}
 
-	// Token approval state variables
+		return (readProjectTokenInfo.data[3].result as bigint) || undefined
+	}, [readProjectTokenInfo.data])
+
+	const hasEnoughProjectTokenBalance = useMemo(() => {
+		if (!projectTokenBalance || !totalProjectTokenSupply) return false
+		return projectTokenBalance >= totalProjectTokenSupply
+	}, [projectTokenBalance, totalProjectTokenSupply])
+
+	/* ---------------------- Contract interaction: Project Token Approval ---------------------- */
 	const [isApprovalNeeded, setIsApprovalNeeded] = useState(false)
 	const [isApprovalComplete, setIsApprovalComplete] = useState(false)
 	const [approvalError, setApprovalError] = useState<string | null>(null)
 
-	/* ---------------------- Contract interaction: Project Token Approval ---------------------- */
 	const handleTokenApproval = async () => {
 		if (!account.isConnected) {
 			toast.warning('Connect your wallet first', {
@@ -443,10 +461,12 @@ export default function CreatePool() {
 
 	// Check if approval is needed when allowance data is loaded
 	useEffect(() => {
-		if (tokenAllowanceStatus === 'success' && tokenAllowance !== undefined) {
+		if (
+			tokenAllowanceStatus === 'success' &&
+			tokenAllowance !== undefined &&
+			totalProjectTokenSupply
+		) {
 			const currentAllowance = BigInt(tokenAllowance?.toString() ?? '0')
-			console.log('Current allowance:', currentAllowance.toString())
-			console.log('Required amount:', totalProjectTokenSupply.toString())
 			setIsApprovalNeeded(currentAllowance < totalProjectTokenSupply)
 		}
 	}, [tokenAllowanceStatus, tokenAllowance, totalProjectTokenSupply])
@@ -454,7 +474,6 @@ export default function CreatePool() {
 	// Handle approval confirmation
 	useEffect(() => {
 		if (approveTokenReceiptStatus === 'success' && approveTokenReceipt) {
-			console.log('Approval confirmed! Receipt:', approveTokenReceipt)
 			setIsApprovalComplete(true)
 
 			// Refetch allowance to confirm it's updated
@@ -524,7 +543,15 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Validate Pool Dates ---------------------- */
-	const validatePoolDates = (poolId: string, field: string, value: string) => {
+	const validatePoolDates = (
+		poolId: string,
+		field: string,
+		value: string
+	): boolean => {
+		if (!value) {
+			return true
+		}
+
 		const now = new Date()
 		const fromDate =
 			field === 'from'
@@ -609,16 +636,18 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Find mistakes in emission rate number when changed ---------------------- */
-	const findMistakesInEmissionRate = (
+	const findMistakesInPhaseData = (
 		poolId: string,
 		phaseId: number,
 		newEmissionRate: number
 	): { mistake: string | null } => {
-		if (isNaN(newEmissionRate) || newEmissionRate <= 0) {
-			return { mistake: 'Emission rate must be a positive number.' }
+		if (isNaN(newEmissionRate)) {
+			return {
+				mistake: 'Emission rate must be a non-negative and valid number',
+			}
 		}
 
-		const totalEmitTokens =
+		const totalEmittedTokens =
 			newEmissionRate +
 			poolData[poolId]?.phases?.reduce((prev, curr) => {
 				if (curr.id === phaseId) {
@@ -627,8 +656,8 @@ export default function CreatePool() {
 				return prev + curr.tokenAmount
 			}, 0)
 
-		if (totalEmitTokens > poolData[poolId]?.tokenSupply) {
-			console.log('Total emitted tokens:', totalEmitTokens)
+		if (totalEmittedTokens > poolData[poolId]?.tokenSupply) {
+			console.log('Total emitted tokens:', totalEmittedTokens)
 			console.log('Pool token supply:', poolData[poolId]?.tokenSupply)
 			return {
 				mistake:
@@ -644,8 +673,10 @@ export default function CreatePool() {
 		newTokenSupply: string
 	): { mistake: string | null } => {
 		const parsedTokenSupply = parseFloat(newTokenSupply)
-		if (isNaN(parsedTokenSupply) || parsedTokenSupply <= 0) {
-			return { mistake: 'Token supply must be a positive number.' }
+		console.log('raw token supply: ', newTokenSupply)
+		console.log('parsed token supply: ', parsedTokenSupply)
+		if (isNaN(parsedTokenSupply)) {
+			return { mistake: 'Token supply must be a non-negative and valid number' }
 		}
 		const totalEmitTokens =
 			poolData[poolId]?.phases?.reduce((prev, curr) => {
@@ -662,55 +693,70 @@ export default function CreatePool() {
 	}
 
 	/* ---------------------- Handle Change Pool ---------------------- */
+
 	const handleChangePool = (
 		poolId: string,
 		field: keyof PoolDataType,
 		value: string
 	) => {
-		if (field === 'from' || field === 'to') {
-			if (!validatePoolDates(poolId, field, value)) return
-		}
+		switch (field) {
+			case 'from':
+				if (!value) {
+					value = new Date(Date.now() + 60000).toString() // Default to 1 minute from now if empty
+				}
+			case 'to':
+				if (!validatePoolDates(poolId, field, value)) return
+				break
 
-		if (field === 'tokenSupply') {
-			const { mistake } = findMistakesInTokenSupply(poolId, value)
-			if (mistake) {
-				toast.warning(mistake)
-				return
-			}
+			case 'tokenSupply':
+				if (!value) {
+					value = '0'
+				} else if (value.length > 1 && value.startsWith('0')) {
+					value = value.slice(1)
+				}
+
+				const { mistake } = findMistakesInTokenSupply(poolId, value)
+				if (mistake) {
+					toast.warning(mistake)
+					return
+				}
+
+				break
 		}
 
 		updatePoolItem(poolId, { [field]: value })
 	}
 
 	/* ---------------------- Handle Change EmissionRate ---------------------- */
-	const handleChangeEmissionRate = (
+	const handleChangePhase = (
 		poolId: string,
 		phaseId: number,
 		field: keyof PhaseDataType,
 		value: string
 	) => {
-		if (field === 'from' || field === 'to') {
-			if (!validatePhaseDates(poolId, phaseId, field, value)) return
+		switch (field) {
+			case 'from':
+			case 'to':
+				if (!validatePhaseDates(poolId, phaseId, field, value)) return
+				updatePhase(poolId, phaseId, { [field]: value })
+				break
+			case 'tokenAmount':
+				let newTokenAmount = 0
+				if (value) {
+					newTokenAmount = parseFloat(value)
+					const { mistake } = findMistakesInPhaseData(
+						poolId,
+						phaseId,
+						newTokenAmount
+					)
+					if (mistake) {
+						toast.warning(mistake)
+						return
+					}
+				}
+				updatePhase(poolId, phaseId, { [field]: newTokenAmount })
+				break
 		}
-
-		if (field === 'tokenAmount') {
-			const newTokenAmount = parseFloat(value as string)
-			const { mistake } = findMistakesInEmissionRate(
-				poolId,
-				phaseId,
-				newTokenAmount
-			)
-
-			if (mistake) {
-				toast.warning(mistake)
-				return
-			}
-
-			updatePhase(poolId, phaseId, { [field]: newTokenAmount })
-			return
-		}
-
-		updatePhase(poolId, phaseId, { [field]: value })
 	}
 
 	/* ---------------------- Open and Close Confirm Modal ---------------------- */
@@ -826,12 +872,12 @@ export default function CreatePool() {
 
 						// Limit the maximum number of decimals
 						const formattedEmissionRate = phaseEmissionRate.toFixed(
-							projectTokenMetadata.decimals
+							projectTokenMetadata?.decimals
 						)
 
 						return ethers.parseUnits(
 							formattedEmissionRate,
-							projectTokenMetadata.decimals
+							projectTokenMetadata?.decimals
 						)
 					})
 
@@ -839,8 +885,8 @@ export default function CreatePool() {
 					const launchpoolParams = {
 						projectId: BigInt(projectID),
 						projectTokenAmount: ethers.parseUnits(
-							pool.tokenSupply.toString(),
-							projectTokenMetadata.decimals
+							(pool.tokenSupply || 0).toString(),
+							projectTokenMetadata?.decimals
 						),
 						projectToken: projectTokenAddress,
 						vAsset: pool.vTokenAddress,
@@ -1003,12 +1049,12 @@ export default function CreatePool() {
 					initialStep={1}
 					onFinalStepCompleted={() => handleCreateLaunchpool()}
 					onStepChange={handleStepChange}
-					disableStepIndicators={!isTokenValid}
+					disableStepIndicators={!isProjectTokenValid}
 					backButtonText="Previous"
 					nextButtonText="Next"
 				>
 					{/* --------------------------------------Token Input And Token Validation----------------------------------------------------- */}
-					<Step canGoToNextStep={isTokenValid === true}>
+					<Step canGoToNextStep={isProjectTokenValid === true}>
 						<div className="flex flex-col items-center justify-center w-full gap-5">
 							<span className="text-3xl font-orbitron text-white mb-4 flex justify-center w-full">
 								Token address
@@ -1030,13 +1076,13 @@ export default function CreatePool() {
 							</div>
 
 							{tokenValidationMessage && (
-								<AlertInfo accentColor={isTokenValid ? 'green' : 'red'}>
+								<AlertInfo accentColor={isProjectTokenValid ? 'green' : 'red'}>
 									<div className="flex items-center">
-										{isTokenValid ? (
+										{isProjectTokenValid ? (
 											<div>
 												<p>{tokenValidationMessage}</p>
-												{projectTokenMetadata.decimals &&
-													projectTokenMetadata.symbol && (
+												{projectTokenMetadata?.decimals &&
+													projectTokenMetadata?.symbol && (
 														<p className="text-sm mt-1">
 															Token Symbol:{' '}
 															<span className="font-medium">
@@ -1062,7 +1108,7 @@ export default function CreatePool() {
 								</AlertInfo>
 							)}
 
-							{isTokenValid == undefined &&
+							{isProjectTokenValid == undefined &&
 								projectTokenAddress &&
 								!isValidatingToken && (
 									<div className="text-sm text-gray-400 italic">
@@ -1104,6 +1150,19 @@ export default function CreatePool() {
 									/>
 								</svg>
 							</Button>
+
+							<ProjectTokenBalanceIndicator
+								key={projectTokenAddress}
+								isShown={
+									(!!isProjectTokenValid || false) &&
+									(!!totalProjectTokenSupply || false) &&
+									!!projectTokenMetadata
+								}
+								hasEnoughProjectTokenBalance={hasEnoughProjectTokenBalance}
+								projectTokenMetadata={projectTokenMetadata!}
+								projectTokenBalance={projectTokenBalance}
+								totalProjectTokenSupply={totalProjectTokenSupply}
+							/>
 
 							<div className="flex flex-wrap gap-3 w-full">
 								{pool.map((poolId) => (
@@ -1230,15 +1289,16 @@ export default function CreatePool() {
     																[&::-webkit-outer-spin-button]:appearance-none"
 												/>
 
-												<Button className="glass-enhanced rounded-xl">
-													Check
-												</Button>
+												{/* <Button className="glass-enhanced rounded-xl">
+													Check balance
+												</Button> */}
 											</div>
 										</div>
 
 										<div className="w-full flex flex-col gap-3 p-2">
 											<span className="font-orbitron text-lg">
-												Max stake per investor
+												Max stake per investor (
+												{poolData[poolId]?.vTokenSymbol || 'Tokens'})
 											</span>
 											<input
 												type="number"
@@ -1266,7 +1326,7 @@ export default function CreatePool() {
 										</div>
 
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className="font-orbitron text-lg">From</span>
+											<span className="font-orbitron text-lg">Start date</span>
 											<input
 												type="datetime-local"
 												value={
@@ -1281,7 +1341,7 @@ export default function CreatePool() {
 										</div>
 
 										<div className="w-full flex flex-col gap-3 p-2">
-											<span className="font-orbitron text-lg">To</span>
+											<span className="font-orbitron text-lg">End date</span>
 											<input
 												type="datetime-local"
 												value={formatDateTimeLocal(poolData[poolId]?.to) || ''}
@@ -1295,7 +1355,7 @@ export default function CreatePool() {
 
 										<div className=" w-full flex flex-col gap-3 p-2">
 											<span className="font-orbitron flex text-lg  items-center gap-2">
-												<span>Emission Rate</span>
+												<span>Rewards Emission Rate</span>
 												<div className="relative group cursor-pointer">
 													<svg
 														width="20"
@@ -1313,12 +1373,12 @@ export default function CreatePool() {
 														/>
 													</svg>
 													<div className="absolute w-64 -left-[127px] top-1/2 -translate-y-28 ml-2 bg-white text-black text-xs px-3 py-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 font-comfortaa pointer-events-none">
-														Project owners can define multiple emission phases
-														with different token rates. Higher emission rates in
-														early phases attract early stakers, while lower
-														rates in later phases reward long-term commitment.
-														Strategic planning of these rates can significantly
-														impact investor participation and staking behavior.
+														Define distinct emission rate phases of your project
+														token to tailor your reward strategy. You can set
+														higher rates for early phases to incentivize early
+														participation, and adjust them for later phases to
+														reward long-term stakers. This strategic approach is
+														key to managing investor engagement.
 													</div>
 												</div>
 											</span>
@@ -1605,7 +1665,9 @@ export default function CreatePool() {
 						{selectedPoolId && (
 							<SteplineChart
 								poolId={selectedPoolId}
-								projectTokenName={projectTokenMetadata.name}
+								projectTokenName={projectTokenMetadata?.name}
+								projectTokenSymbol={projectTokenMetadata?.symbol}
+								projectTokenDecimals={projectTokenMetadata?.decimals}
 							/>
 						)}
 					</div>
@@ -1654,16 +1716,19 @@ export default function CreatePool() {
 										>
 											X
 										</Button>
-										<span className="absolute top-4 sm:top-5 left-4 sm:left-7 font-orbitron text-sm sm:text-lg max-w-[82%]">
-											The amount of tokens emitted for this period
+										<span className="absolute top-4 sm:top-5 left-4 sm:left-7 font-orbitron text-sm sm:text-lg max-w-[70%]">
+											Phase {index + 1} configurations
 										</span>
 										<div className="w-full flex flex-col gap-2 mt-12 sm:gap-3 p-1 sm:p-2">
+											<span className="font-orbitron text-base sm:text-lg">
+												Tokens emitted
+											</span>
 											<div className="relative w-full">
 												<input
 													type="number"
 													value={phase.tokenAmount || ''}
 													onChange={(e) =>
-														handleChangeEmissionRate(
+														handleChangePhase(
 															selectedPoolId,
 															phase.id,
 															'tokenAmount',
@@ -1683,7 +1748,7 @@ export default function CreatePool() {
 												type="datetime-local"
 												value={formatDateTimeLocal(phase.from) || ''}
 												onChange={(e) =>
-													handleChangeEmissionRate(
+													handleChangePhase(
 														selectedPoolId,
 														phase.id,
 														'from',
@@ -1702,7 +1767,7 @@ export default function CreatePool() {
 												type="datetime-local"
 												value={formatDateTimeLocal(phase.to) || ''}
 												onChange={(e) =>
-													handleChangeEmissionRate(
+													handleChangePhase(
 														selectedPoolId,
 														phase.id,
 														'to',

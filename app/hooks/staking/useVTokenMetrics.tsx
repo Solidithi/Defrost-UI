@@ -13,6 +13,7 @@ export function useVTokenMetrics({ launchpools }: useVTokenDataProps) {
 
 	const availableVTokens = useMemo(() => {
 		const chainIdKey = chainId.toString() as keyof typeof chains
+		// const chainIdKey = 1287
 		return chains[chainIdKey].tokens.filter(
 			(token) => token.type.toLowerCase() === 'vtoken'
 		)
