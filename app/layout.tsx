@@ -36,9 +36,9 @@ export default function RootLayout({
 						navItems={[
 							{ name: 'Home', link: '/home' },
 							{ name: 'Launchpools', link: '/home' },
-							{ name: 'Launcher Tool', link: '/project/create' },
-							{ name: 'My Projects', link: '/my-project' },
 							{ name: 'Staking Portfolio', link: '/staking-portfolio' },
+							{ name: 'Project Launcher', link: '/project/create' },
+							{ name: 'My Projects', link: '/my-project' },
 						]}
 					/>
 					<main className="flex-1">{children}</main>
