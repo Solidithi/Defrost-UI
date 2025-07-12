@@ -4,6 +4,7 @@ import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
 import { StatCard } from '@/app/components/UI/card/StatCard'
 import { TokenInfo } from '@/app/store/staking'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
+import { useProjectStore } from '@/app/store/project'
 import BarChart from '@/app/components/charts/Barchart'
 import DonutChart from '@/app/components/charts/DonutChart'
 import LineChart from '@/app/components/charts/LineChart'
@@ -14,6 +15,8 @@ import Tabs from '@/app/components/UI/shared/Tabs'
 const Launchpool = () => {
 	// vToken filtering state (kept local as requested)
 	const [selectedVToken, setSelectedVToken] = useState<TokenInfo | null>(null)
+
+	const { currentProject } = useProjectStore()
 
 	const mockSocials = {
 		website: 'https://www.example.com',
@@ -105,7 +108,7 @@ const Launchpool = () => {
 
 	return (
 		<div className="relative mt-24 px-4 mb-8 min-h-screen overflow-hidden">
-			{/* Professional ambient background layers */}
+			{/* Ambient background layers */}
 			<div className="fixed inset-0 z-0">
 				<div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"></div>
 				<div className="absolute inset-0 bg-gradient-to-r from-purple-950/20 via-slate-900/30 to-blue-950/20"></div>
@@ -142,12 +145,14 @@ const Launchpool = () => {
 			<BackLight
 				backgroundColor="#020203"
 				overlayColor="#8B5CF6"
-				opacity={0.03}
+				opacity={0.5}
 			/>
 			<div className="relative z-10 flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky top-32 self-start">
 					<SideBar
 						selectedVToken={selectedVToken}
+						projectLogo={currentProject?.logo || undefined}
+						projectName={currentProject?.name || ''}
 						onVTokenSelect={setSelectedVToken}
 						socials={mockSocials}
 					/>

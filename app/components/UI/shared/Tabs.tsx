@@ -40,12 +40,12 @@ const Tabs: React.FC<TabsProps> = ({
 							relative z-10 px-3 py-2 font-medium text-sm font-orbitron
 							rounded-lg transition-all duration-300 ease-in-out
 							focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-slate-800
-							min-w-[80px] text-center
+							min-w-[80px] text-center overflow-hidden
 							${tabClassName}
 							${
 								activeIndex === idx
-									? `warm-cool-bg text-white shadow-lg shadow-blue-500/40 
-									border border-blue-400/50 transform scale-105`
+									? `text-white shadow-lg shadow-purple-500/20 
+									border-0 transform scale-105`
 									: `text-slate-300 hover:text-white hover:bg-slate-700/50 
 									hover:shadow-md hover:transform hover:scale-102 hover:border-slate-600/50
 									border border-transparent rounded-lg`
@@ -53,21 +53,26 @@ const Tabs: React.FC<TabsProps> = ({
 						`}
 						onClick={() => setActiveIndex(idx)}
 					>
-						<span className="relative z-10">{tab.title}</span>
-
-						{/* Active tab indicator */}
+						{/* Active tab indicator - positioned behind text */}
 						{activeIndex === idx && (
 							<motion.div
 								layoutId="activeTab"
-								className="absolute inset-0 warm-cool-bg rounded-lg border border-blue-400/30 shadow-lg shadow-blue-500/40"
+								className="absolute inset-0 warm-cool-bg rounded-lg shadow-lg shadow-purple-500/20"
 								initial={false}
 								transition={{
 									type: 'spring',
 									stiffness: 300,
 									damping: 30,
 								}}
+								style={{
+									mask: 'linear-gradient(90deg, transparent 0%, black 2%, black 98%, transparent 100%)',
+									WebkitMask:
+										'linear-gradient(90deg, transparent 0%, black 2%, black 98%, transparent 100%)',
+								}}
 							/>
 						)}
+
+						<span className="relative z-20">{tab.title}</span>
 					</button>
 				))}
 			</div>

@@ -20,6 +20,8 @@ import {
 interface SideBarProps {
 	selectedVToken: TokenInfo | null
 	onVTokenSelect?: (vToken: TokenInfo | null) => void
+	projectLogo?: string
+	projectName: string
 	socials?: {
 		website?: string
 		twitter?: string
@@ -29,7 +31,13 @@ interface SideBarProps {
 	}
 }
 
-const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
+const SideBar = ({
+	selectedVToken,
+	onVTokenSelect,
+	projectLogo,
+	projectName,
+	socials,
+}: SideBarProps) => {
 	const { pools } = useStakingStore()
 	const { availableVTokens, poolCountByVToken } = useVTokenMetrics({
 		launchpools: pools.launchpools,
@@ -111,13 +119,17 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 					) : (
 						<div className="flex justify-between items-center">
 							<div className="flex items-center">
-								<Image src={DefrostLogo} alt="Logo" className="h-7 w-7 mr-2" />
+								<Image
+									src={projectLogo || DefrostLogo}
+									alt="Logo"
+									className="h-7 w-7 mr-2"
+								/>
 								<Link href={'/'}>
 									<span
 										style={{ fontFamily: permanentMarker.style.fontFamily }}
 										className="text-2xl tracking-tight text-white font-bold"
 									>
-										Defrost
+										{projectLogo && projectName ? projectName : 'Defrost'}
 									</span>
 								</Link>
 							</div>

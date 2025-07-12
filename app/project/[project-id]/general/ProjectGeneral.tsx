@@ -6,13 +6,14 @@ import { useAccount } from 'wagmi'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { project } from '@prisma/client'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
+import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
+import { useProjectStore } from '@/app/store/project'
 import CarouselWithProgress from '@/app/components/UI/carousel/Carousel'
 import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
 import SideBar from '@/app/components/service-sections/SideBar'
 import Logo from '@/public/Logo.png'
 import Tabs from '@/app/components/UI/shared/Tabs'
-import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
 
 interface ProjectDetailProps {
 	project: project | null
@@ -41,6 +42,8 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 			src: 'https://images.unsplash.com/photo-1679420437432-80cfbf88986c?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 		},
 	]
+
+	const { currentProject } = useProjectStore()
 
 	const params = useParams()
 	const projectId = params['project-id']
@@ -150,7 +153,11 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 			<AnimatedBlobs />
 			<div className="relative z-10 flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky self-start">
-					<SideBar selectedVToken={null} />
+					<SideBar
+						selectedVToken={null}
+						projectLogo={currentProject?.logo || undefined}
+						projectName={currentProject?.name || ''}
+					/>
 				</div>
 				<div className="h-auto w-full rounded-xl glass-enhanced flex flex-wrap flex-col gap-10 justify-center items-center p-20">
 					<div className=" self-start">
