@@ -399,8 +399,8 @@ const AllProject = () => {
 				<div className="flex items-center">
 					{project.logo ? (
 						<Image
-							src={`data:image/png;base64,${project.logo}`}
-							alt={project.name || 'Project logo'}
+							src={project.logo}
+							alt={'Logo'}
 							width={32}
 							height={32}
 							className="w-8 h-8 mr-3 rounded-full"
