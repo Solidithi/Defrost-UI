@@ -25,6 +25,7 @@ import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll'
 import { debounce } from '@/app/utils/timing'
 import { StatCard, StatCardSkeleton } from '../components/UI/card/StatCard'
 import { useChainId } from 'wagmi'
+import Link from 'next/link'
 import Pagination, { PaginationInfo } from '../components/UI/shared/Pagination'
 import {
 	Filter,
@@ -63,7 +64,7 @@ const BODY_SECTION_GRADIENTS = [
 ]
 
 // Define stat card interface
-const AllProject = () => {
+export default function Home() {
 	const [isCard, setIsCard] = useState(true)
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
@@ -1134,7 +1135,7 @@ const AllProject = () => {
 								</p>
 								<div className="flex flex-col sm:flex-row gap-4 justify-center">
 									<button className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg">
-										Launch Project
+										<Link href="/project/create">Launch Project</Link>
 									</button>
 									<button className="px-8 py-3 bg-white/10 text-white font-medium rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/20">
 										Learn More
@@ -1148,5 +1149,3 @@ const AllProject = () => {
 		</div>
 	)
 }
-
-export default AllProject
