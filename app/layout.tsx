@@ -34,10 +34,11 @@ export default function RootLayout({
 				<Providers cookies={headers().get('cookie')}>
 					<Navbar
 						navItems={[
-							{ name: 'Home', link: '/' },
-							{ name: 'My Project', link: '/my-project' },
-							{ name: 'My Staking', link: '/my-staking' },
-							{ name: 'Launchpool', link: '/about' },
+							{ name: 'Home', link: '/home' },
+							{ name: 'Launchpools', link: '/home' },
+							{ name: 'Launcher Tool', link: '/project/create' },
+							{ name: 'My Projects', link: '/my-project' },
+							{ name: 'Staking Portfolio', link: '/staking-portfolio' },
 						]}
 					/>
 					<main className="flex-1">{children}</main>

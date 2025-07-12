@@ -19,7 +19,7 @@ import { useNavBarControl } from '../provider/navbar-control'
 import Button from '../components/UI/button/Button'
 import Spinner from '@/app/components/UI/effect/Spinner'
 
-export function MyStakingPage() {
+export function StakingPortfolio() {
 	const {
 		activeTab,
 		setActiveTab,
