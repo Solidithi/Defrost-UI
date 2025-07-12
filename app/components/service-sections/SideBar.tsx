@@ -122,6 +122,8 @@ const SideBar = ({
 								<Image
 									src={projectLogo || DefrostLogo}
 									alt="Logo"
+									width={'28'}
+									height={'28'}
 									className="h-7 w-7 mr-2"
 								/>
 								<Link href={'/'}>

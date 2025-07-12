@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import SplitText from '../components/UI/effect/SplitText'
 import Spinner from '@/app/components/UI/effect/Spinner'
 import GlowingSearchBar from '../components/UI/shared/GlowingSearchBar'
@@ -12,6 +12,7 @@ import Image from 'next/image'
 import Particles from '../components/UI/background/Particles'
 import CarouselWithProgress from '../components/UI/carousel/Carousel'
 import AllProjectCard from '../components/UI/card/AllProjectCard'
+import { LaunchpoolCard } from '../components/UI/card/LaunchpoolCard'
 import LaunchpoolTableRow from '@/app/components/pool-specific-rows/LaunchpoolTableRow'
 import AnimatedBlobs from '../components/UI/background/AnimatedBlobs'
 import { Column } from '../components/UI/shared/DataTable'
@@ -25,6 +26,26 @@ import { debounce } from '@/app/utils/timing'
 import { StatCard, StatCardSkeleton } from '../components/UI/card/StatCard'
 import { useChainId } from 'wagmi'
 import Pagination, { PaginationInfo } from '../components/UI/shared/Pagination'
+import {
+	Filter,
+	TrendingUp,
+	Zap,
+	Target,
+	Star,
+	Flame,
+	Trophy,
+	Users,
+	ChevronDown,
+	Calendar,
+	Globe,
+	Sparkles,
+	ArrowRight,
+	BarChart3,
+	Activity,
+	Coins,
+	Shield,
+	Layers,
+} from 'lucide-react'
 
 // Stable gradient arrays - defined outside component to prevent re-renders
 const HEAD_SECTION_GRADIENTS = [
@@ -53,6 +74,46 @@ const AllProject = () => {
 	)
 	const [currentPage, setCurrentPage] = useState(1)
 	const [itemsPerPage] = useState(10) // Fixed items per page
+
+	// Enhanced filtering state
+	const [selectedFilter, setSelectedFilter] = useState<
+		'all' | 'trending' | 'featured' | 'new'
+	>('all')
+	const [selectedCategory, setSelectedCategory] = useState<
+		'all' | 'defi' | 'nft' | 'gaming' | 'infrastructure'
+	>('all')
+	const [selectedChain, setSelectedChain] = useState<
+		'all' | 'moonbeam' | 'polkadot' | 'kusama'
+	>('all')
+	const [sortBy, setSortBy] = useState<
+		'newest' | 'oldest' | 'apy' | 'tvl' | 'participants'
+	>('newest')
+	const [activeSection, setActiveSection] = useState<
+		'overview' | 'projects' | 'launchpools' | 'trending'
+	>('overview')
+
+	// Content filtering options
+	const filterOptions = [
+		{ id: 'all', label: 'All Projects', icon: Globe },
+		{ id: 'trending', label: 'Trending', icon: TrendingUp },
+		{ id: 'featured', label: 'Featured', icon: Star },
+		{ id: 'new', label: 'New Launches', icon: Sparkles },
+	]
+
+	const categoryOptions = [
+		{ id: 'all', label: 'All Categories', icon: Layers },
+		{ id: 'defi', label: 'DeFi', icon: Coins },
+		{ id: 'nft', label: 'NFTs', icon: Trophy },
+		{ id: 'gaming', label: 'Gaming', icon: Target },
+		{ id: 'infrastructure', label: 'Infrastructure', icon: Shield },
+	]
+
+	const chainOptions = [
+		{ id: 'all', label: 'All Chains' },
+		{ id: 'moonbeam', label: 'Moonbeam' },
+		{ id: 'polkadot', label: 'Polkadot' },
+		{ id: 'kusama', label: 'Kusama' },
+	]
 
 	/**----------------- Handle query change in debounced manner ------------------ */
 	const handleDebouncedSearchQuery = debounce(
@@ -95,11 +156,114 @@ const AllProject = () => {
 		enabled: !isCard, // Only fetch when in table mode
 	})
 
+	/**----------------- Fetch Platform Metrics ------------------ */
+	const {
+		data: platformMetrics,
+		isLoading: isLoadingMetrics,
+		error: metricsError,
+	} = usePlatformMetrics()
+
 	// Use the appropriate data source based on view mode
 	const isLoading = isCard ? isLoadingInfinite : isLoadingPaginated
 	const isError = isCard ? isErrorInfinite : isErrorPaginated
 	const error = isCard ? errorInfinite : errorPaginated
 	const refetch = isCard ? refetchInfinite : refetchPaginated
+
+	// Enhanced filtering and sorting logic
+	const filteredAndSortedProjects = useMemo(() => {
+		let projects: EnrichedProject[] = []
+
+		if (isCard && projectsData?.pages) {
+			projects = projectsData.pages.flatMap((page) => page.projects)
+		} else if (!isCard && paginatedData?.projects) {
+			projects = paginatedData.projects
+		}
+
+		// Apply category filter
+		if (selectedCategory !== 'all') {
+			projects = projects.filter((project) => {
+				// This would need to be implemented based on your project categorization
+				return true // Placeholder
+			})
+		}
+
+		// Apply search filter
+		if (debouncedSearchQuery) {
+			projects = projects.filter(
+				(project) =>
+					(project.name || '')
+						.toLowerCase()
+						.includes(debouncedSearchQuery.toLowerCase()) ||
+					(project.short_description || '')
+						.toLowerCase()
+						.includes(debouncedSearchQuery.toLowerCase())
+			)
+		}
+
+		// Apply sorting
+		switch (sortBy) {
+			case 'newest':
+				projects.sort(
+					(a, b) =>
+						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+				)
+				break
+			case 'oldest':
+				projects.sort(
+					(a, b) =>
+						new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+				)
+				break
+			case 'apy':
+				projects.sort((a, b) => b.avgApy - a.avgApy)
+				break
+			case 'tvl':
+				projects.sort((a, b) => b.totalStaked - a.totalStaked)
+				break
+			case 'participants':
+				projects.sort((a, b) => b.totalStakers - a.totalStakers)
+				break
+		}
+
+		return projects
+	}, [
+		projectsData,
+		paginatedData,
+		selectedCategory,
+		debouncedSearchQuery,
+		sortBy,
+		isCard,
+	])
+
+	// Extract all launchpools from projects
+	const allLaunchpools = useMemo(() => {
+		return filteredAndSortedProjects.flatMap(
+			(project) =>
+				project.launchpools?.map((pool) => ({
+					...pool,
+					projectName: project.name,
+					projectLogo: project.logo,
+				})) || []
+		)
+	}, [filteredAndSortedProjects])
+
+	// Get featured launchpools (top 6 by APY)
+	const featuredLaunchpools = useMemo(() => {
+		return [...allLaunchpools]
+			.sort(
+				(a, b) =>
+					parseFloat(b.staker_apy?.toString() || '0') -
+					parseFloat(a.staker_apy?.toString() || '0')
+			)
+			.slice(0, 6)
+	}, [allLaunchpools])
+
+	// Get trending projects (top 6 by recent activity)
+	const trendingProjects = useMemo(() => {
+		return [...filteredAndSortedProjects]
+			.sort((a, b) => b.totalStakers - a.totalStakers)
+			.slice(0, 6)
+	}, [filteredAndSortedProjects])
 
 	// Use infinite scroll hook
 	const { loadMoreRef } = useInfiniteScroll({
@@ -168,7 +332,7 @@ const AllProject = () => {
 	/**----------------- Use platform metrics (tanstack query) ------------------ */
 	const {
 		data: platformMetricsData,
-		isLoading: isLoadingMetrics,
+		isLoading: isLoadingPlatformMetrics,
 		isError: isLoadingMetricsError,
 		error: loadingMetricsError,
 		refetch: refetchMetrics,
@@ -389,10 +553,10 @@ const AllProject = () => {
 
 			<div className="relative z-10 text-white">
 				{/* Hero Section */}
-				<div className="pt-36 pb-16 text-center">
+				<div className="pt-32 pb-24 text-center">
 					<SplitText
 						text="THE DEFROST X-PERIENCE"
-						className="text-5xl md:text-5xl text-center font-bold text-white font-orbitron mb-4"
+						className="text-5xl md:text-6xl text-center font-bold text-white font-orbitron mb-6"
 						delay={150}
 						animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
 						animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
@@ -400,21 +564,95 @@ const AllProject = () => {
 						threshold={0.2}
 						rootMargin="-50px"
 					/>
-					<div className="text-gray-300 text-lg font-light max-w-2xl mx-auto">
-						Professional DeFi ecosystem for staking and yield farming
+					<div className="text-gray-300 text-xl font-light max-w-4xl mx-auto mb-16 leading-relaxed">
+						Explore the complete DeFi ecosystem with launchpools, launchpads,
+						NFT collections, and yield farming opportunities
+					</div>
+
+					{/* Quick Action Pills - Professional Gradients */}
+					<div className="flex flex-wrap justify-center gap-4 mb-12">
+						{[
+							{
+								label: 'High Yield Pools',
+								icon: TrendingUp,
+								gradient: 'from-slate-600/20 to-slate-700/20',
+								border: 'border-slate-500/30',
+								textColor: 'text-slate-300',
+								hoverGradient: 'hover:from-slate-500/30 hover:to-slate-600/30',
+								hoverBorder: 'hover:border-slate-400/50',
+								hoverText: 'hover:text-white',
+							},
+							{
+								label: 'New Launches',
+								icon: Sparkles,
+								gradient: 'from-indigo-600/20 to-indigo-700/20',
+								border: 'border-indigo-500/30',
+								textColor: 'text-indigo-300',
+								hoverGradient:
+									'hover:from-indigo-500/30 hover:to-indigo-600/30',
+								hoverBorder: 'hover:border-indigo-400/50',
+								hoverText: 'hover:text-white',
+							},
+							{
+								label: 'NFT Collections',
+								icon: Trophy,
+								gradient: 'from-violet-600/20 to-violet-700/20',
+								border: 'border-violet-500/30',
+								textColor: 'text-violet-300',
+								hoverGradient:
+									'hover:from-violet-500/30 hover:to-violet-600/30',
+								hoverBorder: 'hover:border-violet-400/50',
+								hoverText: 'hover:text-white',
+							},
+							{
+								label: 'Trending Projects',
+								icon: Flame,
+								gradient: 'from-gray-600/20 to-gray-700/20',
+								border: 'border-gray-500/30',
+								textColor: 'text-gray-300',
+								hoverGradient: 'hover:from-gray-500/30 hover:to-gray-600/30',
+								hoverBorder: 'hover:border-gray-400/50',
+								hoverText: 'hover:text-white',
+							},
+						].map((action, index) => (
+							<button
+								key={index}
+								className={`
+									flex items-center gap-2 px-6 py-3 rounded-full 
+									bg-gradient-to-r ${action.gradient} ${action.hoverGradient}
+									backdrop-blur-sm transition-all duration-300 font-medium text-sm
+									${action.textColor} ${action.hoverText} 
+									border ${action.border} ${action.hoverBorder}
+									hover:scale-105 group shadow-lg hover:shadow-xl
+									overflow-hidden
+								`}
+								onClick={() =>
+									setActiveSection(
+										index === 0
+											? 'launchpools'
+											: index === 1
+												? 'projects'
+												: index === 2
+													? 'overview'
+													: 'trending'
+									)
+								}
+							>
+								<action.icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+								<span>{action.label}</span>
+							</button>
+						))}
 					</div>
 				</div>
 
 				<div className="container mx-auto px-8">
-					{/* Stat cards */}
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
+					{/* Platform Stats - More Elegant Grid */}
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
 						{isLoadingMetrics
-							? // Show skeleton cards while loading
-								Array.from({ length: 3 }).map((_, index) => (
+							? Array.from({ length: 3 }).map((_, index) => (
 									<StatCardSkeleton key={index} />
 								))
-							: // Show actual stat cards
-								statCardItems.map((card, index) => (
+							: statCardItems.map((card, index) => (
 									<StatCard
 										key={index}
 										valuePrefix={card?.valuePrefix}
@@ -428,172 +666,481 @@ const AllProject = () => {
 								))}
 					</div>
 
-					{/* Yield Ecosystem Section */}
-					<div className="mb-12">
-						{/* Section Title */}
-						<div className="text-center mb-12">
-							<h2 className="text-3xl md:text-4xl font-bold font-orbitron text-white mb-4">
-								Yield Ecosystem
-							</h2>
-							<p className="text-gray-300 text-lg max-w-2xl mx-auto">
-								Discover and stake in our curated collection of high-yield DeFi
-								projects
-							</p>
+					{/* Secondary Stats - Simplified and More Spacious */}
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
+						<div className="bg-white/3 backdrop-blur-sm rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 group">
+							<div className="flex items-center justify-between mb-4">
+								<Coins className="w-6 h-6 text-blue-400/70 group-hover:text-blue-400 transition-colors" />
+								<span className="text-green-400/70 text-sm font-medium">
+									+12%
+								</span>
+							</div>
+							<div className="text-3xl font-bold text-white mb-2">
+								{allLaunchpools.length}
+							</div>
+							<div className="text-gray-400 text-sm">Active Pools</div>
+						</div>
+						<div className="bg-white/3 backdrop-blur-sm rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 group">
+							<div className="flex items-center justify-between mb-4">
+								<Trophy className="w-6 h-6 text-purple-400/70 group-hover:text-purple-400 transition-colors" />
+								<span className="text-green-400/70 text-sm font-medium">
+									+8%
+								</span>
+							</div>
+							<div className="text-3xl font-bold text-white mb-2">
+								{filteredAndSortedProjects.length}
+							</div>
+							<div className="text-gray-400 text-sm">Total Projects</div>
+						</div>
+						<div className="bg-white/3 backdrop-blur-sm rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 group">
+							<div className="flex items-center justify-between mb-4">
+								<BarChart3 className="w-6 h-6 text-green-400/70 group-hover:text-green-400 transition-colors" />
+								<span className="text-green-400/70 text-sm font-medium">
+									+24%
+								</span>
+							</div>
+							<div className="text-3xl font-bold text-white mb-2">
+								{featuredLaunchpools.length > 0
+									? `${parseFloat(featuredLaunchpools[0]?.staker_apy?.toString() || '0').toFixed(1)}%`
+									: '0%'}
+							</div>
+							<div className="text-gray-400 text-sm">Highest APY</div>
+						</div>
+						<div className="bg-white/3 backdrop-blur-sm rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 group">
+							<div className="flex items-center justify-between mb-4">
+								<Activity className="w-6 h-6 text-orange-400/70 group-hover:text-orange-400 transition-colors" />
+								<span className="text-green-400/70 text-sm font-medium">
+									+18%
+								</span>
+							</div>
+							<div className="text-3xl font-bold text-white mb-2">
+								{trendingProjects.reduce(
+									(sum, project) => sum + project.totalStakers,
+									0
+								)}
+							</div>
+							<div className="text-gray-400 text-sm">Total Participants</div>
+						</div>
+					</div>
+
+					{/* Enhanced Header with Navigation - More Elegant */}
+					<div className="flex flex-col lg:flex-row gap-8 mb-20">
+						{/* Search Bar */}
+						<div className="flex-1">
+							<GlowingSearchBar
+								value={searchQuery}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+									setSearchQuery(e.target.value)
+								}
+								placeholder="Search projects, pools, or tokens..."
+							/>
 						</div>
 
-						{/* Search and Controls */}
-						<div className="flex flex-col md:flex-row gap-6 mb-12">
-							<div className="flex-1">
-								<GlowingSearchBar
-									value={searchQuery}
-									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-										setSearchQuery(e.target.value)
-									}
-									placeholder="Search projects..."
-								/>
-							</div>
-							<div className="flex-shrink-0">
-								<SwitchTableOrCard
-									isCard={isCard}
-									setIsCard={handleViewToggle}
-								/>
-							</div>
-						</div>
-						{/* Projects Section */}
-						<div className="relative">
-							{/* Show loading state when initially loading */}
-							{isLoading && allProjects.length === 0 && (
-								<div className="flex justify-center items-center py-20">
-									<div className="flex items-center space-x-2">
-										<Spinner />
-										<span className="text-white text-lg">
-											Waking up the Yetis...
-										</span>
-									</div>
-								</div>
-							)}
-							{/* Show empty state when no projects */}
-							{!isLoading && allProjects.length === 0 && (
-								<div className="flex justify-center items-center py-20">
-									<div className="text-center">
-										<p className="text-gray-400 text-lg mb-4">
-											No projects found
-										</p>
-										<button
-											onClick={() => refetch()}
-											className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+						{/* Filter Controls - More Refined */}
+						<div className="flex flex-wrap gap-4">
+							{/* Category Filter */}
+							<div className="relative">
+								<select
+									value={selectedCategory}
+									onChange={(e) => setSelectedCategory(e.target.value as any)}
+									className="
+										appearance-none bg-white/5 backdrop-blur-sm border border-white/10 
+										rounded-xl px-5 py-3 text-white pr-10 focus:outline-none focus:ring-2 
+										focus:ring-blue-500/30 min-w-[150px] font-medium
+										hover:bg-white/10 hover:border-white/20 transition-all duration-300
+									"
+								>
+									{categoryOptions.map((option) => (
+										<option
+											key={option.id}
+											value={option.id}
+											className="bg-gray-800 text-white"
 										>
-											Refresh
+											{option.label}
+										</option>
+									))}
+								</select>
+								<ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+							</div>
+
+							{/* Chain Filter */}
+							<div className="relative">
+								<select
+									value={selectedChain}
+									onChange={(e) => setSelectedChain(e.target.value as any)}
+									className="
+										appearance-none bg-white/5 backdrop-blur-sm border border-white/10 
+										rounded-xl px-5 py-3 text-white pr-10 focus:outline-none focus:ring-2 
+										focus:ring-blue-500/30 min-w-[130px] font-medium
+										hover:bg-white/10 hover:border-white/20 transition-all duration-300
+									"
+								>
+									{chainOptions.map((option) => (
+										<option
+											key={option.id}
+											value={option.id}
+											className="bg-gray-800 text-white"
+										>
+											{option.label}
+										</option>
+									))}
+								</select>
+								<ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+							</div>
+
+							{/* Sort Filter */}
+							<div className="relative">
+								<select
+									value={sortBy}
+									onChange={(e) => setSortBy(e.target.value as any)}
+									className="
+										appearance-none bg-white/5 backdrop-blur-sm border border-white/10 
+										rounded-xl px-5 py-3 text-white pr-10 focus:outline-none focus:ring-2 
+										focus:ring-blue-500/30 min-w-[130px] font-medium
+										hover:bg-white/10 hover:border-white/20 transition-all duration-300
+									"
+								>
+									<option value="newest" className="bg-gray-800">
+										Newest
+									</option>
+									<option value="oldest" className="bg-gray-800">
+										Oldest
+									</option>
+									<option value="apy" className="bg-gray-800">
+										Highest APY
+									</option>
+									<option value="tvl" className="bg-gray-800">
+										Highest TVL
+									</option>
+									<option value="participants" className="bg-gray-800">
+										Most Popular
+									</option>
+								</select>
+								<ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+							</div>
+
+							{/* View Toggle */}
+							<SwitchTableOrCard isCard={isCard} setIsCard={handleViewToggle} />
+						</div>
+					</div>
+
+					{/* Content Tabs - More Elegant */}
+					<div className="flex flex-wrap gap-3 mb-16">
+						{[
+							{ id: 'overview', label: 'Overview', icon: Globe },
+							{ id: 'launchpools', label: 'Launchpools', icon: Zap },
+							{ id: 'projects', label: 'All Projects', icon: Layers },
+							{ id: 'trending', label: 'Trending', icon: TrendingUp },
+						].map((tab) => (
+							<button
+								key={tab.id}
+								onClick={() => setActiveSection(tab.id as any)}
+								className={`
+									flex items-center gap-3 px-6 py-3 rounded-xl transition-all duration-300 font-medium
+									${
+										activeSection === tab.id
+											? 'bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-white border border-blue-500/30 shadow-lg'
+											: 'bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 hover:border-white/20'
+									}
+								`}
+							>
+								<tab.icon className="w-5 h-5" />
+								{tab.label}
+							</button>
+						))}
+					</div>
+
+					{/* Content Based on Active Section */}
+					{activeSection === 'overview' && (
+						<div className="space-y-16">
+							{/* Featured Launchpools */}
+							{featuredLaunchpools.length > 0 && (
+								<div>
+									<div className="flex items-center justify-between mb-8">
+										<div>
+											<h3 className="text-2xl font-bold text-white mb-2">
+												Featured Launchpools
+											</h3>
+											<p className="text-gray-400">
+												High-yield opportunities selected for you
+											</p>
+										</div>
+										<button
+											onClick={() => setActiveSection('launchpools')}
+											className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+										>
+											View All <ArrowRight className="w-4 h-4" />
 										</button>
 									</div>
+									<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+										{featuredLaunchpools.slice(0, 6).map((pool, index) => (
+											<SectionComponent key={`featured-${pool.id}-${index}`}>
+												<LaunchpoolCard launchpool={pool} />
+											</SectionComponent>
+										))}
+									</div>
 								</div>
 							)}
-							{/* Show filtered empty state */}
-							{!isLoading &&
-								allProjects.length > 0 &&
-								filteredProjects.length === 0 && (
+
+							{/* Trending Projects */}
+							{trendingProjects.length > 0 && (
+								<div>
+									<div className="flex items-center justify-between mb-8">
+										<div>
+											<h3 className="text-2xl font-bold text-white mb-2">
+												Trending Projects
+											</h3>
+											<p className="text-gray-400">
+												Most popular projects by user activity
+											</p>
+										</div>
+										<button
+											onClick={() => setActiveSection('trending')}
+											className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+										>
+											View All <ArrowRight className="w-4 h-4" />
+										</button>
+									</div>
+									<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+										{trendingProjects.slice(0, 6).map((project, index) => (
+											<SectionComponent key={`trending-${project.id}-${index}`}>
+												<AllProjectCard project={project} />
+											</SectionComponent>
+										))}
+									</div>
+								</div>
+							)}
+						</div>
+					)}
+
+					{activeSection === 'launchpools' && (
+						<div>
+							<div className="text-center mb-12">
+								<h2 className="text-3xl md:text-4xl font-bold font-orbitron text-white mb-4">
+									All Launchpools
+								</h2>
+								<p className="text-gray-300 text-lg max-w-2xl mx-auto">
+									Discover high-yield staking opportunities across the ecosystem
+								</p>
+							</div>
+							{allLaunchpools.length > 0 ? (
+								<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+									{allLaunchpools.map((pool, index) => (
+										<SectionComponent key={`pool-${pool.id}-${index}`}>
+											<LaunchpoolCard launchpool={pool} />
+										</SectionComponent>
+									))}
+								</div>
+							) : (
+								<div className="text-center py-20">
+									<div className="text-gray-400 text-lg">
+										No launchpools available
+									</div>
+								</div>
+							)}
+						</div>
+					)}
+
+					{activeSection === 'projects' && (
+						<div>
+							<div className="text-center mb-12">
+								<h2 className="text-3xl md:text-4xl font-bold font-orbitron text-white mb-4">
+									All Projects
+								</h2>
+								<p className="text-gray-300 text-lg max-w-2xl mx-auto">
+									Complete ecosystem of DeFi projects and opportunities
+								</p>
+							</div>
+							{/* Projects Section */}
+							<div className="relative">
+								{/* Show loading state when initially loading */}
+								{isLoading && allProjects.length === 0 && (
+									<div className="flex justify-center items-center py-20">
+										<div className="flex items-center space-x-2">
+											<Spinner />
+											<span className="text-white text-lg">
+												Waking up the Yetis...
+											</span>
+										</div>
+									</div>
+								)}
+								{/* Show empty state when no projects */}
+								{!isLoading && allProjects.length === 0 && (
 									<div className="flex justify-center items-center py-20">
 										<div className="text-center">
 											<p className="text-gray-400 text-lg mb-4">
-												No projects match your search: &ldquo;
-												{debouncedSearchQuery}&ldquo;
+												No projects found
 											</p>
 											<button
-												onClick={() => setSearchQuery('')}
+												onClick={() => refetch()}
 												className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
 											>
-												Clear Search
+												Refresh
 											</button>
 										</div>
 									</div>
-								)}{' '}
-							{/* Show projects */}
-							{filteredProjects.length > 0 && (
-								<div className="relative">
-									{/* Animated Blobs - Body Section (Project Cards) - Very subtle for table readability */}
-									<div className="absolute inset-0 z-40 pointer-events-none overflow-hidden">
-										<AnimatedBlobs
-											count={2}
-											customGradients={BODY_SECTION_GRADIENTS}
-											opacity={0.08}
-										/>
-									</div>
-
-									{isCard ? (
-										<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-24 relative z-20">
-											{paginatedProjects.map(
-												(project: EnrichedProject, index: number) => (
-													<SectionComponent key={`${project.id}-${index}`}>
-														<AllProjectCard project={project} />
-													</SectionComponent>
-												)
-											)}
-										</div>
-									) : (
-										<div className="mb-8 relative z-20">
-											<DataTable
-												data={paginatedProjects}
-												columns={tableColumns}
-												keyField="id"
-												renderActions={renderTableActions}
-												renderExpandableRow={renderExpandableRow}
-												onRowClick={(project) =>
-													setSelectedProject(
-														selectedProject && selectedProject.id === project.id
-															? null
-															: project
-													)
-												}
-												className="max-w-full"
-												noDataMessage="No projects found"
-											/>
-
-											{/* Pagination Controls */}
-											{totalPages > 1 && (
-												<div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-													<PaginationInfo
-														currentPage={currentPage}
-														totalPages={totalPages}
-														totalItems={totalItems}
-														itemsPerPage={itemsPerPage}
-														className="order-2 sm:order-1"
-													/>
-													<Pagination
-														currentPage={currentPage}
-														totalPages={totalPages}
-														onPageChange={handlePageChange}
-														className="order-1 sm:order-2"
-													/>
-												</div>
-											)}
-										</div>
-									)}
-								</div>
-							)}
-							{/* Infinite scroll loading trigger - Only for card view */}
-							{!debouncedSearchQuery && isCard && (
-								<div ref={loadMoreRef} className="flex justify-center py-8">
-									{isFetchingNextPage && (
-										<div className="flex items-center space-x-2">
-											<Spinner />
-											<span className="text-gray-400">
-												Summoning more yetis...
-											</span>
-										</div>
-									)}
-									{!hasNextPage && allProjects.length > 0 && (
-										<div className="flex items-center justify-center py-12">
-											<div className="flex items-center space-x-6">
-												<div className="h-px w-16 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
-												<span className="text-gray-500 text-sm font-medium tracking-wide">
-													End of Projects
-												</span>
-												<div className="h-px w-16 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
+								)}
+								{/* Show filtered empty state */}
+								{!isLoading &&
+									allProjects.length > 0 &&
+									filteredProjects.length === 0 && (
+										<div className="flex justify-center items-center py-20">
+											<div className="text-center">
+												<p className="text-gray-400 text-lg mb-4">
+													No projects match your search: &ldquo;
+													{debouncedSearchQuery}&ldquo;
+												</p>
+												<button
+													onClick={() => setSearchQuery('')}
+													className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+												>
+													Clear Search
+												</button>
 											</div>
 										</div>
 									)}
+								{/* Show projects */}
+								{filteredProjects.length > 0 && (
+									<div className="relative">
+										{/* Animated Blobs - Body Section (Project Cards) - Very subtle for table readability */}
+										<div className="absolute inset-0 z-40 pointer-events-none overflow-hidden">
+											<AnimatedBlobs
+												count={2}
+												customGradients={BODY_SECTION_GRADIENTS}
+												opacity={0.08}
+											/>
+										</div>
+
+										{isCard ? (
+											<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-24 relative z-20">
+												{paginatedProjects.map(
+													(project: EnrichedProject, index: number) => (
+														<SectionComponent key={`${project.id}-${index}`}>
+															<AllProjectCard project={project} />
+														</SectionComponent>
+													)
+												)}
+											</div>
+										) : (
+											<div className="mb-8 relative z-20">
+												<DataTable
+													data={paginatedProjects}
+													columns={tableColumns}
+													keyField="id"
+													renderActions={renderTableActions}
+													renderExpandableRow={renderExpandableRow}
+													onRowClick={(project) =>
+														setSelectedProject(
+															selectedProject &&
+																selectedProject.id === project.id
+																? null
+																: project
+														)
+													}
+													className="max-w-full"
+													noDataMessage="No projects found"
+												/>
+
+												{/* Pagination Controls */}
+												{totalPages > 1 && (
+													<div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+														<PaginationInfo
+															currentPage={currentPage}
+															totalPages={totalPages}
+															totalItems={totalItems}
+															itemsPerPage={itemsPerPage}
+															className="order-2 sm:order-1"
+														/>
+														<Pagination
+															currentPage={currentPage}
+															totalPages={totalPages}
+															onPageChange={handlePageChange}
+															className="order-1 sm:order-2"
+														/>
+													</div>
+												)}
+											</div>
+										)}
+									</div>
+								)}
+								{/* Infinite scroll loading trigger - Only for card view */}
+								{!debouncedSearchQuery && isCard && (
+									<div ref={loadMoreRef} className="flex justify-center py-8">
+										{isFetchingNextPage && (
+											<div className="flex items-center space-x-2">
+												<Spinner />
+												<span className="text-gray-400">
+													Summoning more yetis...
+												</span>
+											</div>
+										)}
+										{!hasNextPage && allProjects.length > 0 && (
+											<div className="flex items-center justify-center py-12">
+												<div className="flex items-center space-x-6">
+													<div className="h-px w-16 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
+													<span className="text-gray-500 text-sm font-medium tracking-wide">
+														End of Projects
+													</span>
+													<div className="h-px w-16 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
+												</div>
+											</div>
+										)}
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+
+					{activeSection === 'trending' && (
+						<div>
+							<div className="text-center mb-12">
+								<h2 className="text-3xl md:text-4xl font-bold font-orbitron text-white mb-4">
+									Trending Projects
+								</h2>
+								<p className="text-gray-300 text-lg max-w-2xl mx-auto">
+									Most popular projects based on user activity and engagement
+								</p>
+							</div>
+							{trendingProjects.length > 0 ? (
+								<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+									{trendingProjects.map((project, index) => (
+										<SectionComponent
+											key={`trending-all-${project.id}-${index}`}
+										>
+											<AllProjectCard project={project} />
+										</SectionComponent>
+									))}
+								</div>
+							) : (
+								<div className="text-center py-20">
+									<div className="text-gray-400 text-lg">
+										No trending projects available
+									</div>
 								</div>
 							)}
+						</div>
+					)}
+
+					{/* Call to Action Section */}
+					<div className="mt-24 mb-16">
+						<div className="bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-2xl p-8 border border-white/10 backdrop-blur-sm">
+							<div className="text-center">
+								<h3 className="text-2xl font-bold text-white mb-4">
+									Ready to Launch Your Project?
+								</h3>
+								<p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+									Join the Defrost ecosystem and launch your own DeFi project
+									with our comprehensive platform
+								</p>
+								<div className="flex flex-col sm:flex-row gap-4 justify-center">
+									<button className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg">
+										Launch Project
+									</button>
+									<button className="px-8 py-3 bg-white/10 text-white font-medium rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/20">
+										Learn More
+									</button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
