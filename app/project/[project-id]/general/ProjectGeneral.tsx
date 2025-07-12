@@ -15,11 +15,10 @@ import Tabs from '@/app/components/UI/shared/Tabs'
 import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
 
 interface ProjectDetailProps {
-	launchpools: EnrichedLaunchpool[] | undefined
 	project: project | null
 }
 
-const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
+const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 	const slideData = [
 		{
 			title: 'Mystic Mountains',
@@ -104,10 +103,52 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 	]
 
 	return (
-		<div className="my-36 px-16 text-white">
+		<div className="relative my-36 px-16 text-white min-h-screen overflow-hidden">
+			{/* Professional ambient background layers */}
+			<div className="fixed inset-0 z-0">
+				<div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"></div>
+				<div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/15 via-slate-900/20 to-purple-950/15"></div>
+				<div
+					className="absolute top-1/4 left-1/5 w-80 h-80 bg-indigo-600/8 rounded-full blur-3xl animate-pulse"
+					style={{ animationDuration: '9s' }}
+				></div>
+				<div
+					className="absolute bottom-1/3 right-1/5 w-96 h-96 bg-purple-600/6 rounded-full blur-3xl animate-pulse"
+					style={{ animationDuration: '7s', animationDelay: '1s' }}
+				></div>
+				<div
+					className="absolute top-2/3 left-2/3 w-64 h-64 bg-blue-600/4 rounded-full blur-2xl animate-pulse"
+					style={{ animationDuration: '11s', animationDelay: '3s' }}
+				></div>
+				<div
+					className="absolute top-1/6 right-1/3 w-32 h-32 bg-pink-600/3 rounded-full blur-xl animate-pulse"
+					style={{ animationDuration: '5s', animationDelay: '2s' }}
+				></div>
+			</div>
+
+			{/* Subtle floating elements */}
+			<div className="fixed inset-0 z-0 pointer-events-none">
+				<div
+					className="absolute top-1/5 left-1/3 w-0.5 h-0.5 bg-indigo-400/40 rounded-full animate-ping"
+					style={{ animationDelay: '1s', animationDuration: '4s' }}
+				></div>
+				<div
+					className="absolute top-2/3 left-1/5 w-0.5 h-0.5 bg-purple-400/30 rounded-full animate-ping"
+					style={{ animationDelay: '0s', animationDuration: '5s' }}
+				></div>
+				<div
+					className="absolute top-1/2 right-1/6 w-0.5 h-0.5 bg-blue-400/25 rounded-full animate-ping"
+					style={{ animationDelay: '2.5s', animationDuration: '6s' }}
+				></div>
+				<div
+					className="absolute bottom-1/4 right-2/5 w-0.5 h-0.5 bg-pink-400/20 rounded-full animate-ping"
+					style={{ animationDelay: '4s', animationDuration: '7s' }}
+				></div>
+			</div>
+
 			<BackLight />
 			<AnimatedBlobs />
-			<div className="flex items-start justify-start gap-6 min-h-screen relative z-10">
+			<div className="relative z-10 flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky self-start">
 					<SideBar selectedVToken={null} />
 				</div>
@@ -180,4 +221,4 @@ const ProjectDetail = ({ launchpools, project }: ProjectDetailProps) => {
 	)
 }
 
-export default ProjectDetail
+export default ProjectGeneral
