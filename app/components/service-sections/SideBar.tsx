@@ -95,7 +95,7 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 			className={`transition-all duration-300 ease-in-out ${isExpanded ? 'w-[250px]' : 'w-[80px]'}`}
 		>
 			<div
-				className={`glass-enhanced rounded-xl p-5 relative ${isExpanded ? '' : 'flex flex-col items-center'}`}
+				className={`glass-enhanced rounded-xl p-5 relative shadow-2xl shadow-purple-900/30 border border-purple-700/20 backdrop-blur-2xl ${isExpanded ? '' : 'flex flex-col items-center'}`}
 			>
 				{/* Title area */}
 				<div className="w-full mb-4">
@@ -301,10 +301,10 @@ const SideBar = ({ selectedVToken, onVTokenSelect, socials }: SideBarProps) => {
 						<Link
 							href={`/project/${projectId}/${section.name.toLowerCase()}`}
 							key={section.id}
-							className={`text-white font-orbitron font-bold text-base hover:bg-white/10 p-2 rounded-xl flex items-center ${isExpanded ? 'mt-14' : 'mt-4'}`}
+							className={`text-white font-orbitron font-bold text-base hover:bg-gradient-to-r hover:from-purple-700/20 hover:via-blue-700/15 hover:to-purple-700/20 hover:border hover:border-purple-400/30 p-3 rounded-xl flex items-center transition-all duration-300 ${isExpanded ? 'mt-14' : 'mt-4'}`}
 						>
 							<div className="flex justify-start items-center gap-4">
-								<div className="w-10 h-10 rounded-full flex justify-center items-center">
+								<div className="w-10 h-10 rounded-full flex justify-center items-center bg-gradient-to-r from-slate-700/30 to-slate-600/30 backdrop-blur-lg">
 									<Image
 										src={section.icon}
 										alt=""

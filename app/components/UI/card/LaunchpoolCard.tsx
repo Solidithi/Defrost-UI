@@ -21,7 +21,6 @@ import { Address } from 'viem'
 import { normalizeAddress } from '@/app/utils/address'
 import { useLaunchpoolNameAndDescription } from '@/app/hooks/staking/usePoolNameAndDescription'
 import { useLaunchpoolStakingInfo } from '@/app/hooks/staking'
-import { GlowingEffect } from '../effect/GlowingEffect'
 import {
 	StakingModal,
 	ManageStakeModal,
@@ -30,7 +29,6 @@ import {
 	ClaimOwnerInterestModal,
 } from '../modal/launchpool-service-modals'
 import Image from 'next/image'
-import ProgressBar from '../project-progress/ProgressBar'
 import { getFunctionAbiFromIface } from '@/app/utils/abi'
 import { Launchpool__factory } from '@/app/types/typechain'
 
@@ -77,7 +75,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		)
 	}, [account.address, launchpool.project?.owner_id])
 
-	/* ---------------------- Read project owner's claimable interests (if is connected account project owner) ---------------------- */
+	/* ---------------------- Read project owner's claimable interests ---------------------- */
 	const { data: ownerInterestAndPlatformFee } = useReadContract({
 		abi: getFunctionAbiFromIface(
 			Launchpool__factory,
@@ -89,11 +87,6 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 			enabled: !!launchpool.id && isProjectOwner,
 		},
 	})
-
-	useEffect(() => {
-		console.log('launchpool address: ', launchpool.id)
-		console.log('ownerInterests changed: ', ownerInterestAndPlatformFee)
-	}, [ownerInterestAndPlatformFee])
 
 	/* ---------------------- Modal states ---------------------- */
 	type ActiveModal =
@@ -163,7 +156,6 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 			return
 		}
 
-		// Only open manage stake modal if user has stake in the pool
 		if (
 			stakingInfo.withdrawableVTokens &&
 			stakingInfo.withdrawableVTokens > BigInt(0)
@@ -200,6 +192,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		tokensInfo.vTokenInfo.decimals,
 		tokensInfo.vTokenInfo.symbol,
 	])
+
 	const formattedClaimableRewards = useMemo(() => {
 		return formatTokenAmount(stakingInfo.claimableReward, {
 			decimals: tokensInfo.projectTokenInfo.decimals,
@@ -234,14 +227,14 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		[launchpool.start_date, launchpool.end_date]
 	)
 
-	// Determine button text and style based on state
+	// Subtle button configurations with muted gradients
 	const getButtonConfig = () => {
 		if (!account.isConnected) {
 			return {
 				text: 'Connect Wallet',
 				icon: <Wallet size={16} />,
 				className:
-					'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600',
+					'bg-gradient-to-r from-slate-700/80 to-slate-600/80 hover:from-slate-600/90 hover:to-slate-500/90 shadow-lg shadow-slate-700/20 hover:shadow-slate-600/30 backdrop-blur-md border border-slate-500/30',
 			}
 		}
 
@@ -251,7 +244,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 					text: 'Opening Soon',
 					icon: <Clock size={16} />,
 					className:
-						'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 cursor-not-allowed',
+						'bg-gradient-to-r from-slate-600/60 to-slate-700/60 cursor-not-allowed opacity-60 backdrop-blur-md border border-slate-500/20',
 				}
 			case 'active':
 				if (isProjectOwner) {
@@ -259,49 +252,44 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 						text: 'Claim Interest',
 						icon: <Award size={16} />,
 						className:
-							'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+							'bg-gradient-to-r from-amber-600/70 to-orange-600/70 hover:from-amber-600/80 hover:to-orange-600/80 shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 backdrop-blur-md border border-amber-500/30',
 					}
 				} else if (stakingInfo.claimableReward > BigInt(0)) {
 					return {
 						text: 'Claim Rewards',
 						icon: <Award size={16} />,
 						className:
-							'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
+							'bg-gradient-to-r from-emerald-600/70 to-green-600/70 hover:from-emerald-600/80 hover:to-green-600/80 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 backdrop-blur-md border border-emerald-500/30',
 					}
 				} else if (stakingInfo.yourShare > 0) {
 					return {
 						text: 'Manage Stake',
 						icon: <ArrowRight size={16} />,
 						className:
-							'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600',
+							'bg-gradient-to-r from-blue-600/70 to-purple-600/70 hover:from-blue-600/80 hover:to-purple-600/80 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 backdrop-blur-md border border-blue-500/30',
 					}
 				} else {
 					return {
 						text: 'Stake Now',
 						icon: <Plus size={16} />,
-						className: 'warm-cool-bg hover:from-blue-600 hover:to-purple-600',
+						className:
+							'bg-gradient-to-r from-slate-700/80 to-slate-600/80 hover:from-slate-600/90 hover:to-slate-500/90 shadow-lg shadow-slate-700/20 hover:shadow-slate-600/30 backdrop-blur-md border border-slate-500/30',
 					}
 				}
-			// return {
-			// 	text: 'Claim Rewards',
-			// 	icon: <Award size={16} />,
-			// 	className:
-			// 		'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
-			// }
 			case 'ended':
 				if (isProjectOwner) {
 					return {
 						text: 'Claim Interest',
 						icon: <Award size={16} />,
 						className:
-							'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+							'bg-gradient-to-r from-amber-600/70 to-orange-600/70 hover:from-amber-600/80 hover:to-orange-600/80 shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 backdrop-blur-md border border-amber-500/30',
 					}
 				} else {
 					return {
 						text: 'Withdraw All',
 						icon: <ArrowRight size={16} />,
 						className:
-							'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+							'bg-gradient-to-r from-amber-600/70 to-orange-600/70 hover:from-amber-600/80 hover:to-orange-600/80 shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 backdrop-blur-md border border-amber-500/30',
 					}
 				}
 			default:
@@ -309,7 +297,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 					text: 'Stake Now',
 					icon: <Plus size={16} />,
 					className:
-						'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600',
+						'bg-gradient-to-r from-slate-700/80 to-slate-600/80 hover:from-slate-600/90 hover:to-slate-500/90 shadow-lg shadow-slate-700/20 hover:shadow-slate-600/30 backdrop-blur-md border border-slate-500/30',
 				}
 		}
 	}
@@ -321,258 +309,270 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 		account.isConnected && stakingInfo.claimableReward > BigInt(0)
 
 	return (
-		<div className="relative">
-			{/* Apply Border GlowingEffect */}
-			<GlowingEffect
-				spread={40}
-				glow={true}
-				disabled={false}
-				proximity={64}
-				inactiveZone={0.01}
-				className="absolute inset-0 rounded-2xl"
-			/>
-			{/* Gradient border effect */}
-			<div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-50 rounded-xl" />
+		<div className="relative group">
+			{/* Enhanced purple-blue hover glow effect */}
+			<div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 via-blue-500/15 to-purple-500/20 rounded-2xl opacity-0 group-hover:opacity-60 transition-all duration-500 blur-lg" />
+			<div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/12 via-blue-400/15 to-purple-400/12 rounded-2xl opacity-0 group-hover:opacity-40 transition-all duration-400 blur-md" />
 
-			<div className="rounded-xl overflow-hidden relative group">
-				{/* Card content with blue-tinted glassmorphism */}
+			{/* Main card container with professional purple-blue transparency */}
+			<div className="relative bg-gradient-to-br from-purple-950/25 via-blue-950/30 to-slate-950/25 backdrop-blur-xl border border-purple-500/20 rounded-2xl overflow-hidden transition-all duration-300 group-hover:border-purple-400/35 group-hover:shadow-2xl group-hover:shadow-purple-900/40 group-hover:scale-[1.005] group-hover:bg-gradient-to-br group-hover:from-purple-950/35 group-hover:via-blue-950/40 group-hover:to-slate-950/35">
+				{/* Enhanced status indicators with purple-blue theme */}
+				{launchpool.status === 'active' && (
+					<div className="absolute top-4 right-4 bg-emerald-500/20 border border-emerald-400/40 rounded-full px-3 py-1.5 flex items-center gap-2 backdrop-blur-xl z-10">
+						<div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+						<span className="text-emerald-300 font-medium text-sm">Active</span>
+					</div>
+				)}
+				{launchpool.status === 'ended' && (
+					<div className="absolute top-4 right-4 bg-amber-500/20 border border-amber-400/40 rounded-full px-3 py-1.5 flex items-center gap-2 backdrop-blur-xl z-10">
+						<div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+						<span className="text-amber-300 font-medium text-sm">Ended</span>
+					</div>
+				)}
+				{launchpool.status === 'upcoming' && (
+					<div className="absolute top-4 right-4 bg-blue-500/20 border border-blue-400/40 rounded-full px-3 py-1.5 flex items-center gap-2 backdrop-blur-xl z-10">
+						<div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+						<span className="text-blue-300 font-medium text-sm">Soon</span>
+					</div>
+				)}
+
+				{/* Token and APY section */}
 				<div
-					className="relative m-[1px] rounded-xl bg-gradient-to-br 
-				from-gray-900/90 to-black/90 backdrop-blur-xl overflow-hidden transition-all 
-				duration-300 hover:bg-gradient-to-br 
-				hover:shadow-2xl hover:shadow-blue-500/20"
-					// hover:scale-[1.005]
+					className="relative p-6 cursor-pointer transition-all duration-300"
+					onClick={handleCardBodyClick}
 				>
-					{/* Top section with logo and APR */}
-					<div
-						className="relative p-4 cursor-pointer transition-all duration-300"
-						onClick={handleCardBodyClick}
-					>
-						<div className="flex justify-between items-start">
-							<div className="relative h-20 w-20 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500/20 to-slate-600/15 backdrop-blur-md flex items-center justify-center transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-slate-600/25 accent-blue-glow">
-								<Image
-									src={tokensInfo.vTokenInfo.icon || ''}
-									alt={'Token image'}
-									width={80}
-									height={80}
-									className="object-cover transition-transform duration-300 group-hover:scale-105"
-								/>
+					<div className="flex justify-between items-start">
+						<div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gradient-to-br from-purple-800/25 to-blue-800/20 backdrop-blur-xl flex items-center justify-center transition-all duration-300 group-hover:from-purple-700/35 group-hover:to-blue-700/30 border border-purple-500/25 group-hover:border-purple-400/40 group-hover:scale-105">
+							<Image
+								src={tokensInfo.vTokenInfo.icon || ''}
+								alt={'Token image'}
+								width={80}
+								height={80}
+								className="object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+							/>
 
-								{/* Token pair badge */}
-								<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-500/85 to-slate-600/80 backdrop-blur-md p-1 text-xs text-center font-medium transition-all duration-300 group-hover:from-blue-600/95 group-hover:to-slate-700/90">
-									{tokensInfo.vTokenInfo.symbol} →{' '}
-									{tokensInfo.projectTokenInfo.symbol}
-								</div>
+							{/* Enhanced token pair badge */}
+							<div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-purple-800/90 to-blue-800/85 rounded-md px-2 py-1 text-xs font-medium text-slate-200 shadow-lg backdrop-blur-xl border border-purple-500/30">
+								{tokensInfo.vTokenInfo.symbol} →{' '}
+								{tokensInfo.projectTokenInfo.symbol}
 							</div>
+						</div>
 
-							<div className="bg-gradient-to-r from-blue-500/12 to-slate-600/8 backdrop-blur-md rounded-lg p-2 text-center min-w-[100px] transition-all duration-300 accent-blue-glow">
-								<div className="text-xs text-slate-300">APR</div>
-								<div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-slate-300 bg-clip-text text-transparent transition-all duration-300 group-hover:from-blue-300 group-hover:to-slate-200">
-									{launchpool.staker_apy.toFixed(2)}%
-								</div>
+						<div className="bg-gradient-to-br from-purple-800/25 to-blue-800/20 backdrop-blur-xl rounded-xl p-4 text-center min-w-[110px] border border-purple-500/25 group-hover:border-purple-400/40 transition-all duration-300 group-hover:scale-105 mt-4">
+							<div className="text-sm text-purple-300 font-medium mb-1">
+								APY
+							</div>
+							<div className="text-2xl font-bold text-white group-hover:text-purple-100 transition-all duration-300">
+								{launchpool.staker_apy.toFixed(2)}%
 							</div>
 						</div>
 					</div>
+				</div>
 
-					{/* Project Owner Badge */}
-					{isProjectOwner && (
-						<div className="mx-4 mb-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-lg p-2">
-							<div className="flex items-center gap-2">
-								<div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-								<span className="text-amber-400 font-medium text-xs">
+				{/* Refined Project Owner Badge */}
+				{isProjectOwner && (
+					<div className="mx-6 mb-4 bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 rounded-xl p-3 backdrop-blur-lg">
+						<div className="flex items-center gap-3">
+							<div className="relative">
+								<div className="w-3 h-3 bg-amber-400 rounded-full animate-pulse"></div>
+								<div className="absolute inset-0 w-3 h-3 bg-amber-400 rounded-full animate-ping opacity-75"></div>
+							</div>
+							<div>
+								<span className="text-amber-300 font-semibold text-sm">
 									Project Owner
 								</span>
+								<p className="text-amber-300/70 text-xs mt-1">
+									You can claim interest from this pool
+								</p>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Main content */}
+				<div
+					className="p-6 pt-0 cursor-pointer space-y-4"
+					onClick={handleCardBodyClick}
+				>
+					<div className="space-y-3">
+						<h3 className="text-xl font-bold text-white group-hover:text-slate-100 transition-colors duration-300 leading-tight">
+							{name}
+						</h3>
+						<p className="text-slate-300 group-hover:text-slate-200 transition-colors duration-300 leading-relaxed">
+							{description}
+						</p>
+					</div>
+
+					{/* Refined progress bar */}
+					{account.isConnected && (
+						<div className="space-y-3">
+							<div className="flex justify-between items-center">
+								<span className="text-sm font-medium text-slate-300">
+									Pool Progress
+								</span>
+								<span className="text-sm font-semibold text-slate-400">
+									{launchpoolRemainingTime.inNaturalLanguage} remaining
+								</span>
+							</div>
+							<div className="w-full bg-slate-800/60 rounded-full h-2 overflow-hidden">
+								<div
+									className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+									style={{
+										width: `${Math.min(
+											100,
+											(1 -
+												launchpoolRemainingTime.inMiliseconds /
+													(launchpool.durationSeconds * 1000)) *
+												100
+										)}%`,
+									}}
+								></div>
 							</div>
 						</div>
 					)}
 
-					{/* Launchpool info */}
-					<div
-						className="p-4 pt-0 cursor-pointer"
-						onClick={handleCardBodyClick}
-					>
-						<h3 className="text-xl font-bold text-white mb-2">{name}</h3>
-						<p className="text-sm text-white mb-4">{description}</p>
-
-						{/* Progress bar - only show when wallet is connected */}
-						{account.isConnected && (
-							<div className="mb-4">
-								<div className="flex justify-between text-xs text-slate-400 mb-1 transition-colors duration-300">
-									<span>Progress</span>
-									<span>{launchpoolRemainingTime.inNaturalLanguage} left</span>
-								</div>
-								<ProgressBar
-									index={
-										1 -
-										launchpoolRemainingTime.inMiliseconds /
-											(launchpool.start_date.getTime() -
-												launchpool.end_date.getTime())
-									}
-									total={launchpool.durationSeconds}
-									overrideClassName={true}
-									barClassName="h2 bg-slate-800 transition-colors duration-300"
-									colorClassName="bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-								/>
+					{/* Enhanced professional stats grid with purple-blue theme */}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="bg-gradient-to-br from-purple-800/20 to-blue-800/15 backdrop-blur-xl rounded-xl p-3 border border-purple-500/25 group-hover:border-purple-400/40 transition-all duration-300">
+							<div className="flex items-center gap-2 text-sm text-purple-300 mb-2">
+								<Clock size={16} />
+								<span className="font-medium">Duration</span>
 							</div>
-						)}
-
-						{/* Professional stats row */}
-						<div className="grid grid-cols-2 gap-2 mb-4">
-							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
-								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1">
-									<Clock size={12} />
-									<span>Duration</span>
-								</div>
-								<div className="text-sm font-medium transition-colors duration-300 group-hover:text-white">
-									{formatTimeDuration(launchpool.durationSeconds * 1000)}
-								</div>
-							</div>
-							<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
-								<div className="flex items-center gap-1 text-xs text-slate-300 mb-1">
-									<BarChart3 size={12} />
-									<span>Total Staked</span>
-								</div>
-								<div className="text-sm font-medium transition-colors duration-300 group-hover:text-white">
-									{formattedTotalVTokenStake}
-								</div>
+							<div className="text-lg font-semibold text-white group-hover:text-purple-100 transition-all duration-300">
+								{formatTimeDuration(launchpool.durationSeconds * 1000)}
 							</div>
 						</div>
-
-						{/* User stats - only show when wallet is connected */}
-						{account.isConnected && (
-							<div className="grid grid-cols-2 gap-2 mb-4">
-								<div className="bg-gradient-to-r from-blue-500/15 to-slate-600/12 backdrop-blur-md rounded-lg p-2 accent-blue-glow">
-									<div className="text-xs text-slate-300 mb-1">Your Stake</div>
-									<div className="text-sm font-medium text-white">
-										{formattedWithdrawableVTokens}
-									</div>
-								</div>
-								<div
-									className={`${
-										stakingInfo.claimableReward > BigInt(0)
-											? 'bg-gradient-to-r from-emerald-500/15 to-green-500/12 group-hover:from-emerald-500/20 group-hover:to-green-500/18'
-											: 'bg-gradient-to-r from-blue-500/15 to-slate-600/12'
-									} backdrop-blur-md rounded-lg p-2 relative accent-blue-glow`}
-								>
-									<div className="text-xs text-slate-300 mb-1">
-										Your Rewards
-									</div>
-									<div className="text-sm font-medium text-white">
-										{formattedClaimableRewards}
-									</div>
-
-									{/* Notification badge for available rewards */}
-									{showRewardsBadge && (
-										<div className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full w-5 h-5 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:shadow-emerald-500/50">
-											<Check size={12} />
-										</div>
-									)}
-								</div>
+						<div className="bg-gradient-to-br from-purple-800/20 to-blue-800/15 backdrop-blur-xl rounded-xl p-3 border border-purple-500/25 group-hover:border-purple-400/40 transition-all duration-300">
+							<div className="flex items-center gap-2 text-sm text-blue-300 mb-2">
+								<BarChart3 size={16} />
+								<span className="font-medium">Total Staked</span>
 							</div>
-						)}
-
-						{/* Main action button */}
-						<button
-							className={`w-full ${buttonConfig.className} rounded-lg p-2.5 font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-lg active:scale-95`}
-							onClick={(e) => {
-								e.stopPropagation() // Prevent card body click when button is clicked
-								handleActionButtonClick()
-							}}
-						>
-							{buttonConfig.icon}
-							{buttonConfig.text}
-						</button>
+							<div className="text-lg font-semibold text-white group-hover:text-blue-100 transition-all duration-300">
+								{formattedTotalVTokenStake}
+							</div>
+						</div>
 					</div>
 
-					{/* Expandable details section */}
-					<div
-						className="border-t border-slate-600/60 p-4 cursor-pointer transition-all accent-blue-glow"
+					{/* Enhanced user stats with purple-blue theme */}
+					{account.isConnected && (
+						<div className="grid grid-cols-2 gap-4">
+							<div className="bg-gradient-to-br from-purple-800/20 to-blue-800/15 backdrop-blur-xl rounded-xl p-3 border border-purple-500/25 group-hover:border-purple-400/40 transition-all duration-300">
+								<div className="text-xs text-purple-300 font-medium mb-1">
+									Your Stake
+								</div>
+								<div className="text-sm font-semibold text-white">
+									{formattedWithdrawableVTokens}
+								</div>
+							</div>
+							<div
+								className={`${
+									stakingInfo.claimableReward > BigInt(0)
+										? 'bg-gradient-to-br from-emerald-500/15 to-green-500/10 border-emerald-500/35 group-hover:border-emerald-500/45'
+										: 'bg-gradient-to-br from-purple-800/20 to-blue-800/15 border-purple-500/25 group-hover:border-purple-400/40'
+								} backdrop-blur-xl rounded-xl p-3 border transition-all duration-300 relative`}
+							>
+								<div className="text-xs text-blue-300 font-medium mb-1">
+									Your Rewards
+								</div>
+								<div className="text-sm font-semibold text-white">
+									{formattedClaimableRewards}
+								</div>
+
+								{/* Enhanced notification badge for available rewards */}
+								{showRewardsBadge && (
+									<div className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-400 to-green-400 rounded-full w-6 h-6 flex items-center justify-center shadow-xl shadow-emerald-400/50 animate-pulse">
+										<Check size={14} className="text-white font-bold" />
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+
+					{/* Enhanced main action button with vibrant colors */}
+					<button
+						className={`w-full ${buttonConfig.className} rounded-2xl p-4 font-black text-base transition-all duration-500 flex items-center justify-center gap-3 hover:scale-105 active:scale-95 shadow-xl tracking-wide`}
 						onClick={(e) => {
-							e.stopPropagation() // Prevent card body click when expanding details
-							setIsExpanded(!isExpanded)
+							e.stopPropagation()
+							handleActionButtonClick()
 						}}
 					>
-						<div className="flex items-center justify-between">
-							<span className="text-sm font-medium text-slate-300 transition-colors duration-300 group-hover:text-white">
-								Details
-							</span>
-							<div className="text-blue-400 transition-transform duration-300 group-hover:scale-105">
-								{isExpanded ? (
-									<ChevronUp size={16} />
-								) : (
-									<ChevronDown size={16} />
-								)}
-							</div>
+						{buttonConfig.icon}
+						{buttonConfig.text}
+					</button>
+				</div>
+
+				{/* Enhanced expandable details section with purple-blue theme */}
+				<div
+					className="border-t border-purple-800/30 p-4 cursor-pointer transition-all duration-300 hover:bg-purple-900/10"
+					onClick={(e) => {
+						e.stopPropagation()
+						setIsExpanded(!isExpanded)
+					}}
+				>
+					<div className="flex items-center justify-between">
+						<span className="text-sm font-medium text-purple-300 group-hover:text-purple-200 transition-colors duration-300">
+							Details
+						</span>
+						<div className="text-purple-400 transition-transform duration-300">
+							{isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
 						</div>
 					</div>
-
-					{/* Expanded content */}
-					{isExpanded && (
-						<div className="p-4 border-t border-slate-700/50 bg-gradient-to-br from-blue-900/8 to-slate-800/10 backdrop-blur-md transition-all duration-300 group-hover:from-blue-900/12 group-hover:to-slate-800/15 group-hover:border-slate-600/60">
-							<div className="space-y-3">
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
-										Start Date
-									</span>
-									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
-										{formattedDates.startDate}
-									</span>
-								</div>
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
-										End Date
-									</span>
-									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
-										{formattedDates.endDate}
-									</span>
-								</div>
-								{account.isConnected && (
-									<>
-										<div className="flex justify-between items-center">
-											<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
-												Your Share
-											</span>
-											<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
-												{formattedValues.yourShare}
-											</span>
-										</div>
-									</>
-								)}
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
-										Reward Token
-									</span>
-									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
-										{tokensInfo.projectTokenInfo.symbol}
-									</span>
-								</div>
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-slate-400 transition-colors duration-300 group-hover:text-slate-300">
-										Stake Token
-									</span>
-									<span className="text-sm text-slate-200 transition-colors duration-300 group-hover:text-white">
-										{tokensInfo.vTokenInfo.symbol}
-									</span>
-								</div>
-								{launchpool.status === 'ended' && (
-									<div className="mt-4 p-2 bg-amber-500/20 rounded-lg flex items-center gap-2 transition-all duration-300 group-hover:bg-amber-500/30 accent-blue-border">
-										<AlertCircle size={16} className="text-amber-400" />
-										<span className="text-sm text-amber-400">
-											This pool has ended. Withdraw your stake and rewards.
-										</span>
-									</div>
-								)}
-							</div>
-						</div>
-					)}
 				</div>
+
+				{/* Enhanced expanded content */}
+				{isExpanded && (
+					<div className="p-4 border-t border-purple-800/30 bg-gradient-to-br from-purple-900/15 to-blue-900/10 backdrop-blur-xl">
+						<div className="space-y-3">
+							<div className="flex justify-between items-center">
+								<span className="text-sm text-purple-300">Start Date</span>
+								<span className="text-sm text-slate-200">
+									{formattedDates.startDate}
+								</span>
+							</div>
+							<div className="flex justify-between items-center">
+								<span className="text-sm text-purple-300">End Date</span>
+								<span className="text-sm text-slate-200">
+									{formattedDates.endDate}
+								</span>
+							</div>
+							{account.isConnected && (
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-purple-300">Your Share</span>
+									<span className="text-sm text-slate-200">
+										{formattedValues.yourShare}
+									</span>
+								</div>
+							)}
+							<div className="flex justify-between items-center">
+								<span className="text-sm text-blue-300">Reward Token</span>
+								<span className="text-sm text-slate-200">
+									{tokensInfo.projectTokenInfo.symbol}
+								</span>
+							</div>
+							<div className="flex justify-between items-center">
+								<span className="text-sm text-blue-300">Stake Token</span>
+								<span className="text-sm text-slate-200">
+									{tokensInfo.vTokenInfo.symbol}
+								</span>
+							</div>
+							{launchpool.status === 'ended' && (
+								<div className="mt-4 p-3 bg-amber-500/15 border border-amber-500/30 rounded-lg flex items-center gap-2">
+									<AlertCircle size={16} className="text-amber-400" />
+									<span className="text-sm text-amber-400">
+										This pool has ended. Withdraw your stake and rewards.
+									</span>
+								</div>
+							)}
+						</div>
+					</div>
+				)}
 			</div>
 
-			{/* Show cursor pointer hint when user has stake */}
+			{/* Enhanced manage stake tooltip */}
 			{account.isConnected &&
 				stakingInfo.withdrawableVTokens &&
 				stakingInfo.withdrawableVTokens > BigInt(0) && (
-					<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 text-white text-xs px-2 py-1 rounded-md pointer-events-none z-10">
+					<div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-r from-purple-900/95 to-blue-900/95 text-white text-sm px-3 py-2 rounded-xl pointer-events-none z-10 backdrop-blur-lg border border-purple-400/30 shadow-xl shadow-purple-500/30 font-medium">
 						Click to manage stake
 					</div>
 				)}
@@ -663,8 +663,8 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 								}}
 								totalStaked={formattedValues.totalVTokenStake}
 								claimableInterests={
-									(ownerInterestAndPlatformFee as bigint[])[0]
-								} // This should be calculated from actual contract data
+									(ownerInterestAndPlatformFee as bigint[])?.[0] || BigInt(0)
+								}
 								projectName={name}
 								poolAddress={launchpool.id}
 							/>
