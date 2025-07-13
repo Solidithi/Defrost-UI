@@ -144,7 +144,7 @@ export const useEditProjectStore = create<EditProjectStore>((set, get) => {
 
 			// Call API to save project
 			try {
-				const response = await fetch("/api/project", {
+				const response = await fetch("/api/project/update", {
 					method: "PATCH",
 					headers: {
 						"Content-Type": "application/json",

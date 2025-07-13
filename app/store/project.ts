@@ -84,7 +84,7 @@ export const useProjectStore = create<ProjectStore>()(
 
 				try {
 					const response = await fetch(
-						`/api/project/?${new URLSearchParams({
+						`/api/project/read?${new URLSearchParams({
 							"project-id": projectId,
 						}).toString()}`
 					);
