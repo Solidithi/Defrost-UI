@@ -81,8 +81,9 @@ const HeroSection = () => {
 							className="text-white text-xl"
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 						>
-							We believe all project stakeholders are as important as each
-							other.
+							Connecting blockchain project creators with investors through a
+							transparent, secure platform that empowers equal opportunities for
+							all stakeholders.
 						</motion.span>
 
 						{/* <motion.button
