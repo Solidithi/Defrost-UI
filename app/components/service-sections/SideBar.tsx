@@ -113,7 +113,7 @@ const SideBar = ({
 								className="bg-white rounded-full p-1 shadow-md"
 								onClick={() => setCollapsed(!collapsed)}
 							>
-								<ChevronLeft size={16} className="rotate-180" />
+								<ChevronLeft size={20} className="text-purple-500 rotate-180" />
 							</button>
 						</div>
 					) : (
@@ -124,7 +124,7 @@ const SideBar = ({
 									alt="Logo"
 									width={'28'}
 									height={'28'}
-									className="h-7 w-7 mr-2"
+									className="rounded-full h-7 w-7 mr-2"
 								/>
 								<Link href={'/'}>
 									<span
