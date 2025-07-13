@@ -9,8 +9,8 @@ import {
 	moonriver,
 	sepolia,
 } from '@reown/appkit/networks'
-import { createSiweConfig } from '@/app/lib/appkit-siwe'
-import React, { type ReactNode } from 'react'
+import { createSiweConfig } from '@/app/lib/auth/appkit-siwe'
+import React, { type ReactNode, useEffect, useState } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 import { NavBarControlProvider } from './navbar-control'
 import '@/app/lib/superjson-init'
@@ -24,9 +24,9 @@ if (!projectId) {
 
 // Set up metadata
 const metadata = {
-	name: 'defrost-dapp',
+	name: 'Defrost',
 	description: 'Defrost Protocol DApp',
-	url: 'https://appkitexampleapp.com', // origin must match your domain & subdomain
+	url: 'http://localhost:3000', // origin must match your domain & subdomain
 	icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
@@ -36,16 +36,6 @@ const supportedChains = [moonbeam, moonbaseAlpha, moonriver, sepolia] as [
 	typeof moonriver,
 	typeof sepolia,
 ]
-
-// Create the modal
-const modal = createAppKit({
-	adapters: [wagmiAdapter],
-	projectId,
-	networks: supportedChains,
-	defaultNetwork: moonbaseAlpha,
-	metadata: metadata,
-	siweConfig: createSiweConfig(supportedChains.map((chain) => chain.id)),
-})
 
 export function Providers({
 	children,
@@ -58,6 +48,25 @@ export function Providers({
 		wagmiAdapter.wagmiConfig as Config,
 		cookies
 	)
+
+	const [modal, setModal] = useState<ReturnType<typeof createAppKit> | null>(
+		null
+	)
+	useEffect(() => {
+		if (!projectId) {
+			return
+		}
+		// Create the appkit modal
+		const modalInstance = createAppKit({
+			adapters: [wagmiAdapter],
+			projectId,
+			networks: supportedChains,
+			defaultNetwork: moonbaseAlpha,
+			metadata: metadata,
+			siweConfig: createSiweConfig(supportedChains.map((chain) => chain.id)),
+		})
+		setModal(modalInstance)
+	}, [projectId])
 
 	return (
 		<WagmiProvider
