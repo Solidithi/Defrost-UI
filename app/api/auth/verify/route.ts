@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import {
-	/*verifySignature,*/
+	type SIWESession,
+	verifySignature,
 	getAddressFromMessage,
 	getChainIdFromMessage,
 } from "@reown/appkit-siwe";
-import { createPublicClient, http, Address } from "viem";
+import { createPublicClient, http } from "viem";
 
 export async function POST(req: Request) {
 	try {
@@ -26,11 +27,25 @@ export async function POST(req: Request) {
 		}
 
 		const address = getAddressFromMessage(message) as `0x${string}`;
-		let chainID: string | number = getChainIdFromMessage(message);
+		let chainId: string | number = getChainIdFromMessage(message);
+		const isSignatureValid = await verifySignature({
+			address,
+			message,
+			signature,
+			chainId,
+			projectId: reownProjectID,
+		});
+
+		if (!isSignatureValid) {
+			return NextResponse.json(
+				{ isValidMessage: false, reason: "Invalid signature" },
+				{ status: 401 }
+			);
+		}
 
 		const publicClient = createPublicClient({
 			transport: http(
-				`https://rpc.walletconnect.org/v1/?chainId=${chainID}&projectId=${reownProjectID}`
+				`https://rpc.walletconnect.org/v1/?chainId=${chainId}&projectId=${reownProjectID}`
 			),
 		});
 		const isValidMessage = await publicClient.verifyMessage({
@@ -41,18 +56,18 @@ export async function POST(req: Request) {
 		if (!isValidMessage) {
 			throw new Error("Invalid signature");
 		}
-		if (chainID.includes(":")) {
-			chainID = chainID.split(":")[1];
+		if (chainId.includes(":")) {
+			chainId = chainId.split(":")[1];
 		}
 
-		chainID = Number(chainID);
+		chainId = Number(chainId);
 
-		if (isNaN(chainID)) {
+		if (isNaN(chainId)) {
 			throw new Error("Invalid chainId");
 		}
 
 		// Issue session cookie when after successful verification
-		const session = { address, chainID };
+		const session: SIWESession = { address, chainId };
 		const cookieValue = Buffer.from(JSON.stringify(session)).toString(
 			"base64"
 		);
