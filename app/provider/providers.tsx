@@ -44,9 +44,6 @@ const modal = createAppKit({
 	networks: supportedChains,
 	defaultNetwork: moonbaseAlpha,
 	metadata: metadata,
-	features: {
-		analytics: true, // Optional
-	},
 	siweConfig: createSiweConfig(supportedChains.map((chain) => chain.id)),
 })
 
