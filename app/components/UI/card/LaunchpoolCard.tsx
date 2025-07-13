@@ -3,6 +3,7 @@
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
+import { useAppKit } from '@reown/appkit/react'
 import {
 	ChevronDown,
 	ChevronUp,
@@ -28,9 +29,9 @@ import {
 	WithdrawModal,
 	ClaimOwnerInterestModal,
 } from '../modal/launchpool-service-modals'
-import Image from 'next/image'
 import { getFunctionAbiFromIface } from '@/app/utils/abi'
 import { Launchpool__factory } from '@/app/types/typechain'
+import Image from 'next/image'
 
 interface LaunchpoolCardProps {
 	launchpool: EnrichedLaunchpool
@@ -108,8 +109,10 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	}, [])
 
 	/* ---------------------- Main action button click handler ---------------------- */
+	const { open: openWalletModal, close: closeWalletModal } = useAppKit()
 	const handleActionButtonClick = useCallback(() => {
 		if (!account.isConnected) {
+			openWalletModal()
 			return
 		}
 
