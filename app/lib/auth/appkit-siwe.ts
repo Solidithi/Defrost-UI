@@ -11,7 +11,7 @@ import {
 /* Function that returns the user's session - this should come from your SIWE backend */
 async function getSession() {
 	const baseUrl = window.location.origin;
-	const res = await fetch(baseUrl + "/session", {
+	const res = await fetch(baseUrl + "/api/auth/session", {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
