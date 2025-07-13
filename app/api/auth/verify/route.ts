@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 		const response = NextResponse.json({ isValidMessage });
 		response.headers.set(
 			"Set-Cookie",
-			`siwe-session=${cookieValue}; Path=/; HttpOnly; SameSite=Lax; Secure`
+			`siwe-session=${cookieValue}; Path=/; HttpOnly; SameSite=Lax; Secure Max-Age=3600` // persist for 1 hour in seconds
 		);
 		return response;
 	} catch (e: any) {

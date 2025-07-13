@@ -11,6 +11,10 @@ export async function GET() {
 		const session = JSON.parse(
 			Buffer.from(sessionCookie.value, "base64").toString()
 		);
+		console.log("Session:", session);
+		console.log("typeof session.address", typeof session.address);
+		console.log("typeof session.chainId", typeof session.chainId);
+
 		if (
 			typeof session.address === "string" &&
 			typeof session.chainId === "number"
