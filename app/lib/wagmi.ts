@@ -6,7 +6,6 @@ import {
 	moonriver,
 	sepolia,
 } from "@reown/appkit/networks";
-import { walletConnect, injected, coinbaseWallet } from "wagmi/connectors";
 
 // Get projectId from https://cloud.reown.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
