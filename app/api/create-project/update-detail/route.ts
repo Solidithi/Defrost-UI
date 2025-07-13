@@ -1,5 +1,4 @@
 import { prismaClient } from "@/app/lib/prisma";
-import { isAddressAuthorized } from "@/app/lib/auth/authorization";
 
 export async function POST(request: Request) {
 	try {
