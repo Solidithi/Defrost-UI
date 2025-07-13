@@ -9,6 +9,7 @@ import {
 	moonriver,
 	sepolia,
 } from '@reown/appkit/networks'
+import { createSiweConfig } from '@/app/lib/appkit-siwe'
 import React, { type ReactNode } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 import { NavBarControlProvider } from './navbar-control'
@@ -29,16 +30,24 @@ const metadata = {
 	icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
+const supportedChains = [moonbeam, moonbaseAlpha, moonriver, sepolia] as [
+	typeof moonbeam,
+	typeof moonbaseAlpha,
+	typeof moonriver,
+	typeof sepolia,
+]
+
 // Create the modal
 const modal = createAppKit({
 	adapters: [wagmiAdapter],
 	projectId,
-	networks: [moonbeam, moonbaseAlpha, moonriver, sepolia],
+	networks: supportedChains,
 	defaultNetwork: moonbaseAlpha,
 	metadata: metadata,
 	features: {
 		analytics: true, // Optional
 	},
+	siweConfig: createSiweConfig(supportedChains.map((chain) => chain.id)),
 })
 
 export function Providers({
