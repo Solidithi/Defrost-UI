@@ -3,10 +3,8 @@
 import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useProjectStore } from '@/app/store/project'
-import { useAccount } from 'wagmi'
 import { LoadingModal } from '@/app/components/UI/modal/LoadingModal'
 import { useStakingStore } from '@/app/store/staking'
-import Spinner from '@/app/components/UI/effect/Spinner'
 import AlertInfo from '@/app/components/UI/shared/AlertInfo'
 
 export default function ProjectLayout({
@@ -16,14 +14,16 @@ export default function ProjectLayout({
 }) {
 	const params = useParams()
 	const projectID = params['project-id'].toString()
-	const { chainId, address } = useAccount()
-	const { currentProject } = useProjectStore()
 	const { isLoading, error, fetchProject, fetchMockProject } = useProjectStore()
 	const { fetchPoolsOfProject } = useStakingStore()
-	const projectIDFromContext = currentProject?.id
+
 	// Fetch project data on mount and when projectId changes or when user change wallet
 	useEffect(() => {
-		if (!projectID || !chainId || !address) {
+		// if (!projectID || !chainId || !address) {
+		// 	return
+		// }
+
+		if (!projectID) {
 			return
 		}
 
@@ -42,8 +42,8 @@ export default function ProjectLayout({
 		}
 	}, [
 		projectID,
-		address,
-		chainId,
+		// address,
+		// chainId,
 		fetchProject,
 		fetchMockProject,
 		fetchPoolsOfProject,
