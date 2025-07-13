@@ -106,8 +106,8 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 	]
 
 	return (
-		<div className="relative my-36 px-16 text-white min-h-screen overflow-hidden">
-			{/* Professional ambient background layers */}
+		<div className="relative px-16 text-white min-h-screen overflow-hidden">
+			{/* Ambient background layers */}
 			<div className="fixed inset-0 z-0">
 				<div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"></div>
 				<div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/15 via-slate-900/20 to-purple-950/15"></div>
@@ -149,9 +149,9 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 				></div>
 			</div>
 
-			<BackLight />
+			{/* <BackLight /> */}
 			<AnimatedBlobs />
-			<div className="relative z-10 flex items-start justify-start gap-6 min-h-screen">
+			<div className="relative z-10  my-36 flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky self-start">
 					<SideBar
 						selectedVToken={null}
