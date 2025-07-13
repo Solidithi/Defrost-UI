@@ -149,7 +149,7 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 				></div>
 			</div>
 
-			{/* <BackLight /> */}
+			<BackLight />
 			<AnimatedBlobs />
 			<div className="relative z-10  my-36 flex items-start justify-start gap-6 min-h-screen">
 				<div className="sticky self-start">

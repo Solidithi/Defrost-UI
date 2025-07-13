@@ -30,22 +30,21 @@ export const LaunchpoolSection = () => {
 		<>
 			{launchpool ? (
 				<div className="mt-10 flex flex-col gap-10 ">
-					<div className="flex flex-col gap-10 items-center">
-						<span className="title-text font-orbitron">Launchpool</span>
+					<div className="flex flex-col gap-10 items-start">
+						<span className="title-text font-orbitron text-left">
+							Stake vTokens, <br />
+							Earn High Rewards
+						</span>
 						<div className="relative p-6">
 							<span>
-								Step into the future of decentralized finance where innovation
-								meets opportunity. Our Launchpool empowers you to stake your
-								tokens and earn rewards while supporting groundbreaking Web3
-								projects that are reshaping the digital economy. By
-								participating in our carefully curated ecosystem, you are not
-								just farming yields - you are actively contributing to the
-								growth of next-generation DeFi protocols, NFT marketplaces,
-								GameFi platforms, and revolutionary blockchain solutions. Join a
-								community of forward-thinking investors who understand that the
-								future is decentralized, permissionless, and built on the
-								principles of trustless innovation. Your journey into the
-								decentralized web starts here.
+								Amplify your earning potential. Our launchpool allows you to
+								stake Bifrost vTokens, enabling you to earn valuable project
+								token rewards while your original assets remain liquid and
+								productive. This pioneering approach, a first for the Polkadot
+								ecosystem, unlocks a new layer of liquidity and utility. By
+								staking, you secure early access to promising projects and
+								contribute to a more vibrant, interconnected DeFi landscape.
+								Maximize your rewards and join the future of staking.
 							</span>
 
 							<div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white" />
@@ -60,10 +59,10 @@ export const LaunchpoolSection = () => {
 					<div className="">
 						<div className="flex justify-between">
 							<span className="font-orbitron text-4xl font-bold">
-								Launchpool
+								High-yield Launchpools
 							</span>
 							<Button onClick={handleClick} className="warm-cool-bg px-16">
-								More Detail
+								More like this
 							</Button>
 						</div>
 						<div className="w-full">

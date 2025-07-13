@@ -252,7 +252,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 			case 'active':
 				if (isProjectOwner) {
 					return {
-						text: 'Claim Interest',
+						text: 'Claim Interests',
 						icon: <Award size={16} />,
 						className:
 							'bg-gradient-to-r from-amber-600/70 to-orange-600/70 hover:from-amber-600/80 hover:to-orange-600/80 shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 backdrop-blur-md border border-amber-500/30',
@@ -385,7 +385,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 									Project Owner
 								</span>
 								<p className="text-amber-300/70 text-xs mt-1">
-									You can claim interest from this pool
+									You can claim interests from this pool
 								</p>
 							</div>
 						</div>
