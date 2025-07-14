@@ -1,10 +1,13 @@
 'use client'
 import Image, { StaticImageData } from 'next/image'
+import { useAccount } from 'wagmi'
+
 interface ProjectHeaderProps {
 	id: number
 	name: string
 	short_description: string
 	logo: StaticImageData | string
+	owner_id?: string
 	// status: string
 }
 const ProjectHeader = ({
@@ -12,7 +15,16 @@ const ProjectHeader = ({
 	name,
 	short_description,
 	logo,
+	owner_id,
 }: ProjectHeaderProps) => {
+	const account = useAccount()
+
+	// Check if current user is project owner
+	const isProjectOwner =
+		account.address &&
+		owner_id &&
+		account.address.toLowerCase() === owner_id.toLowerCase()
+
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
 			case 'upcoming':
@@ -56,9 +68,26 @@ const ProjectHeader = ({
 								</div> */}
 							</div>
 
-							<div className="text-[#CACACA] font-comfortaa w-2/3  mt-2">
+							<div className="text-[#CACACA] font-comfortaa w-2/3 mt-2">
 								{short_description}
 							</div>
+
+							{/* Project Owner Indicator - Compact */}
+							{account.isConnected && isProjectOwner && (
+								<div className="mt-4 w-fit bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-400/20 rounded-lg px-3 py-2 glass-enhanced">
+									<div className="flex items-center gap-2">
+										<div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+										<div>
+											<h3 className="text-emerald-400 font-medium text-xs font-orbitron">
+												Project Owner
+											</h3>
+											<p className="text-emerald-200/70 text-xs">
+												Manage pools & claim rewards
+											</p>
+										</div>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
