@@ -1,5 +1,6 @@
 import "@/app/lib/superjson-init";
 import { EnrichedProject } from "@/app/types";
+import { keyframes } from "framer-motion";
 import { parse } from "superjson";
 
 export interface ProjectsResponse {
@@ -10,17 +11,29 @@ export interface ProjectsResponse {
 	totalPages: number;
 }
 
+export interface ProjectFilters {
+	chainId?: number | string;
+	category?: string;
+	search?: string;
+}
+
 export const projectsApi = {
 	// Fetch all projects with pagination (for infinite scroll - card view)
 	getAllProjects: async (
-		chainID: number | string,
 		page: number = 1,
-		limit: number = 10
+		limit: number = 10,
+		filters: ProjectFilters = {}
 	): Promise<ProjectsResponse> => {
 		const params = new URLSearchParams({
-			chainID: chainID.toString(),
 			page: page.toString(),
 			limit: limit.toString(),
+		});
+
+		Object.entries(filters).forEach(([key, value]) => {
+			if (!value) {
+				return;
+			}
+			params.append(key, value.toString().trim());
 		});
 
 		const response = await fetch(`/api/all-project?${params}`);
@@ -32,20 +45,21 @@ export const projectsApi = {
 
 	// Fetch paginated projects with search (for table view)
 	getPaginatedProjects: async (
-		chainID: number | string,
 		page: number = 1,
 		limit: number = 10,
-		search?: string
+		filters: ProjectFilters = {}
 	): Promise<ProjectsResponse> => {
 		const params = new URLSearchParams({
-			chainID: chainID.toString(),
 			page: page.toString(),
 			limit: limit.toString(),
 		});
 
-		if (search && search.trim()) {
-			params.append("search", search.trim());
-		}
+		Object.entries(filters).forEach(([key, value]) => {
+			if (!value) {
+				return;
+			}
+			params.append(key, value.toString().trim());
+		});
 
 		const response = await fetch(`/api/all-project?${params}`);
 		if (!response.ok) {

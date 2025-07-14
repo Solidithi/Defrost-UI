@@ -1,22 +1,22 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { projectsApi } from "@/app/lib/queries/projects";
+import { type ProjectFilters, projectsApi } from "@/app/lib/queries/projects";
 
 // Query keys for consistent caching
 export const projectsKeys = {
 	all: ["projects"] as const,
-	lists: () => [...projectsKeys.all, "list"] as const,
-	list: (filters: string) => [...projectsKeys.lists(), filters] as const,
+	list: (filters?: Record<any, any>) =>
+		[...projectsKeys.all, filters] as const,
 	details: () => [...projectsKeys.all, "detail"] as const,
 	detail: (id: string) => [...projectsKeys.details(), id] as const,
 	search: (query: string) => [...projectsKeys.all, "search", query] as const,
 };
 
 // Fetch all projects with infinite scrolling
-export const useProjects = (chainID: number | string) => {
+export const useProjects = (filters?: ProjectFilters) => {
 	return useInfiniteQuery({
-		queryKey: projectsKeys.lists(),
+		queryKey: projectsKeys.list(filters),
 		queryFn: ({ pageParam = 1 }) =>
-			projectsApi.getAllProjects(chainID, pageParam),
+			projectsApi.getAllProjects(pageParam, undefined, filters),
 		getNextPageParam: (lastPage) => {
 			// Check if there are more pages
 			const currentPage = lastPage.page;

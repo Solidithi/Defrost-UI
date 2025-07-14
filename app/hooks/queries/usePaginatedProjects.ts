@@ -1,25 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { projectsApi, ProjectsResponse } from "@/app/lib/queries/projects";
+import { projectsApi, ProjectFilters } from "@/app/lib/queries/projects";
 
-interface UsePaginatedProjectsProps {
-	chainID: number | string;
-	page: number;
-	limit: number;
-	search?: string;
-	enabled?: boolean;
-}
-
-export function usePaginatedProjects({
-	chainID,
-	page,
-	limit,
-	search,
+export function usePaginatedProjects(
+	page: number,
+	limit: number,
 	enabled = true,
-}: UsePaginatedProjectsProps) {
+	filters: ProjectFilters = {}
+) {
 	return useQuery({
-		queryKey: ["projects-paginated", page, limit, search],
-		queryFn: () =>
-			projectsApi.getPaginatedProjects(chainID, page, limit, search),
+		queryKey: ["projects-paginated", page, limit, filters],
+		queryFn: () => projectsApi.getPaginatedProjects(page, limit, filters),
 		enabled,
 		placeholderData: (previousData) => previousData, // Keep previous data while fetching new page (TanStack Query v5)
 		staleTime: 30000, // Data stays fresh for 30 seconds

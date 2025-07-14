@@ -21,17 +21,19 @@ export async function GET(request: Request) {
 	try {
 		// Parse query parameters
 		const { searchParams } = new URL(request.url);
-		const chainID = parseInt(searchParams.get("chainID") || "1", 10);
+		const chainId = searchParams.get("chainId");
+		const category = searchParams.get("cateogry");
 		const page = parseInt(searchParams.get("page") || "1", 10);
 		const limit = parseInt(searchParams.get("limit") || "10", 10);
 		const search = searchParams.get("search");
 
 		// Validate parameters
-		if (isNaN(chainID)) {
-			return NextResponse.json(
-				{ error: "Invalid chainID parameter" },
-				{ status: 400 }
-			);
+		let filterChainId: number | undefined;
+		if (chainId) {
+			const numChainId = Number(chainId);
+			if (!isNaN(numChainId)) {
+				filterChainId = numChainId;
+			}
 		}
 
 		if (page < 1 || limit < 1 || limit > 100) {
@@ -45,30 +47,35 @@ export async function GET(request: Request) {
 		const skip = (page - 1) * limit;
 
 		// Build where clause for search
-		const whereClause = search
-			? {
-					OR: [
-						{
-							name: {
-								contains: search,
-								mode: "insensitive" as const,
-							},
-						},
-						{
-							short_description: {
-								contains: search,
-								mode: "insensitive" as const,
-							},
-						},
-						{
-							token_symbol: {
-								contains: search,
-								mode: "insensitive" as const,
-							},
-						},
-					],
-				}
-			: {};
+		let whereClause: any = {};
+		if (search) {
+			whereClause.OR = [
+				{
+					name: {
+						contains: search,
+						mode: "insensitive" as const,
+					},
+				},
+				{
+					short_description: {
+						contains: search,
+						mode: "insensitive" as const,
+					},
+				},
+				{
+					token_symbol: {
+						contains: search,
+						mode: "insensitive" as const,
+					},
+				},
+			];
+		}
+		if (filterChainId) {
+			whereClause.chain_id = filterChainId;
+		}
+		if (category) {
+			whereClause.category = category;
+		}
 
 		// Get total count for pagination with search filter
 		const totalCount = await prismaClient.project.count({
@@ -107,7 +114,7 @@ export async function GET(request: Request) {
 
 					// Create unified pool for backward compatibility
 					unifiedPools.push(
-						toUnifiedPool(pool, "launchpool", chainID)
+						toUnifiedPool(pool, "launchpool", project.chain_id)
 					);
 				});
 			}
@@ -133,7 +140,7 @@ export async function GET(request: Request) {
 				console.log("Pool token address:", pool.token_address);
 				if (!decimals) {
 					decimals = getTokenInfoFromConfig(
-						chainID,
+						project.chain_id,
 						normalizeAddress((pool.token_address as Address) ?? "")
 					)?.decimals;
 					if (decimals) {
