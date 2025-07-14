@@ -24,7 +24,6 @@ import { usePlatformMetrics } from '@/app/hooks/queries/useStats'
 import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll'
 import { debounce } from '@/app/utils/timing'
 import { StatCard, StatCardSkeleton } from '../components/UI/card/StatCard'
-import { useChainId } from 'wagmi'
 import Link from 'next/link'
 import Pagination, { PaginationInfo } from '../components/UI/shared/Pagination'
 import {
@@ -65,7 +64,7 @@ const BODY_SECTION_GRADIENTS = [
 
 // Define stat card interface
 export default function Home() {
-	const [isCard, setIsCard] = useState(true)
+	const [isCardView, setIsCardView] = useState(true)
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 	const [selectedProject, setSelectedProject] =
@@ -76,16 +75,16 @@ export default function Home() {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [itemsPerPage] = useState(10) // Fixed items per page
 
-	// Enhanced filtering state
-	const [selectedFilter, setSelectedFilter] = useState<
-		'all' | 'trending' | 'featured' | 'new'
-	>('all')
-	const [selectedCategory, setSelectedCategory] = useState<
-		'all' | 'defi' | 'nft' | 'gaming' | 'infrastructure'
-	>('all')
-	const [selectedChain, setSelectedChain] = useState<
-		'all' | 'moonbeam' | 'polkadot' | 'kusama'
-	>('all')
+	// Filtering state
+	const [selectedFilter, setSelectedFilter] = useState<string | undefined>(
+		undefined
+	)
+	const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+		undefined
+	)
+	const [selectedChainId, setSelectedChainId] = useState<number | undefined>(
+		undefined
+	)
 	const [sortBy, setSortBy] = useState<
 		'newest' | 'oldest' | 'apy' | 'tvl' | 'participants'
 	>('newest')
@@ -94,26 +93,29 @@ export default function Home() {
 	>('overview')
 
 	// Content filtering options
-	const filterOptions = [
-		{ id: 'all', label: 'All Projects', icon: Globe },
-		{ id: 'trending', label: 'Trending', icon: TrendingUp },
-		{ id: 'featured', label: 'Featured', icon: Star },
-		{ id: 'new', label: 'New Launches', icon: Sparkles },
+	const quickTagOptions = [
+		{ slug: undefined, label: 'All Projects', icon: Globe },
+		{ slug: 'trending', label: 'Trending', icon: TrendingUp },
+		{ slug: 'featured', label: 'Featured', icon: Star },
+		{ slug: 'new', label: 'New Launches', icon: Sparkles },
 	]
 
 	const categoryOptions = [
-		{ id: 'all', label: 'All Categories', icon: Layers },
-		{ id: 'defi', label: 'DeFi', icon: Coins },
-		{ id: 'nft', label: 'NFTs', icon: Trophy },
-		{ id: 'gaming', label: 'Gaming', icon: Target },
-		{ id: 'infrastructure', label: 'Infrastructure', icon: Shield },
+		{ slug: undefined, label: 'All Categories', icon: Layers },
+		{ slug: 'defi', label: 'DeFi', icon: Coins },
+		{ slug: 'nft', label: 'NFTs', icon: Trophy },
+		{ slug: 'gaming', label: 'Gaming', icon: Target },
+		{ slug: 'infrastructure', label: 'Infrastructure', icon: Shield },
 	]
 
 	const chainOptions = [
-		{ id: 'all', label: 'All Chains' },
-		{ id: 'moonbeam', label: 'Moonbeam' },
-		{ id: 'polkadot', label: 'Polkadot' },
-		{ id: 'kusama', label: 'Kusama' },
+		{ chainId: undefined, label: 'All Chains' },
+		{ chainId: 1287, label: 'Moonbase Alpha', isTestnet: true },
+		{ chainId: 1284, label: 'Moonbeam' },
+		{ chainId: 1285, label: 'Moonriver' },
+		{ chainId: 787, label: 'Acala' },
+		{ chainId: 100, label: 'Polkadot' },
+		{ chainId: 101, label: 'Kusama' },
 	]
 
 	/**----------------- Handle query change in debounced manner ------------------ */
@@ -128,8 +130,6 @@ export default function Home() {
 		setCurrentPage(1)
 	}, [searchQuery])
 
-	const chainID = useChainId()
-
 	/**----------------- Use infinite query for projects (Card View) ------------------ */
 	const {
 		data: projectsData,
@@ -140,7 +140,10 @@ export default function Home() {
 		hasNextPage,
 		isFetchingNextPage,
 		refetch: refetchInfinite,
-	} = useProjects(chainID)
+	} = useProjects({
+		chainId: selectedChainId,
+		category: selectedCategory,
+	})
 
 	/**----------------- Use paginated query for projects (Table View) ------------------ */
 	const {
@@ -149,13 +152,16 @@ export default function Home() {
 		isError: isErrorPaginated,
 		error: errorPaginated,
 		refetch: refetchPaginated,
-	} = usePaginatedProjects({
-		chainID,
-		page: currentPage,
-		limit: itemsPerPage,
-		search: debouncedSearchQuery,
-		enabled: !isCard, // Only fetch when in table mode
-	})
+	} = usePaginatedProjects(
+		currentPage,
+		itemsPerPage,
+		!isCardView, // Only fetch when in table mode
+		{
+			chainId: selectedChainId,
+			category: selectedCategory,
+			search: debouncedSearchQuery,
+		}
+	)
 
 	/**----------------- Fetch Platform Metrics ------------------ */
 	const {
@@ -165,18 +171,18 @@ export default function Home() {
 	} = usePlatformMetrics()
 
 	// Use the appropriate data source based on view mode
-	const isLoading = isCard ? isLoadingInfinite : isLoadingPaginated
-	const isError = isCard ? isErrorInfinite : isErrorPaginated
-	const error = isCard ? errorInfinite : errorPaginated
-	const refetch = isCard ? refetchInfinite : refetchPaginated
+	const isLoading = isCardView ? isLoadingInfinite : isLoadingPaginated
+	const isError = isCardView ? isErrorInfinite : isErrorPaginated
+	const error = isCardView ? errorInfinite : errorPaginated
+	const refetch = isCardView ? refetchInfinite : refetchPaginated
 
 	// Enhanced filtering and sorting logic
 	const filteredAndSortedProjects = useMemo(() => {
 		let projects: EnrichedProject[] = []
 
-		if (isCard && projectsData?.pages) {
+		if (isCardView && projectsData?.pages) {
 			projects = projectsData.pages.flatMap((page) => page.projects)
-		} else if (!isCard && paginatedData?.projects) {
+		} else if (!isCardView && paginatedData?.projects) {
 			projects = paginatedData.projects
 		}
 
@@ -233,7 +239,7 @@ export default function Home() {
 		selectedCategory,
 		debouncedSearchQuery,
 		sortBy,
-		isCard,
+		isCardView,
 	])
 
 	// Extract all launchpools from projects
@@ -281,16 +287,18 @@ export default function Home() {
 		([] as EnrichedProject[])
 
 	// Get projects and pagination info based on view mode
-	const displayProjects = isCard ? allProjects : paginatedData?.projects || []
+	const displayProjects = isCardView
+		? allProjects
+		: paginatedData?.projects || []
 
-	const totalPages = isCard
+	const totalPages = isCardView
 		? 1 // No pagination for card view
 		: paginatedData?.totalPages || 1
 
-	const totalItems = isCard ? allProjects.length : paginatedData?.total || 0
+	const totalItems = isCardView ? allProjects.length : paginatedData?.total || 0
 
 	// Filter projects based on debounced search query (only for card view)
-	const filteredProjects = isCard
+	const filteredProjects = isCardView
 		? allProjects.filter((project: EnrichedProject) => {
 				// If no search query, show all projects
 				if (!debouncedSearchQuery.trim()) {
@@ -308,7 +316,7 @@ export default function Home() {
 		: displayProjects // For table view, filtering is done server-side
 
 	// Calculate final projects to display
-	const paginatedProjects = isCard
+	const paginatedProjects = isCardView
 		? filteredProjects // Show filtered projects in card view (client-side pagination via infinite scroll)
 		: displayProjects // Show server-paginated projects in table view
 
@@ -321,7 +329,7 @@ export default function Home() {
 
 	// Handle view toggle (reset pagination when switching between card and table)
 	const handleViewToggle = (cardView: boolean) => {
-		setIsCard(cardView)
+		setIsCardView(cardView)
 		if (!cardView) {
 			// Reset to first page when switching to table view
 			setCurrentPage(1)
@@ -753,8 +761,8 @@ export default function Home() {
 								>
 									{categoryOptions.map((option) => (
 										<option
-											key={option.id}
-											value={option.id}
+											key={option.slug}
+											value={option.slug}
 											className="bg-gray-800 text-white"
 										>
 											{option.label}
@@ -767,8 +775,8 @@ export default function Home() {
 							{/* Chain Filter */}
 							<div className="relative">
 								<select
-									value={selectedChain}
-									onChange={(e) => setSelectedChain(e.target.value as any)}
+									value={selectedChainId}
+									onChange={(e) => setSelectedChainId(e.target.value as any)}
 									className="
 										appearance-none bg-white/5 backdrop-blur-sm border border-white/10 
 										rounded-xl px-5 py-3 text-white pr-10 focus:outline-none focus:ring-2 
@@ -776,13 +784,13 @@ export default function Home() {
 										hover:bg-white/10 hover:border-white/20 transition-all duration-300
 									"
 								>
-									{chainOptions.map((option) => (
+									{chainOptions.map((chain) => (
 										<option
-											key={option.id}
-											value={option.id}
+											key={chain.chainId}
+											value={chain.chainId}
 											className="bg-gray-800 text-white"
 										>
-											{option.label}
+											{chain.label}
 										</option>
 									))}
 								</select>
@@ -821,11 +829,14 @@ export default function Home() {
 							</div>
 
 							{/* View Toggle */}
-							<SwitchTableOrCard isCard={isCard} setIsCard={handleViewToggle} />
+							<SwitchTableOrCard
+								isCard={isCardView}
+								setIsCard={handleViewToggle}
+							/>
 						</div>
 					</div>
 
-					{/* Content Tabs - More Elegant */}
+					{/* Content Tabs */}
 					<div className="flex flex-wrap gap-3 mb-16">
 						{[
 							{ id: 'overview', label: 'Overview', icon: Globe },
@@ -955,7 +966,7 @@ export default function Home() {
 							{/* Projects Section */}
 							<div className="relative">
 								{/* Show loading state when initially loading */}
-								{isLoading && allProjects.length === 0 && (
+								{isLoading && (
 									<div className="flex justify-center items-center py-20">
 										<div className="flex items-center space-x-2">
 											<Spinner />
@@ -970,7 +981,7 @@ export default function Home() {
 									<div className="flex justify-center items-center py-20">
 										<div className="text-center">
 											<p className="text-gray-400 text-lg mb-4">
-												No projects found
+												We couldn&apos;t find what you were looking for.
 											</p>
 											<button
 												onClick={() => refetch()}
@@ -1012,7 +1023,7 @@ export default function Home() {
 											/>
 										</div>
 
-										{isCard ? (
+										{isCardView ? (
 											<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-24 relative z-20">
 												{paginatedProjects.map(
 													(project: EnrichedProject, index: number) => (
@@ -1065,7 +1076,7 @@ export default function Home() {
 									</div>
 								)}
 								{/* Infinite scroll loading trigger - Only for card view */}
-								{!debouncedSearchQuery && isCard && (
+								{!debouncedSearchQuery && isCardView && (
 									<div ref={loadMoreRef} className="flex justify-center py-8">
 										{isFetchingNextPage && (
 											<div className="flex items-center space-x-2">
@@ -1080,7 +1091,7 @@ export default function Home() {
 												<div className="flex items-center space-x-6">
 													<div className="h-px w-16 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
 													<span className="text-gray-500 text-sm font-medium tracking-wide">
-														End of Projects
+														End
 													</span>
 													<div className="h-px w-16 bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
 												</div>
