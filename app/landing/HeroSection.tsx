@@ -1,11 +1,11 @@
 'use client'
 
-import Logo from '../../../public/Logo.png'
 import { orbitron, comfortaa } from '../lib/font'
 import { Boxes } from '@/app/components/UI/background/BackgroundBoxes'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import DefrostLogo from '@/public/Logo.png'
 import Button from '../components/UI/button/Button'
 
 const HeroSection = () => {
@@ -116,7 +116,7 @@ const HeroSection = () => {
 						alt="Logo"
 					/> */}
 					<motion.img
-						src={Logo.src}
+						src={DefrostLogo.src}
 						alt="Logo"
 						// initial={{ opacity: 0, scale: 0.5, y: 50 }}
 						animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}

@@ -1,15 +1,14 @@
 'use client'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import DefrostLogo from '@/public/Logo.png'
 import { comfortaa, orbitron, permanentMarker } from '@/app/lib/font'
 import { cn } from '@/app/lib/utils'
-import ConnectButton from '../UI/button/ConnectButton'
-import Button from '@/app/components/UI/button/Button'
 import { useNavBarControl } from '@/app/provider/navbar-control'
+import ConnectButton from '../UI/button/ConnectButton'
+import DefrostLogo from '@/public/Logo.png'
+import Image from 'next/image'
+import Link from 'next/link'
 
 const Navbar = ({
 	navItems,
@@ -69,7 +68,7 @@ const Navbar = ({
 			>
 				<div className="flex justify-between items-center gap-36">
 					<div className="flex items-center flex-shrink-0 transition-transform transform hover:-translate-y-1 duration-300 p-3">
-						<Image src={DefrostLogo} alt="Logo" className="h-10 w-10 mr-2" />
+						<Image src={DefrostLogo} alt="Logo" className="h-10 w-auto mr-2" />
 						<Link href={'/'}>
 							<span
 								style={{ fontFamily: permanentMarker.style.fontFamily }}
