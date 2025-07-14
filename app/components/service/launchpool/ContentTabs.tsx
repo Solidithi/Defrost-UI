@@ -175,7 +175,7 @@ export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
 			) : (
 				/* Enhanced launchpool container with vibrant styling */
 				<div className="relative overflow-hidden">
-					<div className="relative glass-enhanced text-white mt-10 p-8 rounded-3xl border border-purple-400/30 shadow-2xl shadow-purple-500/20">
+					<div className="relative glass-enhanced text-white mt-10 p-20 rounded-3xl border border-purple-400/30 shadow-2xl shadow-purple-500/20">
 						{isProjectOwner && (
 							<div className="flex flex-row items-center justify-between mb-8">
 								<ProjectOwnerIndicator containerClassName="max-w-xl" />
