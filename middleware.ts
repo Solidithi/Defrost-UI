@@ -53,7 +53,5 @@ export const config = {
 
 		"/api/create-project/:path*", // Match routes under /api/create-project
 		"/api/project/update/:path*",
-		"/api/stats/:path*",
-		// "/api/fuck/:path*",
 	],
 };
