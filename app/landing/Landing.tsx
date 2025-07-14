@@ -20,9 +20,7 @@ export default function Landing() {
 				</SectionComponent>
 			</div>
 
-			<div>
-				<FeaturesSection />
-			</div>
+			<div>{/* <FeaturesSection /> */}</div>
 
 			<div>
 				<BenefitSection />
