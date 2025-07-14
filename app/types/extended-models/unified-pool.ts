@@ -20,7 +20,7 @@ export interface UnifiedPool {
 	address: string;
 	pool_id: string; // This is on-chain pool id
 	project_id: string;
-	type: "lbaunchpool" | "farmpool" | "launchpad";
+	type: "launchpool" | "farmpool" | "launchpad";
 	total_staked: Decimal;
 	total_stakers: number;
 	staker_apy: number;
