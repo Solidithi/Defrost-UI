@@ -4,19 +4,23 @@ import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchp
 import chains from '@/app/config/chains.json'
 
 interface useVTokenDataProps {
+	chainId: number
 	launchpools: EnrichedLaunchpool[]
 	// add other pool types later
 }
 
-export function useVTokenMetrics({ launchpools }: useVTokenDataProps) {
-	const chainId = useChainId()
-
+export function useVTokenMetrics({ chainId, launchpools }: useVTokenDataProps) {
 	const availableVTokens = useMemo(() => {
+		if (!chainId) {
+			return []
+		}
+
 		const chainIdKey = chainId.toString() as keyof typeof chains
-		// const chainIdKey = 1287
-		return chains[chainIdKey].tokens.filter(
-			(token) => token.type.toLowerCase() === 'vtoken'
-		)
+		const chain = chains[chainIdKey]
+		if (!chain || !chain.tokens) {
+			return []
+		}
+		return chain.tokens.filter((token) => token.type.toLowerCase() === 'vtoken')
 	}, [chainId])
 
 	// Calculate pool count by vToken

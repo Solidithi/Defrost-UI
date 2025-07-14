@@ -3,16 +3,13 @@ import { AcernityCarousel } from '@/app/components/UI/carousel/AcernityCarousel'
 import { LaunchpoolSection } from '@/app/components/project-detail-sections/LaunchpoolSection'
 import { useParams } from 'next/navigation'
 import { useAccount } from 'wagmi'
-import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import { project } from '@prisma/client'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
-import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
 import { useProjectStore } from '@/app/store/project'
 import CarouselWithProgress from '@/app/components/UI/carousel/Carousel'
 import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
 import ProjectHeader from '@/app/components/project-detail-sections/ProjectHeader'
 import SideBar from '@/app/components/service-sections/SideBar'
-import Logo from '@/public/Logo.png'
 import Tabs from '@/app/components/UI/shared/Tabs'
 
 interface ProjectDetailProps {
@@ -43,38 +40,6 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 		},
 	]
 
-	const { currentProject } = useProjectStore()
-
-	const params = useParams()
-	const projectId = params['project-id']
-
-	// Wallet connection
-	const account = useAccount()
-
-	// Check if current user is project owner
-	const isProjectOwner =
-		account.address &&
-		project?.owner_id &&
-		account.address.toLowerCase() === project.owner_id.toLowerCase()
-	// const [projectDetails, setProjectDetails] = useState()
-	// const { project } = useProjectStore()
-
-	// const { poolData, pool, fetchLaunchpoolData } = usePoolStore()
-
-	// useEffect(() => {
-	// 	if (projectId && typeof projectId === 'string') {
-	// 		fetchProject(projectId)
-	// 		// fetchLaunchpoolData(projectId)
-	// 	}
-
-	// 	// return () => {
-	// 	// 	clearProject()
-	// 	// }
-	// }, [projectId])
-	console.log('Project ID:', projectId)
-	console.log('Current Project:', project)
-	// console.log('Pool:', pool)
-	// console.log('PoolData:', poolData)
 	const tabs = [
 		{
 			title: 'Launchpool',
@@ -155,8 +120,9 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 				<div className="sticky self-start">
 					<SideBar
 						selectedVToken={null}
-						projectLogo={currentProject?.logo || undefined}
-						projectName={currentProject?.name || ''}
+						projectChainId={project!.chain_id}
+						projectLogo={project?.logo || undefined}
+						projectName={project?.name || ''}
 					/>
 				</div>
 				<div className="h-auto w-full rounded-xl glass-enhanced flex flex-wrap flex-col gap-10 justify-center items-center p-20">

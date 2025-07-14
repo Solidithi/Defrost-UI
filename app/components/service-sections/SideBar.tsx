@@ -22,6 +22,7 @@ interface SideBarProps {
 	onVTokenSelect?: (vToken: TokenInfo | null) => void
 	projectLogo?: string
 	projectName: string
+	projectChainId: number
 	socials?: {
 		website?: string
 		twitter?: string
@@ -36,10 +37,12 @@ const SideBar = ({
 	onVTokenSelect,
 	projectLogo,
 	projectName,
+	projectChainId,
 	socials,
 }: SideBarProps) => {
 	const { pools } = useStakingStore()
 	const { availableVTokens, poolCountByVToken } = useVTokenMetrics({
+		chainId: projectChainId,
 		launchpools: pools.launchpools,
 	})
 	const params = useParams()
@@ -139,7 +142,7 @@ const SideBar = ({
 								className="bg-white rounded-full p-1 shadow-md"
 								onClick={() => setCollapsed(!collapsed)}
 							>
-								<ChevronLeft size={16} />
+								<ChevronLeft size={20} className="text-pink-500" />
 							</button>
 						</div>
 					)}
