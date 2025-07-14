@@ -16,6 +16,7 @@ import {
 import { useAccount, useReadContract } from 'wagmi'
 import { abi as launchpoolABI } from '@/abi/Launchpool.json' // @TODO: optimize this later
 import { useNavBarControl } from '../provider/navbar-control'
+import { AccessLockedModal } from '../components/UI/shared/AccessLockedModal'
 import Button from '../components/UI/button/Button'
 import Spinner from '@/app/components/UI/effect/Spinner'
 
@@ -130,6 +131,12 @@ export function StakingPortfolio() {
 
 	return (
 		<div className="min-h-screen bg-black text-white overflow-hidden relative">
+			<AccessLockedModal
+				isOpen={!account.isConnected}
+				title="Connect Wallet to View Staking Portfolio"
+				description="Please connect your wallet to access your staking portfolio and manage your assets."
+			/>
+
 			{/* Beam effects */}
 			<div className="beam beam-1"></div>
 			<div className="beam beam-2"></div>
