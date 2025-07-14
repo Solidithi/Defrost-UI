@@ -8,19 +8,26 @@ import {
 } from "@reown/appkit/networks";
 
 // Get projectId from https://cloud.reown.com
-export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+export const reownProjectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 
-if (!projectId) {
+if (!reownProjectId) {
 	throw new Error("Project ID is not defined");
 }
 
 // Include all commonly used networks
-export const networks = [moonbeam, moonbaseAlpha, moonriver, sepolia];
+export const supportedChains = [
+	moonbeam,
+	moonbaseAlpha,
+	moonriver,
+	sepolia,
+] as [typeof moonbeam, typeof moonbaseAlpha, typeof moonriver, typeof sepolia];
+
+export const defaultChain = moonbaseAlpha;
 
 // Set up the Wagmi Adapter with more options
 export const wagmiAdapter = new WagmiAdapter({
-	projectId: projectId,
-	networks: networks,
+	projectId: reownProjectId,
+	networks: supportedChains,
 	storage: createStorage({
 		storage: cookieStorage,
 	}),
