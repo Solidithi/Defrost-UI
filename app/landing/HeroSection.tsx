@@ -99,7 +99,7 @@ const HeroSection = () => {
 							transition={{ duration: 0.3, delay: 0.6 }}
 						>
 							<Button
-								className="w-48 h-12 text-xl warm-cool-bg"
+								className="w-52 h-14 text-xl font-semibold warm-cool-bg"
 								onClick={handleSubmit}
 							>
 								Start Now
