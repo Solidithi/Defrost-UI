@@ -43,12 +43,8 @@ const CarouselWithProgress = ({ images }: CarouselWithProgressProps) => {
 		if (ref.current && ref.current.splide) {
 			const splideInstance = ref.current.splide
 
-			// Log initial index
-			console.log('Initial index:', splideInstance.index)
-
 			// Listen for slide move events
 			splideInstance.on('move', (newIndex: number) => {
-				console.log('Slide moved to:', newIndex)
 				setIndex(newIndex)
 			})
 
@@ -59,46 +55,172 @@ const CarouselWithProgress = ({ images }: CarouselWithProgressProps) => {
 	}, [])
 
 	return (
-		<div className="">
+		<div className="relative w-full">
+			{/* Minimal elegant container */}
 			<section
 				id="image-carousel"
-				className="splide w-full max-w-4xl mx-auto"
+				className="relative w-full max-w-5xl mx-auto"
 				aria-label="Beautiful Images"
 			>
-				<Splide
-					options={{
-						type: 'loop',
-						perPage: 1,
-						gap: '1rem',
-						breakpoints: {
-							640: { perPage: 1 },
-						},
-						heightRatio: 0.5,
-					}}
-					aria-labelledby="image-carousel"
-					ref={ref}
-					// onMove={(splide: Splide) => setIndex(splide.index)} // Update index on slide move
-					// onArrowMounted={(splide, prev, next) => console.log(next)}
-				>
-					{images.map((image, index) => (
-						<SplideSlide key={index} className="relative">
-							<Image
-								src={image.src}
-								alt={image.alt}
-								className="w-full h-full object-cover rounded-lg shadow-md"
-								width={10}
-								height={10}
-							/>
-							<div className="absolute bottom-0 bg-black bg-opacity-50 text-white text-center p-2 w-full">
-								{/* {image.description} */}
-								Project Images
-							</div>
-						</SplideSlide>
-					))}
-				</Splide>
+				{/* Simple content container */}
+				<div className="relative">
+					<Splide
+						options={{
+							type: 'loop',
+							perPage: 1,
+							perMove: 1,
+							gap: '0',
+							padding: '0',
+							width: '100%',
+							fixedWidth: false,
+							fixedHeight: false,
+							heightRatio: 0.55,
+							arrows: true,
+							pagination: false,
+							autoplay: false,
+							speed: 600,
+							focus: 'center',
+							trimSpace: false,
+							easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+							classes: {
+								arrows: 'splide__arrows carousel-arrows',
+								arrow: 'splide__arrow carousel-arrow',
+								prev: 'splide__arrow--prev carousel-arrow-prev',
+								next: 'splide__arrow--next carousel-arrow-next',
+							},
+						}}
+						aria-labelledby="image-carousel"
+						ref={ref}
+					>
+						{images.map((image, idx) => (
+							<SplideSlide key={idx} className="relative group w-full">
+								{/* Clean image container */}
+								<div className="relative w-full">
+									{/* Main image with elegant styling */}
+									<div
+										className="relative w-full overflow-hidden rounded-3xl shadow-lg"
+										style={{ aspectRatio: '16/9' }}
+									>
+										<Image
+											src={image.src}
+											alt={image.alt}
+											className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.01]"
+											width={800}
+											height={450}
+											priority={idx === 0}
+										/>
+
+										{/* Subtle overlay on hover */}
+										<div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl" />
+									</div>
+								</div>
+							</SplideSlide>
+						))}
+					</Splide>
+				</div>
 			</section>
 
-			<ProgressBar index={index + 1} total={images.length} duration={1000} />
+			{/* Progress indicators */}
+			<div className="mt-6 flex flex-col items-center space-y-4">
+				{/* Progress bar */}
+				<ProgressBar index={index + 1} total={images.length} duration={1000} />
+
+				{/* Simple dot indicators */}
+				<div className="flex space-x-2">
+					{Array.from({ length: images.length }, (_, i) => (
+						<div
+							key={i}
+							className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+								i === index ? 'bg-white scale-110' : 'bg-white/30'
+							}`}
+						/>
+					))}
+				</div>
+
+				{/* Slide counter */}
+				{images.length > 0 && (
+					<div className="text-center">
+						<span className="text-white/60 text-sm font-light tracking-wider">
+							{index + 1} / {images.length}
+						</span>
+					</div>
+				)}
+			</div>
+
+			{/* Elegant arrow styling */}
+			<style jsx global>{`
+				.splide {
+					width: 100% !important;
+				}
+
+				.splide__track {
+					border-radius: 24px;
+					width: 100% !important;
+				}
+
+				.splide__list {
+					width: 100% !important;
+				}
+
+				.splide__slide {
+					width: 100% !important;
+					flex-shrink: 0 !important;
+					transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+				}
+
+				.carousel-arrows {
+					position: absolute;
+					top: 50%;
+					transform: translateY(-50%);
+					width: 100%;
+					pointer-events: none;
+					z-index: 10;
+				}
+
+				.carousel-arrow {
+					position: absolute;
+					top: 50%;
+					transform: translateY(-50%);
+					width: 48px;
+					height: 48px;
+					border-radius: 50%;
+					background: rgba(255, 255, 255, 0.9);
+					border: none;
+					cursor: pointer;
+					pointer-events: auto;
+					transition: all 0.2s ease;
+					box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					backdrop-filter: blur(10px);
+				}
+
+				.carousel-arrow:hover {
+					transform: translateY(-50%) scale(1.05);
+					background: rgba(255, 255, 255, 1);
+					box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+				}
+
+				.carousel-arrow-prev {
+					left: -24px;
+				}
+
+				.carousel-arrow-next {
+					right: -24px;
+				}
+
+				.carousel-arrow svg {
+					width: 20px;
+					height: 20px;
+					fill: rgba(0, 0, 0, 0.7);
+					transition: fill 0.2s ease;
+				}
+
+				.carousel-arrow:hover svg {
+					fill: rgba(0, 0, 0, 0.9);
+				}
+			`}</style>
 		</div>
 	)
 }

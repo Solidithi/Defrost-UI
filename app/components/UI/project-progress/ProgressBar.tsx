@@ -32,18 +32,14 @@ const ProgressBar = ({
 		}
 	}, [index, total])
 
-	const barStyles = overrideClassName
-		? barClassName
-		: 'w-1/2 m-6 glass-enhanced rounded-lg h-1 relative overflow-hidden w-full'
-	const colorStyles = overrideClassName
-		? colorClassName
-		: 'warm-cool-bg h-full transition-all ease-out duration-700'
+	const barStyles = overrideClassName ? barClassName : 'w-full max-w-xs mx-auto'
+	const colorStyles = overrideClassName ? colorClassName : 'bg-white'
 
 	return (
-		<div className="flex justify-center">
-			<div className={`relative overflow-hidden rounded-lg ${barStyles}`}>
+		<div className={`relative ${barStyles}`}>
+			<div className="h-0.5 bg-white/20 rounded-full overflow-hidden">
 				<div
-					className={`h-full ${colorStyles}`}
+					className={`h-full ${colorStyles} transition-all ease-out duration-700 rounded-full`}
 					style={{ width: `${progress}%` }}
 				/>
 			</div>
