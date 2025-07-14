@@ -21,7 +21,7 @@ const HeroSection = () => {
 	}
 
 	const handleSubmit = () => {
-		router.push('/all-project')
+		router.push('/home')
 	}
 
 	const [isTitleDone, setIsTitleDone] = useState(false)
