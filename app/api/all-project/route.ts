@@ -14,8 +14,13 @@ import {
 import { normalizeAddress } from "@/app/utils/address";
 import { Address } from "viem";
 import { getTokenInfoFromConfig } from "@/app/utils/chain";
+import { project, launchpool } from "@prisma/client";
 import { stringify } from "superjson";
 import "@/app/lib/superjson-init";
+
+interface ProjectWithLaunchpool extends project {
+	launchpool: launchpool[];
+}
 
 export async function GET(request: Request) {
 	try {
@@ -100,86 +105,90 @@ export async function GET(request: Request) {
 		});
 
 		// Transform projects to include both specific pool types and unified pools
-		const enrichedProjects = projects.map((project) => {
-			// Convert all pool types to specific enriched types
-			const enrichedLaunchpools: EnrichedLaunchpool[] = [];
-			const unifiedPools: UnifiedPool[] = [];
+		const enrichedProjects = projects.map(
+			(project: ProjectWithLaunchpool) => {
+				// Convert all pool types to specific enriched types
+				const enrichedLaunchpools: EnrichedLaunchpool[] = [];
+				const unifiedPools: UnifiedPool[] = [];
 
-			// Add launchpools to both enriched and unified pools
-			if (project.launchpool?.length) {
-				project.launchpool.forEach((pool) => {
-					// Create enriched launchpool
-					const enrichedPool = toEnrichedLaunchpool(pool);
-					enrichedLaunchpools.push(enrichedPool);
+				// Add launchpools to both enriched and unified pools
+				if (project.launchpool?.length) {
+					project.launchpool.forEach((pool: launchpool) => {
+						// Create enriched launchpool
+						const enrichedPool = toEnrichedLaunchpool(pool);
+						enrichedLaunchpools.push(enrichedPool);
 
-					// Create unified pool for backward compatibility
-					unifiedPools.push(
-						toUnifiedPool(pool, "launchpool", project.chain_id)
-					);
-				});
-			}
-
-			// Add farmpools to unified pools if they exist
-			//   if (project.farmpool?.length) {
-			//     project.farmpool.forEach((pool) => {
-			//       unifiedPools.push(toUnifiedPool(pool, 'farmpool'))
-			//     })
-			//   }
-
-			// Add launchpads to unified pools if they exist
-			//   if (project.launchpad?.length) {
-			//     project.launchpad.forEach((pool) => {
-			//       unifiedPools.push(toUnifiedPool(pool, 'launchpad'))
-			//     })
-			//   }
-
-			// Calculate metrics across all pool types
-			const tokenDecimals = new Map<string, number>(); // map for fast access
-			const totalStaked = unifiedPools.reduce((sum, pool) => {
-				let decimals = tokenDecimals.get(pool.token_address ?? "");
-				console.log("Pool token address:", pool.token_address);
-				if (!decimals) {
-					decimals = getTokenInfoFromConfig(
-						project.chain_id,
-						normalizeAddress((pool.token_address as Address) ?? "")
-					)?.decimals;
-					if (decimals) {
-						tokenDecimals.set(pool.token_address!, decimals);
-					}
+						// Create unified pool for backward compatibility
+						unifiedPools.push(
+							toUnifiedPool(pool, "launchpool", project.chain_id)
+						);
+					});
 				}
-				console.log("Decimals for pool:", decimals);
 
-				return decimals
-					? sum + pool.total_staked.div(decimals).toNumber()
-					: sum;
-			}, 0);
+				// Add farmpools to unified pools if they exist
+				//   if (project.farmpool?.length) {
+				//     project.farmpool.forEach((pool) => {
+				//       unifiedPools.push(toUnifiedPool(pool, 'farmpool'))
+				//     })
+				//   }
 
-			const totalStakers = unifiedPools.reduce(
-				(sum, pool) => sum + pool.total_stakers,
-				0
-			);
+				// Add launchpads to unified pools if they exist
+				//   if (project.launchpad?.length) {
+				//     project.launchpad.forEach((pool) => {
+				//       unifiedPools.push(toUnifiedPool(pool, 'launchpad'))
+				//     })
+				//   }
 
-			const avgApy = calcPoolsAvgApy(unifiedPools);
+				// Calculate metrics across all pool types
+				const tokenDecimals = new Map<string, number>(); // map for fast access
+				const totalStaked = unifiedPools.reduce((sum, pool) => {
+					let decimals = tokenDecimals.get(pool.token_address ?? "");
+					console.log("Pool token address:", pool.token_address);
+					if (!decimals) {
+						decimals = getTokenInfoFromConfig(
+							project.chain_id,
+							normalizeAddress(
+								(pool.token_address as Address) ?? ""
+							)
+						)?.decimals;
+						if (decimals) {
+							tokenDecimals.set(pool.token_address!, decimals);
+						}
+					}
+					console.log("Decimals for pool:", decimals);
 
-			// Get most relevant token address
-			const tokenAddress =
-				project.token_address ||
-				(unifiedPools.length > 0
-					? unifiedPools[0].reward_token_address
-					: undefined);
+					return decimals
+						? sum + pool.total_staked.div(decimals).toNumber()
+						: sum;
+				}, 0);
 
-			// Create enriched project with all needed metrics
-			return {
-				...project,
-				launchpools: enrichedLaunchpools,
-				unifiedPools, // keep for backward compatibility
-				avgApy,
-				tokenAddress,
-				totalStaked,
-				poolCount: unifiedPools.length,
-				totalStakers,
-			} as EnrichedProject;
-		});
+				const totalStakers = unifiedPools.reduce(
+					(sum, pool) => sum + pool.total_stakers,
+					0
+				);
+
+				const avgApy = calcPoolsAvgApy(unifiedPools);
+
+				// Get most relevant token address
+				const tokenAddress =
+					project.token_address ||
+					(unifiedPools.length > 0
+						? unifiedPools[0].reward_token_address
+						: undefined);
+
+				// Create enriched project with all needed metrics
+				return {
+					...project,
+					launchpools: enrichedLaunchpools,
+					unifiedPools, // keep for backward compatibility
+					avgApy,
+					tokenAddress,
+					totalStaked,
+					poolCount: unifiedPools.length,
+					totalStakers,
+				} as EnrichedProject;
+			}
+		);
 
 		return NextResponse.json(
 			stringify({
