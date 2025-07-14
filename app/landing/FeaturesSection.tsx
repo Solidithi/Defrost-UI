@@ -96,20 +96,20 @@ const FeaturesSection = () => {
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							className="text-xl font-light"
 						>
-							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
-							simply dummy text of the printing and typesetting industry. Lorem
-							Ipsum Lorem Ipsum is simply dummy text of the printing and
-							typesetting industry. Lorem Ipsum{' '}
+							<span className="font-bold">No-Loss Launchpools:</span> Stake your
+							vAssets and earn project tokens while maintaining the ability to
+							unstake anytime. Our innovative design leverages Bifrost LST
+							technology to ensure you never lose your principal investment.
 						</span>
 
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							className="text-xl font-light"
 						>
-							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
-							simply dummy text of the printing and typesetting industry. Lorem
-							Ipsum Lorem Ipsum is simply dummy text of the printing and
-							typesetting industry. Lorem Ipsum{' '}
+							<span className="font-bold">Multi-Network Support:</span> Deploy
+							your projects across various blockchain networks including
+							Polkadot ecosystem networks. Choose the perfect network for your
+							project needs with seamless wallet integration.
 						</span>
 					</div>
 					<div className="h-full w-1/2 overflow-hidden">
@@ -133,20 +133,22 @@ const FeaturesSection = () => {
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							className="text-xl font-light"
 						>
-							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
-							simply dummy text of the printing and typesetting industry. Lorem
-							Ipsum Lorem Ipsum is simply dummy text of the printing and
-							typesetting industry. Lorem Ipsum{' '}
+							<span className="font-bold">Dynamic Emission Rates:</span> Project
+							owners can configure multiple emission phases with different token
+							rates. Higher rates in early phases attract early stakers, while
+							strategic planning of these rates significantly impacts investor
+							participation.
 						</span>
 
 						<span
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 							className="text-xl font-light"
 						>
-							<span className="font-bold">Key feature 1:</span> Lorem Ipsum is
-							simply dummy text of the printing and typesetting industry. Lorem
-							Ipsum Lorem Ipsum is simply dummy text of the printing and
-							typesetting industry. Lorem Ipsum{' '}
+							<span className="font-bold">Transparent & Secure:</span> All
+							transactions and project data are stored on-chain, ensuring
+							complete transparency. Smart contracts handle fair token
+							distribution automatically, building trust between creators and
+							investors.
 						</span>
 					</div>
 				</motion.div>

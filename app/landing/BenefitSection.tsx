@@ -43,12 +43,13 @@ const BenefitSection = () => {
 					className="flex flex-col items-start justify-center gap-16 glass-enhanced rounded-2xl p-10 font-comfortaa text-xl translate-y-0"
 				>
 					<span className="font-bold font-orbitron text-3xl warm-cool-text">
-						Benefit 1
+						For Stakers
 					</span>
 					<span className="">
-						Lorem Ipsum is simply dummy text of the printing and typesetting
-						industry. Lorem Ipsum Lorem Ipsum is simply dummy text of the
-						printing and typesetting industry. Lorem IpsumImage
+						Earn continuous rewards with vAsset LST technology while maintaining
+						flexibility to stake and unstake at your convenience. Access diverse
+						token opportunities with zero principal loss risk through our
+						innovative no-loss launchpool mechanism.
 					</span>
 					<span className="font-bold font-orbitron text-4xl text-gray-600">
 						01
@@ -94,15 +95,16 @@ const BenefitSection = () => {
 					className="flex flex-col items-start justify-center gap-16 glass-enhanced rounded-2xl p-10 font-comfortaa text-xl translate-y-[100px]"
 				>
 					<span className="font-bold font-orbitron text-3xl warm-cool-text">
-						Benefit 1
+						For Project Owners
 					</span>
 					<span className="">
-						Lorem Ipsum is simply dummy text of the printing and typesetting
-						industry. Lorem Ipsum Lorem Ipsum is simply dummy text of the
-						printing and typesetting industry. Lorem Ipsum
+						Build a loyal investor community through fair and transparent reward
+						systems. Enhanced liquidity opportunities and decentralized systems
+						ensure fair token distribution while increasing trust in your
+						project.
 					</span>
 					<span className="font-bold font-orbitron text-4xl text-gray-600">
-						01
+						02
 					</span>
 				</motion.div>
 				<motion.div
@@ -142,15 +144,16 @@ const BenefitSection = () => {
 					className="flex flex-col items-start justify-center gap-16 glass-enhanced rounded-2xl p-10 font-comfortaa text-xl translate-y-[200px]"
 				>
 					<span className="font-bold font-orbitron text-3xl warm-cool-text">
-						Benefit 1
+						For Ecosystem
 					</span>
 					<span className="">
-						Lorem Ipsum is simply dummy text of the printing and typesetting
-						industry. Lorem Ipsum Lorem Ipsum is simply dummy text of the
-						printing and typesetting industry. Lorem Ipsum
+						Encourages greater use of Polkadot and Kusama networks while
+						showcasing PolkaVM capabilities. Attracts more developers and
+						projects to the parachain ecosystem, boosting overall value and
+						growth.
 					</span>
 					<span className="font-bold font-orbitron text-4xl text-gray-600">
-						01
+						03
 					</span>
 				</motion.div>
 				<motion.div
@@ -193,15 +196,16 @@ const BenefitSection = () => {
 					className="flex flex-col items-start justify-center gap-16 glass-enhanced rounded-2xl p-10 font-comfortaa text-xl  translate-y-[300px]"
 				>
 					<span className="font-bold font-orbitron text-3xl warm-cool-text">
-						Benefit 1
+						For Bifrost
 					</span>
 					<span className="">
-						Lorem Ipsum is simply dummy text of the printing and typesetting
-						industry. Lorem Ipsum Lorem Ipsum is simply dummy text of the
-						printing and typesetting industry. Lorem Ipsum
+						Expands vAsset use cases, increasing adoption and liquidity. Adds
+						value to the Bifrost platform by integrating with DeFi opportunities
+						while strengthening connections within the broader Polkadot
+						ecosystem.
 					</span>
 					<span className="font-bold font-orbitron text-4xl text-gray-600">
-						01
+						04
 					</span>
 				</motion.div>
 			</div>

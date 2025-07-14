@@ -69,7 +69,12 @@ const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
 export default function LineChart() {
 	const [activeToken, setActiveToken] = useState('ACA')
 
-	const series = [{ name: activeToken, data: tokenData[activeToken] }]
+	const series = [
+		{
+			name: activeToken,
+			data: tokenData[activeToken as keyof typeof tokenData],
+		},
+	]
 
 	const options: ApexOptions = {
 		chart: {

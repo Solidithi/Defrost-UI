@@ -32,7 +32,7 @@ const HeroSection = () => {
 			{/* <div className="absolute top-[700px] left-[850px]  h-64 w-[800px] rounded-full opacity-25 blur-[100px] bg-[#F05550]"></div> */}
 			<Boxes />
 			<div className="flex w-full z-50">
-				<div className="bg-white h-screen w-1/2 glass-frosted">
+				<div className="bg-white h-screen w-1/2 glass-enhanced">
 					<div className="flex flex-col items-start h-full gap-10 justify-center px-16">
 						<motion.span
 							initial="hidden"
@@ -78,8 +78,9 @@ const HeroSection = () => {
 							className="text-white text-xl"
 							style={{ fontFamily: comfortaa.style.fontFamily }}
 						>
-							We believe all project stakeholders are as important as each
-							other.
+							Connecting blockchain project creators with investors through a
+							transparent, secure platform that empowers equal opportunities for
+							all stakeholders.
 						</motion.span>
 
 						{/* <motion.button

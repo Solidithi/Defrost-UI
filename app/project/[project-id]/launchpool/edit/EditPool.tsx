@@ -71,7 +71,7 @@ const EditPool = () => {
 			return
 		}
 
-		addPhase(poolId)
+		addPhase(poolId.toString())
 		console.log('After addPhase - poolData:', poolData)
 	}
 
@@ -81,8 +81,11 @@ const EditPool = () => {
 			if (isConfirming.type === 'pool') {
 				removePool(isConfirming.id)
 			} else if (isConfirming.type === 'phase') {
-				if (selectedPoolId) {
-					removePhase(selectedPoolId, isConfirming.id)
+				if (selectedPoolId !== null) {
+					removePhase(
+						selectedPoolId,
+						isConfirming.id ? Number(isConfirming.id) : 0
+					)
 				}
 			}
 		}
@@ -177,7 +180,7 @@ const EditPool = () => {
 		if (field === 'from' || field === 'to') {
 			if (!validatePoolDates(poolId, field, value)) return
 		}
-		updatePoolItem(poolId, { [field]: value })
+		updatePoolItem(poolId.toString(), { [field]: value })
 	}
 
 	/* ---------------------- Handle Change EmissionRate ---------------------- */
@@ -190,12 +193,12 @@ const EditPool = () => {
 		if (field === 'from' || field === 'to') {
 			if (!validatePhaseDates(poolId, phaseId, field, value)) return
 		}
-		updatePhase(poolId, phaseId, { [field]: value })
+		updatePhase(poolId.toString(), phaseId, { [field]: value })
 	}
 
 	/* ---------------------- Open and Close Confirm Modal ---------------------- */
 	const handleOpenConfirmModal = (id: number, type: 'pool' | 'phase') => {
-		setIsConfirming({ open: true, id, type })
+		setIsConfirming({ open: true, id: id.toString(), type })
 	}
 
 	const handleCloseConfirmModal = () => {
@@ -270,7 +273,7 @@ const EditPool = () => {
 							<div className="relative w-full">
 								<input
 									id="projectName"
-									value={projectTokenAddress}
+									value={projectTokenAddress || ''}
 									onChange={(e) => setTokenAddress(e.target.value)}
 									placeholder="Enter your token address"
 									className={`p-4 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full`}
@@ -321,7 +324,9 @@ const EditPool = () => {
 										style={{ width: 'calc(50% - 0.375rem)' }}
 									>
 										<Button
-											onClick={() => handleOpenConfirmModal(poolId, 'pool')}
+											onClick={() =>
+												handleOpenConfirmModal(Number(poolId), 'pool')
+											}
 											className="absolute top-5 right-5 glass-enhanced px-3 py-1"
 										>
 											X
@@ -332,9 +337,13 @@ const EditPool = () => {
 												<span className="font-orbitron text-lg">Chain</span>
 												<div className="relative group">
 													<select
-														value={poolData[poolId]?.chain || ''}
+														value={(poolData[poolId] as any)?.chain || ''}
 														onChange={(e) =>
-															handleChangePool(poolId, 'chain', e.target.value)
+															handleChangePool(
+																Number(poolId),
+																'chain',
+																e.target.value
+															)
 														}
 														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
@@ -367,9 +376,13 @@ const EditPool = () => {
 												<span className="font-orbitron text-lg">Token</span>
 												<div className="relative group">
 													<select
-														value={poolData[poolId]?.token || ''}
+														value={poolData[poolId]?.vTokenSymbol || ''}
 														onChange={(e) =>
-															handleChangePool(poolId, 'token', e.target.value)
+															handleChangePool(
+																Number(poolId),
+																'token',
+																e.target.value
+															)
 														}
 														className="p-3 pr-10 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm appearance-none cursor-pointer"
 													>
@@ -409,7 +422,11 @@ const EditPool = () => {
 													onChange={(e) => {
 														const value = e.target.value
 														if (/^\d*$/.test(value)) {
-															handleChangePool(poolId, 'tokenSupply', value)
+															handleChangePool(
+																Number(poolId),
+																'tokenSupply',
+																value
+															)
 														}
 													}}
 													onKeyDown={(e) => {
@@ -449,7 +466,7 @@ const EditPool = () => {
 												onChange={(e) => {
 													const value = e.target.value
 													if (/^\d*$/.test(value)) {
-														handleChangePool(poolId, 'maxStake', value)
+														handleChangePool(Number(poolId), 'maxStake', value)
 													}
 												}}
 												onKeyDown={(e) => {
@@ -481,7 +498,11 @@ const EditPool = () => {
 													formatDateTimeLocal(poolData[poolId]?.from) || ''
 												}
 												onChange={(e) =>
-													handleChangePool(poolId, 'from', e.target.value)
+													handleChangePool(
+														Number(poolId),
+														'from',
+														e.target.value
+													)
 												}
 												placeholder="Enter start date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm"
@@ -499,7 +520,7 @@ const EditPool = () => {
 												type="datetime-local"
 												value={formatDateTimeLocal(poolData[poolId]?.to) || ''}
 												onChange={(e) =>
-													handleChangePool(poolId, 'to', e.target.value)
+													handleChangePool(Number(poolId), 'to', e.target.value)
 												}
 												placeholder="Enter end date"
 												className="p-3 rounded-xl font-comfortaa text-white glass-enhanced focus:outline-none w-full text-sm"
@@ -585,10 +606,11 @@ const EditPool = () => {
 										<div className="flex justify-between text-gray-300 mb-2">
 											<span>Token Address:</span>
 											<span className="font-mono text-blue-400">
-												{projectTokenAddress.substring(0, 12)}...
-												{projectTokenAddress.substring(
-													projectTokenAddress.length - 6
-												)}
+												{projectTokenAddress
+													? `${projectTokenAddress.substring(0, 12)}...${projectTokenAddress.substring(
+															projectTokenAddress.length - 6
+														)}`
+													: 'N/A'}
 											</span>
 										</div>
 										<div className="flex justify-between text-gray-300 mb-2">

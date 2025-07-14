@@ -752,13 +752,13 @@ const CreateProject = () => {
 										Telegram
 									</label>
 									<input
-										links
-										helps
-										potential
-										supporters
-										find
-										and
-										engage
+										// links
+										// helps
+										// potential
+										// supporters
+										// find
+										// and
+										// engage
 										id="telegram"
 										value={telegram}
 										onChange={(e) => setTelegram(e.target.value)}

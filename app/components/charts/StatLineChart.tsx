@@ -152,7 +152,12 @@ export default function StakedAmountChart() {
 
 	const series = isDefault
 		? Object.entries(tokenData).map(([name, data]) => ({ name, data }))
-		: [{ name: activeToken, data: tokenData[activeToken] }]
+		: [
+				{
+					name: activeToken,
+					data: tokenData[activeToken as keyof typeof tokenData],
+				},
+			]
 
 	const options: ApexOptions = {
 		chart: {

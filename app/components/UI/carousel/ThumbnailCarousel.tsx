@@ -18,7 +18,7 @@ interface ImageCarouselProps {
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ projectImages }) => {
 	const [index, setIndex] = useState(0)
-	const ref = useRef<Splide>(null)
+	const ref = useRef<any>(null)
 
 	// Default images as fallback if no project images are provided
 	const defaultImages: ThumbnailImage[] = [

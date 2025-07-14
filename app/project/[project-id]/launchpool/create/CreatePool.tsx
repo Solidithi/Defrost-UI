@@ -901,12 +901,14 @@ export default function CreatePool() {
 					}
 
 					console.log('Launchpool params: ', launchpoolParams)
-
-					const createLaunchpoolCalldata =
-						ProjectHubUpgradeable__factory.createInterface().encodeFunctionData(
-							'createLaunchpool',
-							[launchpoolParams]
-						)
+					// const createLaunchpoolCalldata =
+					// 	ProjectHubUpgradeable__factory.createInterface().encodeFunctionData(
+					// 		'createLaunchpool',
+					// 		[launchpoolParams]
+					// 	)
+					const createLaunchpoolCalldata = new ethers.Interface(
+						projectHubABI
+					).encodeFunctionData('createLaunchpool', [launchpoolParams])
 
 					return createLaunchpoolCalldata
 				}

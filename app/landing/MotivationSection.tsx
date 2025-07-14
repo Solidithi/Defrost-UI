@@ -36,23 +36,20 @@ const MotivationSection = () => {
 			</div>
 			<div className="text-center glass-enhanced w-full h-auto text-white flex flex-col justify-center items-center gap-10 p-14 rounded-2xl">
 				<span className="font-bold font-orbitron text-5xl ">
-					Lorem Ipsum is simply dummy text of the printing and typesetting
+					Revolutionizing Blockchain Project Funding with Egalitarian Innovation
 				</span>
 				<span className="font-comfortaa text-2xl">
-					Lorem Ipsum is simply dummy text of the printing and typesettingx`
-					industry. Lorem Ipsum has been the industry&apos;s standard dummy text
-					ever since the 1500s, Lorem Ipsum is simply dummy text of the printing
-					and typesetting industry. Lorem Ipsum has been the industry&apos;s
-					standard dummy text ever since the 1500s Lorem Ipsum is simply dummy
-					text of the printing and typesetting industry. Lorem Ipsum has been
-					the industry&apos;s standard dummy text ever since the 1500s, Lorem
-					Ipsum is simply dummy text of the printing and typesetting industry.
-					Lorem Ipsum has been the industry&apos;s standard dummy text ever
-					since the 1500s Lorem Ipsum is simply dummy text of the printing and
-					typesetting industry. Lorem Ipsum has been the industry&apos;s
-					standard dummy text ever since the 1500s, Lorem Ipsum is simply dummy
-					text of the printing and typesetting industry. Lorem Ipsum has been
-					the industry&apos;s standard dummy text ever since the 1500s
+					Defrost is a decentralized platform that connects blockchain project
+					creators and startups with potential funders and investors, providing
+					a transparent and efficient way to showcase and support innovative
+					blockchain initiatives. Our comprehensive project management system
+					allows creators to present their ideas with detailed information,
+					media assets, and social links while enabling supporters to discover
+					and fund promising projects through a clean, intuitive interface.
+					Operating fully on the blockchain ensures transparency and security
+					for all transactions and project data, supporting multiple parachain
+					networks to give project creators the flexibility they need to
+					succeed.
 				</span>
 			</div>
 		</section>
