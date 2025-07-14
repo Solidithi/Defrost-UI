@@ -280,6 +280,10 @@ body::before {
 		@apply bg-gradient-to-r from-[#427FF6] via-[#AB54F2] to-[#E8499E];
 	}
 
+	.purple-blue-gradient {
+		@apply bg-gradient-to-r from-[#6D64F7] via-[#427FF6] to-[#AB54F2];
+	}
+
 	/* Enhanced ambient background for depth */
 	.ambient-bg {
 		background: radial-gradient(

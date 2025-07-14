@@ -168,20 +168,11 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 								name={project.name ?? 'Unnamed'}
 								short_description={project.short_description ?? ''}
 								logo={project.logo ?? '/placeholder.png'}
+								owner_id={project.owner_id ?? undefined}
 							/>
 						)}
 					</div>
-
-					{/* Project Owner Indicator */}
-					{account.isConnected && isProjectOwner && (
-						<ProjectOwnerIndicator containerClassName="w-full" />
-					)}
-					<div className="h-auto w-full ">
-						{/* <AcernityCarousel slides={slideData} /> */}
-						{/* <CarouselWithProgress images={project.images} /> */}
-						{/* {project?.images && (
-							<CarouselWithProgress images={project.images} />
-						)} */}
+					<div className="h-auto w-full">
 						<CarouselWithProgress
 							images={
 								project?.images.map((url) => ({
@@ -191,25 +182,18 @@ const ProjectGeneral = ({ project }: ProjectDetailProps) => {
 							}
 						/>
 					</div>
-					<div className="relative p-6">
-						<span className="content-text block">
-							{/* If you have funded this project, we will be in touch to let you
-							know when the rewards have started distributing and when you can
-							claim them. If you have funded this project, we will be in touch
-							to let you know when the rewards have started distributing and
-							when you can claim them. If you have funded this project, we will
-							be in touch to let you know when the rewards have started
-							distributing and when you can claim them. */}
-							{project?.long_description}
-						</span>
 
-						<div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white" />
-
-						<div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white" />
-
-						<div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white" />
-
-						<div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white" />
+					{/* Enhanced Long Description Section */}
+					<div className="relative w-full max-w-5xl group">
+						{/* Simple Ultra-Transparent Glass */}
+						<div className="relative rounded-3xl p-8 md:p-12 bg-white/[0.008] border border-white/[0.015] backdrop-blur-[1px] hover:bg-white/[0.012] hover:border-white/[0.025] transition-all duration-500">
+							{/* Content */}
+							<div className="relative z-10">
+								<p className="text-white/92 font-comfortaa text-lg leading-relaxed tracking-wide mb-0 group-hover:text-white/96 transition-colors duration-300">
+									{project?.long_description}
+								</p>
+							</div>
+						</div>
 					</div>
 					<div className="bg-white rounded-full w-full h-[1px]" />
 
