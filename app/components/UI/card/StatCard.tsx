@@ -6,7 +6,6 @@ import { GlowingEffect } from '@/app/components/UI/effect/GlowingEffect'
 import CountUp from '@/app/components/UI/effect/Countup'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { formatNumber } from '@/app/utils/format'
 
 interface StatCardProps {
 	value: number
