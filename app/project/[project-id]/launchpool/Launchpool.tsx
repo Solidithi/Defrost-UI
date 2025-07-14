@@ -169,6 +169,7 @@ const Launchpool = () => {
 						// 	discord: currentProject?.discord || '',
 						// 	github: currentProject?.github || '',
 						// }}
+						projectChainId={currentProject?.chain_id || 0}
 						projectName={currentProject?.name || ''}
 						projectLogo={currentProject?.logo || ''}
 						socials={mockSocials}
