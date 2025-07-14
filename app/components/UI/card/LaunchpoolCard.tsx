@@ -1,9 +1,9 @@
 'use client'
 
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
-import { useAppKit } from '@reown/appkit/react'
+import { useAppKit } from '@/app/hooks/useAppKit'
 import {
 	ChevronDown,
 	ChevronUp,
@@ -109,7 +109,7 @@ export function LaunchpoolCard({ launchpool }: LaunchpoolCardProps) {
 	}, [])
 
 	/* ---------------------- Main action button click handler ---------------------- */
-	const { open: openWalletModal, close: closeWalletModal } = useAppKit()
+	const { openWalletModal } = useAppKit()
 	const handleActionButtonClick = useCallback(() => {
 		if (!account.isConnected) {
 			openWalletModal()
