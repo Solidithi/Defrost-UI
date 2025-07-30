@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PoolTab } from '@/app/components/service/launchpool/ContentTabs'
+import { PoolsTab } from '@/app/project/[project-id]/launchpool/PoolsTab'
 import { StatCard } from '@/app/components/UI/card/StatCard'
 import { TokenInfo } from '@/app/store/staking'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
@@ -57,7 +57,7 @@ const Launchpool = () => {
 		{
 			title: 'Pools',
 			value: 'pools',
-			content: <PoolTab selectedVToken={selectedVToken} />,
+			content: <PoolsTab selectedVToken={selectedVToken} />,
 		},
 		{
 			title: 'Analytics',
