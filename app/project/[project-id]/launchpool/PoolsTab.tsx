@@ -7,7 +7,7 @@ import {
 } from '@/app/store/staking'
 import { useProjectStore } from '@/app/store/project'
 import { useEffect } from 'react'
-import { LaunchpoolCard } from '../../UI/card/LaunchpoolCard'
+import { LaunchpoolCard } from '../../../components/UI/card/LaunchpoolCard'
 import { useAccount } from 'wagmi'
 import { normalizeAddress } from '@/app/utils/address'
 import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
@@ -16,12 +16,12 @@ import { CircleArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/app/components/UI/button/Button'
 
-interface PoolTabProps {
+interface PoolsTabProps {
 	selectedVToken?: TokenInfo | null
 	poolLimit?: number
 }
 
-export const PoolTab = ({ selectedVToken, poolLimit }: PoolTabProps) => {
+export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 	const { currentProject } = useProjectStore()
 	const { fetchPoolsOfProject } = useStakingStore()
 	const account = useAccount()
