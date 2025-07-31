@@ -1,20 +1,8 @@
 import { type SIWESession } from "@reown/appkit-siwe";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export default function middleware(req: NextRequest) {
-	// const { nextUrl } = req;
-
-	// // Check if it's an API route
-	// const isApiRoute = nextUrl.pathname.startsWith("/api/");
-	// const isAuthRoute = nextUrl.pathname.startsWith("/api/auth/");
-
-	// // Skip auth routes (need to be accessible without authentication)
-	// if (isAuthRoute) {
-	// 	return NextResponse.next();
-	// }
-
-	// // Protect other API routes
-	// if (isApiRoute) {
 	const responseForUnauthenticated = NextResponse.json(
 		{
 			error: "Unauthorized",
@@ -22,7 +10,9 @@ export default function middleware(req: NextRequest) {
 		{ status: 401 }
 	);
 
-	const sessionCookie = req.cookies.get("siwe-sessions");
+	const cookieStore = cookies();
+	const sessionCookie = cookieStore.get("siwe-session");
+	console.log("Session Cookie:", sessionCookie);
 	if (!sessionCookie) {
 		return responseForUnauthenticated;
 	}
@@ -39,7 +29,6 @@ export default function middleware(req: NextRequest) {
 	response.headers.set("x-user-address", session.address);
 	response.headers.set("x-user-chain-id", session.chainId.toString());
 	return response;
-	// }
 }
 
 // Apply middleware to all routes
