@@ -13,6 +13,7 @@ import { normalizeAddress } from '@/app/utils/address'
 import { ProjectOwnerIndicator } from '@/app/components/UI/shared/ProjectOwnerIndicator'
 import { Address } from 'viem'
 import { CircleArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/app/components/UI/button/Button'
 
@@ -25,6 +26,7 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 	const { currentProject } = useProjectStore()
 	const { fetchPoolsOfProject } = useStakingStore()
 	const account = useAccount()
+	const router = useRouter()
 
 	// Check if current user is project owner
 	const isProjectOwner =
@@ -57,8 +59,6 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 	const showGeneralEmptyState =
 		!selectedVToken && filteredPoolsByVToken.launchpools.length === 0
 
-	const handleCreatePoolClick = () => {}
-
 	return (
 		<div>
 			<div className="flex justify-between items-center my-10">
@@ -79,12 +79,12 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 					</div>
 				)}
 			</div>
-			{/* Enhanced empty state when vToken selected but no pools */}
+			{/* Empty state when vToken selected but no pools */}
 			{showVTokenEmptyState && selectedVToken ? (
 				<div className="relative overflow-hidden">
-					{/* Enhanced background decoration with vibrant gradients */}
-					<div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/25 to-pink-900/30 backdrop-blur-xl rounded-3xl" />
-					<div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-pink-500/10 rounded-3xl animate-pulse" />
+					{/* Background decoration with vibrant gradients */}
+					{/* <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/25 to-pink-900/30 backdrop-blur-xl rounded-3xl" /> */}
+					{/* <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-pink-500/10 rounded-3xl animate-pulse" /> */}
 
 					<div className="relative glass-enhanced text-white mt-10 p-16 rounded-3xl text-center border border-purple-400/30 shadow-2xl shadow-purple-500/20">
 						<div className="max-w-md mx-auto">
@@ -111,16 +111,15 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 								<Button
 									className="bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-pink-600/95 hover:from-purple-700/100 hover:via-blue-700/100 hover:to-pink-700/100 text-white font-black px-8 py-4 rounded-2xl hover:scale-105 transition-all duration-500 shadow-xl shadow-purple-500/40 hover:shadow-purple-500/60 backdrop-blur-xl border border-purple-400/30 hover:border-purple-300/50"
 									onClick={() => {
-										// Handle create pool click
+										router.push(
+											`/project/${currentProject?.id}/launchpool/create`
+										)
 									}}
 								>
-									<Link
-										href={`/project/${currentProject?.id}/launchpool/create`}
-										className="flex items-center gap-3"
-									>
+									<span className="flex items-center gap-3">
 										<span>Create First {selectedVToken.symbol} Pool</span>
 										<CircleArrowRight size={18} />
-									</Link>
+									</span>
 								</Button>
 							)}
 						</div>
@@ -128,9 +127,9 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 				</div>
 			) : showGeneralEmptyState ? (
 				<div className="relative overflow-hidden">
-					{/* Enhanced background decoration with vibrant gradients */}
+					{/* Background decoration with vibrant gradients */}
 					<div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/25 to-pink-900/30 backdrop-blur-xl rounded-3xl" />
-					<div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-pink-500/10 rounded-3xl animate-pulse" />
+					{/* <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-pink-500/10 rounded-3xl animate-pulse" /> */}
 
 					<div className="relative glass-enhanced text-white mt-10 p-20 rounded-3xl text-center border border-purple-400/30 shadow-2xl shadow-purple-500/20">
 						<div className="max-w-lg mx-auto">
@@ -153,8 +152,8 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 							{isProjectOwner && (
 								<div className="space-y-6">
 									<Button
+										on
 										className="bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-pink-600/95 hover:from-purple-700/100 hover:via-blue-700/100 hover:to-pink-700/100 text-white font-black px-10 py-5 rounded-2xl hover:scale-105 transition-all duration-500 shadow-xl shadow-purple-500/40 hover:shadow-purple-500/60 backdrop-blur-xl border border-purple-400/30 hover:border-purple-300/50"
-										onClick={handleCreatePoolClick}
 									>
 										<Link
 											href={`/project/${currentProject?.id}/launchpool/create`}
@@ -179,10 +178,7 @@ export const PoolsTab = ({ selectedVToken, poolLimit }: PoolsTabProps) => {
 						{isProjectOwner && (
 							<div className="flex flex-row items-center justify-between mb-8">
 								<ProjectOwnerIndicator containerClassName="max-w-xl" />
-								<Button
-									className="bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-pink-600/95 hover:from-purple-700/100 hover:via-blue-700/100 hover:to-pink-700/100 text-white font-black hover:scale-105 transition-all duration-500 rounded-2xl flex items-center ml-auto mx-4 shadow-xl shadow-purple-500/40 hover:shadow-purple-500/60 backdrop-blur-xl border border-purple-400/30 hover:border-purple-300/50"
-									onClick={handleCreatePoolClick}
-								>
+								<Button className="bg-gradient-to-r from-purple-600/95 via-blue-600/95 to-pink-600/95 hover:from-purple-700/100 hover:via-blue-700/100 hover:to-pink-700/100 text-white font-black hover:scale-105 transition-all duration-500 rounded-2xl flex items-center ml-auto mx-4 shadow-xl shadow-purple-500/40 hover:shadow-purple-500/60 backdrop-blur-xl border border-purple-400/30 hover:border-purple-300/50">
 									<Link
 										href={`/project/${currentProject?.id}/launchpool/create`}
 										className="flex items-center gap-3 px-6 py-3"

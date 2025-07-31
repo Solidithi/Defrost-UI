@@ -2,17 +2,13 @@
 
 import { useState } from 'react'
 import { PoolsTab } from '@/app/project/[project-id]/launchpool/PoolsTab'
-import { StatCard } from '@/app/components/UI/card/StatCard'
 import { TokenInfo } from '@/app/store/staking'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
 import { useProjectStore } from '@/app/store/project'
 import AnimatedBlobs from '@/app/components/UI/background/AnimatedBlobs'
-import BarChart from '@/app/components/charts/Barchart'
-import DonutChart from '@/app/components/charts/DonutChart'
-import LineChart from '@/app/components/charts/LineChart'
-import StakedAmountChart from '@/app/components/charts/StatLineChart'
 import SideBar from '@/app/components/service-sections/SideBar'
 import Tabs from '@/app/components/UI/shared/Tabs'
+import { MetricsTab } from './MetricsTab'
 
 const Launchpool = () => {
 	// vToken filtering state (kept local as requested)
@@ -27,32 +23,6 @@ const Launchpool = () => {
 		github: 'https://github.com/example',
 	}
 
-	const statCardItems = [
-		{
-			type: 'Current number of investors',
-			value: 4000,
-			label: 'Current number of investors',
-			icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX////mAHrmAHjkAG3kAGzkAG/lAHXlAHP//f797/X62uf75e7++PvmAHv+9fn/+/374uzoNYn3w9jtbaT4zN751uX2u9P86vLwirTudqnpRI/ymr74y9398fbrV5jnGH/sYp7zpcT0r8vqTZPxkrnvga/2v9XynsDpOYrueqvoKITqSZL1tc/sZ6DtcKXwhrKggIhKAAALg0lEQVR4nO1da3siLQ+uMICH2qrVWrU6nqrWnv7/v3v17W5Xh1PCMIB9vL/tde1QIhBIcie5uQmBu8',
-		},
-		{
-			type: 'Current total staked',
-			value: 2657,
-			label: 'Current total staked',
-			icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX////mAHrmAHjkAG3kAGzkAG/lAHXlAHP//f797/X62uf75e7++PvmAHv+9fn/+/374uzoNYn3w9jtbaT4zN751uX2u9P86vLwirTudqnpRI/ymr74y9398fbrV5jnGH/sYp7zpcT0r8vqTZPxkrnvga/2v9XynsDpOYrueqvoKITqSZL1tc/sZ6DtcKXwhrKggIhKAAALg0lEQVR4nO1da3siLQ+uMICH2qrVWrU6nqrWnv7/v3v17W5Xh1PCMIB9vL/tde1QIhBIcie5uQmBu8',
-		},
-		{
-			type: 'Highest Total Staked Amount',
-			value: 3000,
-			label: 'Highest Total Staked Amount',
-			icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX////mAHrmAHjkAG3kAGzkAG/lAHXlAHP//f797/X62uf75e7++PvmAHv+9fn/+/374uzoNYn3w9jtbaT4zN751uX2u9P86vLwirTudqnpRI/ymr74y9398fbrV5jnGH/sYp7zpcT0r8vqTZPxkrnvga/2v9XynsDpOYrueqvoKITqSZL1tc/sZ6DtcKXwhrKggIhKAAALg0lEQVR4nO1da3siLQ+uMICH2qrVWrU6nqrWnv7/v3v17W5Xh1PCMIB9vL/tde1QIhBIcie5uQmBu8',
-		},
-	]
-
-	const barData = [4500, 5300, 3600, 1500]
-	const barLabels = ['vASTR', 'vDOT', 'vGLMR', 'vKSM']
-	const donutData = [6000, 4000]
-	const donutLabels = ['Remaining tokens', 'Owned tokens']
-
 	const tabs = [
 		{
 			title: 'Pools',
@@ -60,50 +30,9 @@ const Launchpool = () => {
 			content: <PoolsTab selectedVToken={selectedVToken} />,
 		},
 		{
-			title: 'Analytics',
+			title: 'Metrics',
 			value: 'analytics',
-			content: (
-				<div>
-					<div className="grid grid-cols-3 gap-8 w-full mx-auto mt-10 mb-24">
-						{statCardItems.map((item, index) => (
-							<StatCard
-								key={index}
-								// type={item.type}
-								value={item.value}
-								label={item.label}
-								icon={item.icon}
-							/>
-						))}
-					</div>
-					<div className="grid grid-cols-2 gap-8">
-						<div className="">
-							{/* <SidebarLineChart
-								data={barData}
-								height={500}
-								gradientFrom="#F05550"
-								gradientTo="#54A4F2"
-							/> */}
-							<StakedAmountChart />
-						</div>
-						<div className="">
-							<BarChart data={barData} label={barLabels} />
-						</div>
-						<div className="">
-							<LineChart />
-						</div>
-						<div className="">
-							<DonutChart
-								title="Remaining token"
-								series={donutData}
-								labels={donutLabels}
-							/>
-						</div>
-					</div>
-					<div className="w-full mt-8">
-						<LineChart />
-					</div>
-				</div>
-			),
+			content: <MetricsTab />,
 		},
 	]
 
