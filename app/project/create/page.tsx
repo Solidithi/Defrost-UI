@@ -1,3 +1,5 @@
+'use client'
+
 import CreateProject from './CreateProject'
 
 const CreateProjectPage = () => {
