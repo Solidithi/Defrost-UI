@@ -100,8 +100,6 @@ const EditProject = () => {
 		// Navigate to the project details page
 		if (editProjectStore.projectID) {
 			router.push(`/project/${editProjectStore.projectID}`)
-		} else {
-			router.push('/project-details') // replace with the actual path when the page available
 		}
 	}
 

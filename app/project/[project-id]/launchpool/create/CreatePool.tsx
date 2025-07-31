@@ -1006,7 +1006,7 @@ export default function CreatePool() {
 					</Link>
 					<span className="mx-2">›</span>
 					<Link
-						href={`/project/${currentProject.id}/project-detail`}
+						href={`/project/${currentProject.id}`}
 						className="hover:text-cyan-400 transition-colors"
 					>
 						{currentProject.name || 'Project'}

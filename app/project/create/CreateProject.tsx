@@ -260,7 +260,7 @@ const CreateProject = () => {
 	}
 
 	const handleViewProjectDetails = (projectId: string | number) => {
-		router.push(`/project/${projectId}/project-detail`) // replace with the actual path when the page avaiable
+		router.push(`/project/${projectId}`) // replace with the actual path when the page avaiable
 	}
 
 	const handleContinueEditing = () => {
@@ -393,15 +393,9 @@ const CreateProject = () => {
 			<div
 				className={`text-center ${isModalOpen ? 'blur-sm pointer-events-none' : ''}`}
 			>
-				<SplitText
-					text="Fill your project's information"
-					className="text-7xl text-center font-bold text-white font-orbitron z-20"
-					delay={50}
-					animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-					animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-					threshold={0.2}
-					rootMargin="-50px"
-				/>
+				<span className="text-7xl text-center font-bold text-white font-orbitron z-20">
+					Fill your project&apos;s information
+				</span>
 			</div>
 
 			<div
@@ -818,7 +812,7 @@ const CreateProject = () => {
 			{/* Transaction Status Modal for Testing */}
 			<LoadingModal
 				isOpen={isCreatingProject}
-				message="Setting up your project on-chain"
+				message="Creating on-chain project identity"
 				subMessage="Please wait while your transaction is being processed"
 			/>
 
