@@ -12,6 +12,11 @@ interface DonutChartProps {
 
 const DonutChart: React.FC<DonutChartProps> = ({ title, series, labels }) => {
 	;<div className="bg-[#a8a8a8]"></div>
+	const total = series.reduce((acc, val) => acc + val, 0)
+	labels = labels.map((label, idx) => {
+		return `${label} (${((series[idx] / total) * 100).toFixed(2)}%)`
+	})
+
 	const options: ApexOptions = {
 		chart: {
 			type: 'donut',
@@ -52,7 +57,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ title, series, labels }) => {
 							color: '#ffffff',
 							offsetY: 10,
 							formatter: function (val: string) {
-								return `${val} units`
+								return `${val} tokens`
 							},
 						},
 						total: {
