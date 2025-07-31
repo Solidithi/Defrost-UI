@@ -40,14 +40,7 @@ export default function ProjectLayout({
 				limit: 3,
 			})
 		}
-	}, [
-		projectID,
-		// address,
-		// chainId,
-		fetchProject,
-		fetchMockProject,
-		fetchPoolsOfProject,
-	])
+	}, [projectID, fetchProject, fetchMockProject, fetchPoolsOfProject])
 
 	// Show loading state
 	if (isLoading) {
