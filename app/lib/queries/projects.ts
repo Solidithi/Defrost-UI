@@ -1,7 +1,7 @@
 import "@/app/lib/superjson-init";
 import { EnrichedProject } from "@/app/types";
-import { keyframes } from "framer-motion";
 import { parse } from "superjson";
+import { Address } from "viem";
 
 export interface ProjectsResponse {
 	projects: EnrichedProject[];
@@ -62,6 +62,32 @@ export const projectsApi = {
 		});
 
 		const response = await fetch(`/api/all-project?${params}`);
+		if (!response.ok) {
+			throw new Error("Failed to fetch projects");
+		}
+		return parse(await response.json());
+	},
+
+	getMyProjects: async (
+		projectOwnerAddress: Address,
+		page: number = 1,
+		limit: number = 10,
+		filters: ProjectFilters = {}
+	): Promise<ProjectsResponse> => {
+		const params = new URLSearchParams({
+			page: page.toString(),
+			limit: limit.toString(),
+			projectOwnerAddress: projectOwnerAddress.toString(),
+		});
+
+		Object.entries(filters).forEach(([key, value]) => {
+			if (!value) {
+				return;
+			}
+			params.append(key, value.toString().trim());
+		});
+
+		const response = await fetch(`/api/my-projects?${params}`);
 		if (!response.ok) {
 			throw new Error("Failed to fetch projects");
 		}

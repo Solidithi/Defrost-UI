@@ -137,7 +137,7 @@ export default function MyProject() {
 		<div className="flex justify-end space-x-2">
 			<button
 				className="bg-transparent border border-[#54A4F2] rounded-full px-3 py-1 text-xs font-bold text-[#54A4F2]"
-				onClick={() => router.push(`/project/${project.id}/project-detail`)}
+				onClick={() => router.push(`/project/${project.id}`)}
 			>
 				View
 			</button>
@@ -435,10 +435,20 @@ export default function MyProject() {
 												</div>
 
 												<div className="flex space-x-2">
-													<button className="bg-transparent border border-[#54A4F2] rounded-full px-4 py-1 text-sm font-bold text-[#54A4F2] hover:bg-[#54A4F2] hover:bg-opacity-10 transition-colors">
+													<button
+														className="bg-transparent border border-[#54A4F2] rounded-full px-4 py-1 text-sm font-bold text-[#54A4F2] hover:bg-[#54A4F2] hover:bg-opacity-10 transition-colors"
+														onClick={() =>
+															router.push(`/project/${project.id}/`)
+														}
+													>
 														View
 													</button>
-													<button className="warm-cool-bg bg-opacity-70 rounded-full px-4 py-1 text-sm font-bold">
+													<button
+														className="warm-cool-bg bg-opacity-70 rounded-full px-4 py-1 text-sm font-bold"
+														onClick={() =>
+															router.push(`/project/${project.id}/edit`)
+														}
+													>
 														Edit
 													</button>
 												</div>
