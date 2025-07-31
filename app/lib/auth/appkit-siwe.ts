@@ -8,10 +8,16 @@ import {
 	formatMessage,
 } from "@reown/appkit-siwe";
 
+function getBaseUrl(): string {
+	if (typeof window === "undefined") {
+		return process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+	}
+	return window.location.origin;
+}
+
 /* Function that returns the user's session - this should come from your SIWE backend */
 async function getSession() {
-	const baseUrl = window.location.origin;
-	const res = await fetch(baseUrl + "/api/auth/session", {
+	const res = await fetch(getBaseUrl() + "/api/auth/session", {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
@@ -35,8 +41,7 @@ async function getSession() {
 /* Use your SIWE server to verify if the message and the signature are valid */
 const verifyMessage = async ({ message, signature }: SIWEVerifyMessageArgs) => {
 	try {
-		const baseUrl = window.location.origin;
-		const response = await fetch(baseUrl + "/api/auth/verify", {
+		const response = await fetch(getBaseUrl() + "/api/auth/verify", {
 			method: "POST",
 			headers: {
 				Accept: "application/json",
@@ -60,8 +65,7 @@ const verifyMessage = async ({ message, signature }: SIWEVerifyMessageArgs) => {
 
 const signOut = async (): Promise<boolean> => {
 	try {
-		const baseUrl = window.location.origin;
-		await fetch(baseUrl + "/api/auth/signout", {
+		await fetch(getBaseUrl() + "/api/auth/signout", {
 			method: "POST",
 		});
 		return true;
@@ -72,8 +76,7 @@ const signOut = async (): Promise<boolean> => {
 };
 
 const getNonce = async () => {
-	const baseUrl = window.location.origin;
-	const res = await fetch(baseUrl + "/api/auth/nonce");
+	const res = await fetch("/api/auth/nonce");
 	const { nonce } = await res.json();
 	if (!nonce) {
 		throw new Error("Invalid nonce received from server!");
