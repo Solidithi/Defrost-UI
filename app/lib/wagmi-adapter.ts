@@ -1,3 +1,5 @@
+"use client";
+
 import { cookieStorage, createStorage, http } from "wagmi";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import {

@@ -705,7 +705,7 @@ export function LaunchpoolStakingDetailsModal({
 										) : deposit.depositStatus === 'success' &&
 										  deposit.depositConfirmStatus === 'pending' ? (
 											<>
-												Confirming transaction...&emsp;
+												Confirming...&emsp;
 												<Spinner heightWidth={4} />
 											</>
 										) : (
@@ -929,7 +929,7 @@ export function LaunchpoolStakingDetailsModal({
 											) : unstakeStatus == 'success' &&
 											  unstakeConfirmStatus === 'pending' ? (
 												<>
-													Confirming transaction...&emsp;
+													Confirming...&emsp;
 													<Spinner heightWidth={4} />
 												</>
 											) : (
@@ -1034,7 +1034,7 @@ export function LaunchpoolStakingDetailsModal({
 											) : claimRewardsStatus == 'success' &&
 											  claimRewardsConfirmStatus === 'pending' ? (
 												<>
-													Confirming transaction...&emsp;
+													Confirming...&emsp;
 													<Spinner heightWidth={4} />
 												</>
 											) : (

@@ -1,4 +1,6 @@
-import { createContext, ReactNode } from 'react'
+'use client'
+
+import { createContext, ReactNode, useState } from 'react'
 import { createAppKit } from '@reown/appkit'
 import { createSiweConfig } from '@/app/lib/auth/appkit-siwe'
 import {
@@ -36,14 +38,16 @@ export const AppKitProvider = ({ children }: { children: ReactNode }) => {
 		icons: ['https://avatars.githubusercontent.com/u/179229932'],
 	}
 
-	const connectWalletModal = createAppKit({
-		adapters: [wagmiAdapter],
-		projectId: reownProjectId,
-		networks: supportedChains,
-		defaultNetwork: defaultChain,
-		metadata: metadata,
-		siweConfig: createSiweConfig(supportedChains.map((chain) => chain.id)),
-	})
+	const [connectWalletModal] = useState(
+		createAppKit({
+			adapters: [wagmiAdapter],
+			projectId: reownProjectId,
+			networks: supportedChains,
+			defaultNetwork: defaultChain,
+			metadata: metadata,
+			siweConfig: createSiweConfig(supportedChains.map((chain) => chain.id)),
+		})
+	)
 
 	return (
 		<AppKitContext.Provider
