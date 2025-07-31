@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { shortenStr } from '@/app/utils/display'
 import { EnrichedProject } from '@/app/types/extended-models/enriched-project'
 import { Column } from '@/app/components/UI/shared/DataTable'
 import { BackLight } from '@/app/components/UI/shared/BackLight'
-import { parse } from 'superjson'
 import { useRouter } from 'next/navigation'
+import { useMyProjects } from '@/app/hooks/queries/useProjects'
+import { useAccount } from 'wagmi'
+import { Address } from 'viem'
 import '@/app/lib/superjson-init'
 import SwitchTableOrCard from '@/app/components/UI/button/SwitchTableOrCard'
 import DataTable from '@/app/components/UI/shared/DataTable'
@@ -15,86 +17,74 @@ import Image from 'next/image'
 import Spinner from '../components/UI/effect/Spinner'
 
 export default function MyProject() {
+	const PROJECTS_PER_PAGE = 10
+
 	const [sortOption, setSortOption] = useState('newest')
 	const [filterCriteria, setFilterCriteria] = useState('all')
-	const [projects, setProjects] = useState<EnrichedProject[]>([])
+	const [page, setPage] = useState(1)
 	const [searchQuery, setSearchQuery] = useState('')
-	const [isLoading, setIsLoading] = useState(true)
 	const [isCardView, setIsCardView] = useState(true)
 
 	const router = useRouter()
+	const account = useAccount()
 
-	const fetchProjects = async () => {
-		setIsLoading(true)
-		fetch(
-			'/api/my-project?' +
-				new URLSearchParams({
-					address: '0xfd48761638e3a8c368abaefa9859cf6baa6c3c27',
-				}).toString(),
-			{
-				method: 'GET',
-			}
-		)
-			.then((rawRes) => rawRes.json())
-			.catch((error) => console.error('Error fetching projects:', error))
-			.then((res) => {
-				res = parse(res)
-				console.log('fetched projects: ', res.projects)
-				setProjects(res.projects || [])
-				setIsLoading(false)
-			})
-	}
-
-	useEffect(() => {
-		fetchProjects()
-	}, [])
+	const {
+		data: projectsResponse,
+		isLoading,
+		isFetching,
+	} = useMyProjects(account.address as Address, page, PROJECTS_PER_PAGE)
 
 	// Filter projects based on selected criteria
-	const filteredProjects = projects
-		.filter((project) => {
-			// First apply search filter
-			if (
-				searchQuery !== '' &&
-				!project.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-				!project.short_description
-					?.toLowerCase()
-					.includes(searchQuery.toLowerCase())
-			) {
-				return false
-			}
+	const filteredProjects = useMemo(() => {
+		if (isFetching) return projectsResponse?.projects || []
+		if (!projectsResponse?.projects) return []
 
-			// Then apply category filter
-			switch (filterCriteria) {
-				case 'all':
-					return true
-				case 'has-pools':
-					return project.unifiedPools && project.unifiedPools.length > 0
-				case 'no-pools':
-					return !project.unifiedPools || project.unifiedPools.length === 0
-				case 'high-apy':
-					return project.unifiedPools?.some((pool) => pool.staker_apy > 10) // APY > 10%
-				case 'active-stakers':
-					return project.unifiedPools?.some((pool) => pool.total_stakers > 5) // More than 5 stakers
-				default:
-					return true
-			}
-		})
-		.sort((a, b) => {
-			if (sortOption === 'newest') {
-				return (
-					new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-				)
-			} else if (sortOption === 'oldest') {
-				return (
-					new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-				)
-			} else if (sortOption === 'alphabetical') {
-				return (a.name || '').localeCompare(b.name || '')
-			} else if (sortOption === 'most-staked') {
-				return b.totalStaked - a.totalStaked
-			}
-			return 0
-		})
+		return projectsResponse?.projects
+			.filter((project: EnrichedProject) => {
+				// First apply search filter
+				if (
+					searchQuery !== '' &&
+					!project.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+					!project.short_description
+						?.toLowerCase()
+						.includes(searchQuery.toLowerCase())
+				) {
+					return false
+				}
+
+				// Then apply category filter
+				switch (filterCriteria) {
+					case 'all':
+						return true
+					case 'has-pools':
+						return project.unifiedPools && project.unifiedPools.length > 0
+					case 'no-pools':
+						return !project.unifiedPools || project.unifiedPools.length === 0
+					case 'high-apy':
+						return project.unifiedPools?.some((pool) => pool.staker_apy > 10) // APY > 10%
+					case 'active-stakers':
+						return project.unifiedPools?.some((pool) => pool.total_stakers > 5) // More than 5 stakers
+					default:
+						return true
+				}
+			})
+			.sort((a, b) => {
+				if (sortOption === 'newest') {
+					return (
+						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+					)
+				} else if (sortOption === 'oldest') {
+					return (
+						new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+					)
+				} else if (sortOption === 'alphabetical') {
+					return (a.name || '').localeCompare(b.name || '')
+				} else if (sortOption === 'most-staked') {
+					return b.totalStaked - a.totalStaked
+				}
+				return 0
+			})
+	}, [projectsResponse, filterCriteria, sortOption, searchQuery])
 
 	// Define columns for the DataTable
 	const tableColumns: Column<EnrichedProject>[] = [
@@ -322,13 +312,13 @@ export default function MyProject() {
 							<div className="text-center">
 								<div className="text-sm text-gray-300">Total Projects</div>
 								<div className="text-2xl font-orbitron font-bold mt-1">
-									{projects.length}
+									{projectsResponse?.projects.length}
 								</div>
 							</div>
 							<div className="text-center">
 								<div className="text-sm text-gray-300">Total Pools</div>
 								<div className="text-2xl font-orbitron font-bold mt-1">
-									{projects.reduce(
+									{projectsResponse?.projects.reduce(
 										(acc, project) => acc + project.poolCount,
 										0
 									)}
@@ -337,7 +327,7 @@ export default function MyProject() {
 							<div className="text-center">
 								<div className="text-sm text-gray-300">Total Value Staked</div>
 								<div className="text-2xl font-orbitron font-bold mt-1">
-									{projects
+									{projectsResponse?.projects
 										.reduce((acc, project) => acc + project.totalStaked, 0)
 										.toLocaleString()}
 								</div>

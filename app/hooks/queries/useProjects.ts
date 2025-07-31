@@ -1,12 +1,29 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { type ProjectFilters, projectsApi } from "@/app/lib/queries/projects";
+import { Address } from "viem";
 
 // Query keys for consistent caching
 export const projectsKeys = {
 	all: ["projects"] as const,
-	list: (filters?: Record<any, any>) =>
-		[...projectsKeys.all, filters] as const,
-	details: () => [...projectsKeys.all, "detail"] as const,
+	listInfinite: (filters?: Record<any, any>) =>
+		[...projectsKeys.all, "infinite", filters] as const,
+	listPaginated: (page: number, limit: number, filters?: Record<any, any>) =>
+		[...projectsKeys.all, "paginated", page, limit, filters] as const,
+	minePaginated: (
+		projectOwnerAddress: Address,
+		page: number,
+		limit: number,
+		filters?: Record<any, any>
+	) =>
+		[
+			...projectsKeys.all,
+			"minePaginated",
+			projectOwnerAddress,
+			page,
+			limit,
+			filters,
+		] as const,
+	details: () => [...projectsKeys.all, "details"] as const,
 	detail: (id: string) => [...projectsKeys.details(), id] as const,
 	search: (query: string) => [...projectsKeys.all, "search", query] as const,
 };
@@ -14,7 +31,7 @@ export const projectsKeys = {
 // Fetch all projects with infinite scrolling
 export const useProjects = (filters?: ProjectFilters) => {
 	return useInfiniteQuery({
-		queryKey: projectsKeys.list(filters),
+		queryKey: projectsKeys.listInfinite(filters),
 		queryFn: ({ pageParam = 1 }) =>
 			projectsApi.getAllProjects(pageParam, undefined, filters),
 		getNextPageParam: (lastPage) => {
@@ -25,6 +42,40 @@ export const useProjects = (filters?: ProjectFilters) => {
 		},
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		initialPageParam: 1,
+	});
+};
+
+export function usePaginatedProjects(
+	page: number,
+	limit: number,
+	enabled = true,
+	filters: ProjectFilters = {}
+) {
+	return useQuery({
+		queryKey: projectsKeys.listPaginated(page, limit, filters),
+		queryFn: () => projectsApi.getPaginatedProjects(page, limit, filters),
+		enabled,
+		placeholderData: (previousData) => previousData, // Keep previous data while fetching new page (TanStack Query v5)
+		staleTime: 30000, // Data stays fresh for 30 seconds
+		gcTime: 5 * 60 * 1000, // Garbage collection time for 5 minutes (replaces cacheTime in v5)
+	});
+}
+
+// Fetch projects created by the requesting user
+export const useMyProjects = (
+	projectOwnerAddress: Address,
+	page: number,
+	limit: number,
+	filters?: ProjectFilters // This isn't used now, but can be utilized later
+) => {
+	return useQuery({
+		queryKey: projectsKeys.minePaginated(projectOwnerAddress, page, limit),
+		queryFn: () =>
+			projectsApi.getMyProjects(projectOwnerAddress, page, limit, {
+				...filters,
+			}),
+		enabled: !!projectOwnerAddress, // Only run if we have a project owner address
+		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
 

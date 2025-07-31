@@ -17,19 +17,29 @@ import "@/app/lib/superjson-init";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
-	const address = searchParams.get("address");
+	const projectOwnerAddress = searchParams.get(
+		"projectOwnerAddress"
+	) as Address;
 	const chainID = parseInt(searchParams.get("chainID") || "1", 10);
 
-	if (!address) {
+	const page = parseInt(searchParams.get("page") || "1", 10);
+	const limit = parseInt(searchParams.get("limit") || "10", 10);
+
+	if (!projectOwnerAddress) {
 		return Response.json({ error: "Address is required" }, { status: 400 });
 	}
 
 	try {
-		// Fetch projects with all potential pool types
+		const where = {
+			owner_id: normalizeAddress(projectOwnerAddress),
+		};
+
+		// Get total count for pagination
+		const total = await prismaClient.project.count({ where });
+
+		// Fetch paginated projects with all potential pool types
 		const projects = await prismaClient.project.findMany({
-			where: {
-				owner_id: address,
-			},
+			where,
 			include: {
 				launchpool: {
 					where: {
@@ -37,47 +47,29 @@ export async function GET(request: Request) {
 						end_date: { gte: new Date() },
 					},
 				},
-				// farmpool: true, // Include farmpool if it exists in your schema
-				// launchpad: true, // Include launchpad if it exists in your schema
+				// farmpool: true,
+				// launchpad: true,
 			},
+			skip: (page - 1) * limit,
+			take: limit,
+			orderBy: { id: "desc" },
 		});
 
-		// Transform projects to include both specific pool types and unified pools
 		const enrichedProjects = projects.map((project) => {
-			// Convert all pool types to specific enriched types
 			const enrichedLaunchpools: EnrichedLaunchpool[] = [];
 			const unifiedPools: UnifiedPool[] = [];
 
-			// Add launchpools to both enriched and unified pools
 			if (project.launchpool?.length) {
 				project.launchpool.forEach((pool) => {
-					// Create enriched launchpool
 					const enrichedPool = toEnrichedLaunchpool(pool);
 					enrichedLaunchpools.push(enrichedPool);
-
-					// Create unified pool for backward compatibility
 					unifiedPools.push(
 						toUnifiedPool(pool, "launchpool", chainID)
 					);
 				});
 			}
 
-			// // Add farmpools to unified pools if they exist
-			// if (project.farmpool?.length) {
-			// 	project.farmpool.forEach((pool) => {
-			// 		unifiedPools.push(toUnifiedPool(pool, "farmpool"));
-			// 	});
-			// }
-
-			// // Add launchpads to unified pools if they exist
-			// if (project.launchpad?.length) {
-			// 	project.launchpad.forEach((pool) => {
-			// 		unifiedPools.push(toUnifiedPool(pool, "launchpad"));
-			// 	});
-			// }
-
-			// Calculate metrics across all pool types
-			const tokenDecimals = new Map<string, number>(); // map for fast access
+			const tokenDecimals = new Map<string, number>();
 			const totalStaked = unifiedPools.reduce((sum, pool) => {
 				let decimals = tokenDecimals.get(pool.token_address ?? "");
 				if (!decimals) {
@@ -89,7 +81,6 @@ export async function GET(request: Request) {
 						tokenDecimals.set(pool.token_address!, decimals);
 					}
 				}
-
 				return decimals
 					? sum + pool.total_staked.div(decimals).toNumber()
 					: sum;
@@ -100,24 +91,18 @@ export async function GET(request: Request) {
 				0
 			);
 
-			// const avgApy = unifiedPools.length
-			// 	? unifiedPools.reduce((sum, pool) => sum + pool.staker_apy, 0) /
-			// 		unifiedPools.length
-			// 	: 0;
 			const avgApy = calcPoolsAvgApy(unifiedPools);
 
-			// Get most relevant token address
 			const tokenAddress =
 				project.token_address ||
 				(unifiedPools.length > 0
 					? unifiedPools[0].reward_token_address
 					: undefined);
 
-			// Create enriched project with all needed metrics
 			return {
 				...project,
 				launchpools: enrichedLaunchpools,
-				unifiedPools, // keep for backward compatibility
+				unifiedPools,
 				avgApy,
 				tokenAddress,
 				totalStaked,
@@ -126,7 +111,17 @@ export async function GET(request: Request) {
 			} as EnrichedProject;
 		});
 
-		return Response.json(stringify({ projects: enrichedProjects }));
+		const totalPages = Math.ceil(total / limit);
+
+		return Response.json(
+			stringify({
+				projects: enrichedProjects,
+				total,
+				page,
+				limit,
+				totalPages,
+			})
+		);
 	} catch (error) {
 		console.error("Error fetching projects:", error);
 		return Response.json(
