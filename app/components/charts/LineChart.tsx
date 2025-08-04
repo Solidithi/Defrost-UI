@@ -63,7 +63,6 @@ const tokenData = {
 	GLMR: [50, 100, 250, 300, 500, 700, 850, 1100],
 }
 
-const tokens = Object.keys(tokenData)
 const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
 
 export default function LineChart() {

@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useChainId } from 'wagmi'
 import { EnrichedLaunchpool } from '@/app/types/extended-models/enriched-launchpool'
 import chains from '@/app/config/chains.json'
 
