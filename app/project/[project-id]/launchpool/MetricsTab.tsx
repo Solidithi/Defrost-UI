@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { StatCard } from '@/app/components/UI/card/StatCard'
 import { useProjectStore } from '@/app/store/project'
@@ -38,27 +38,6 @@ const StakedAmountChart = dynamic(
 	}
 )
 
-/**
- * MetricsTab component for displaying project-specific launchpool metrics
- *
- * ✅ COMPLETED:
- * - Created useProjectLaunchpoolMetrics hook for project-specific data
- * - Integrated StatCards with real project metrics (no growth rates)
- * - Connected BarChart and DonutChart with dynamic data
- * - Fixed stat cards to show non-overlapping metrics:
- *   1. Active Investors (unique participants across all pools)
- *   2. Active Launchpools (total number of pools for this project)
- *   3. Average APR (calculated across all project pools)
- *
- * 🚧 TODO - Chart Data Integration:
- * The chart components need to be updated to accept dynamic data:
- *
- * 1. **StakedAmountChart**: Should accept `stakingTimeSeriesData` prop
- * 2. **LineChart**: Should accept `aprTimeSeriesData` prop
- * 3. **Charts**: Need props for titles and custom data
- *
- * For now, charts show static/demo data while StatCards show real project metrics.
- */
 export const MetricsTab = () => {
 	const { currentProject, isLoading: isProjectLoading } = useProjectStore()
 	const {
@@ -66,6 +45,52 @@ export const MetricsTab = () => {
 		isLoading: isLoadingMetrics,
 		error: metricsError,
 	} = useProjectLaunchpoolMetrics()
+
+	const stakedAmountChartData = useMemo(() => {
+		if (!projectMetrics?.stakeAmountTimeSeriesData)
+			return {
+				legends: [],
+				xAxisValues: [],
+				timeSeriesData2d: {},
+			}
+
+		const legends: string[] = Object.keys(
+			projectMetrics.stakeAmountTimeSeriesData[0].breakdown
+		)
+
+		const legendIcons = legends.map((tokenSymbol) => {
+			switch (tokenSymbol) {
+				case 'vDOT':
+					return '/token-logos/vDOT.avif'
+				default:
+					return tokenSymbol // Fallback to just the symbol if no logo
+			}
+		})
+		const xAxisValues: string[] = []
+		const timeSeriesData2d: Record<string, number[]> = {}
+
+		for (const dateStakeData of projectMetrics.stakeAmountTimeSeriesData) {
+			const date = new Date(dateStakeData.date)
+			const formattedDateStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
+			xAxisValues.push(formattedDateStr)
+
+			for (const [tokenSymbol, stakeAmount] of Object.entries(
+				dateStakeData.breakdown
+			)) {
+				if (!timeSeriesData2d[tokenSymbol]) {
+					timeSeriesData2d[tokenSymbol] = []
+				}
+				timeSeriesData2d[tokenSymbol].push(stakeAmount)
+			}
+		}
+
+		return {
+			legends,
+			legendIcons,
+			xAxisValues,
+			timeSeriesData2d,
+		}
+	}, [projectMetrics?.stakeAmountTimeSeriesData])
 
 	// Define stat cards with project-specific metrics data
 	const statCardItems = [
@@ -144,7 +169,7 @@ export const MetricsTab = () => {
 					</div>
 					<div className="grid grid-cols-2 gap-8">
 						<div className="">
-							<StakedAmountChart />
+							<StakedAmountChart {...stakedAmountChartData} />
 						</div>
 						<div className="">
 							<BarChart data={barData} label={barLabels} />

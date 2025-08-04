@@ -12,15 +12,12 @@ export interface ProjectLaunchpoolMetrics {
 	tokensDistributed: number;
 	totalValueLocked: number; // Used internally for calculations, not displayed in stat cards
 
-	// Chart data
-	stakingTimeSeriesData: Array<{
+	// For Staked amount progress chart
+	stakeAmountTimeSeriesData: Array<{
 		date: string;
-		totalStaked: number;
+		// totalStaked: number;
 		breakdown: {
-			vASTR: number;
-			vDOT: number;
-			vGLMR: number;
-			vKSM: number;
+			[tokenSymbol: string]: number; // Token symbol to staked amount of that token
 		};
 	}>;
 

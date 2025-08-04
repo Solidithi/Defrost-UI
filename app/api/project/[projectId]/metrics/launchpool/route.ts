@@ -1,6 +1,9 @@
 import "@/app/lib/superjson-init";
 import { stringify } from "superjson";
 import { prismaClient } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { getTokenInfoFromConfig } from "@/app/utils/chain";
+import { ProjectLaunchpoolMetrics } from "@/app/lib/queries/projectLaunchpoolMetrics";
 import Decimal from "decimal.js";
 
 // Add type definitions for raw query results
@@ -84,24 +87,104 @@ export async function GET(
 						.toNumber()
 				: 0;
 
-		// 4. Generate mock time series data for charts
-		// TODO: Replace with actual historical data from database
-		const stakingTimeSeriesData = Array.from({ length: 6 }, (_, i) => {
-			const date = new Date();
-			date.setMonth(date.getMonth() - (5 - i));
-			const baseValue = totalValueLocked.toNumber() * (0.4 + i * 0.12);
+		// 4. Query time series data for staked amount progress chart
+		// const stakingTimeSeriesData = Array.from({ length: 6 }, (_, i) => {
+		// 	const date = new Date();
+		// 	date.setMonth(date.getMonth() - (5 - i));
+		// 	const baseValue = totalValueLocked.toNumber() * (0.4 + i * 0.12);
 
-			return {
-				date: date.toISOString().split("T")[0],
-				totalStaked: Math.round(baseValue),
-				breakdown: {
-					vASTR: Math.round(baseValue * 0.25),
-					vDOT: Math.round(baseValue * 0.35),
-					vGLMR: Math.round(baseValue * 0.28),
-					vKSM: Math.round(baseValue * 0.12),
-				},
-			};
-		});
+		// 	return {
+		// 		date: date.toISOString().split("T")[0],
+		// 		totalStaked: Math.round(baseValue),
+		// 		breakdown: {
+		// 			vASTR: Math.round(baseValue * 0.25),
+		// 			vDOT: Math.round(baseValue * 0.35),
+		// 			vGLMR: Math.round(baseValue * 0.28),
+		// 			vKSM: Math.round(baseValue * 0.12),
+		// 		},
+		// 	};
+		// });
+		const stakeAmountTimeSeriesRes = await prismaClient.$queryRaw`
+		select 
+			sum(stakes.amount) as daily_stake_amount,
+			DATE(stakes.created_at) as date,
+			pools.v_asset_address
+		from 
+		(
+			(select amount, launchpool_id, created_at
+			from launchpool_stake
+			where launchpool_id in (${Prisma.join(launchpoolIds)})) as stakes
+			join
+			(select id, project_token_address, v_asset_address
+			from launchpool
+			where id in (${Prisma.join(launchpoolIds)})
+			) as pools
+			on stakes.launchpool_id = pools.id
+		) 
+		group by DATE(stakes.created_at), pools.v_asset_address
+		`;
+
+		const dateToStakeAmountMap = new Map<string, any>();
+		const vAssetInfoMap = new Map<
+			string,
+			{ symbol: string; decimals: number }
+		>();
+		for (const item of stakeAmountTimeSeriesRes as any[]) {
+			const { date, v_asset_address, daily_stake_amount } = item;
+
+			let tokenInfo: { symbol: string; decimals: number } | undefined =
+				vAssetInfoMap.get(v_asset_address);
+
+			if (!tokenInfo) {
+				const { symbol, decimals } =
+					getTokenInfoFromConfig(
+						projectLaunchpools[0].chain_id,
+						v_asset_address
+					) || {};
+				// If not found symbol or decimals from config, skip this vAsset (should not happen)
+				if (!symbol || !decimals) {
+					console.warn(
+						"Token info not found for vAsset:",
+						v_asset_address,
+						", skipping..."
+					);
+					continue;
+				}
+
+				// cache for fast access in subsequent iters if available
+				tokenInfo = { symbol, decimals };
+				vAssetInfoMap.set(v_asset_address, tokenInfo);
+			}
+			console.log("Found token info:", tokenInfo);
+
+			const stakeRecordOfDate = dateToStakeAmountMap.get(date);
+			const dailyStakeAmount = (daily_stake_amount as Decimal)
+				.div(Math.pow(10, tokenInfo?.decimals || 0))
+				.toNumber();
+			console.log(
+				`Processing date: ${date}, vAsset: ${v_asset_address}, daily stake amount: ${dailyStakeAmount}`
+			);
+			if (!stakeRecordOfDate) {
+				dateToStakeAmountMap.set(date, {
+					date,
+					breakdown: {
+						[tokenInfo!.symbol]: dailyStakeAmount,
+					},
+				});
+			} else {
+				stakeRecordOfDate.breakdown[
+					tokenInfo!
+						.symbol as keyof typeof stakeRecordOfDate.breakdown
+				] = dailyStakeAmount;
+			}
+		}
+		const stakeAmountTimeSeriesData = Array.from(
+			dateToStakeAmountMap.values()
+		);
+		console.log(
+			"Stake amount time series data:",
+			JSON.stringify(stakeAmountTimeSeriesData, null, 2)
+		);
 
 		// 6. Generate mock APR data
 		// TODO: Calculate from actual launchpool APY data
@@ -188,7 +271,7 @@ export async function GET(
 			tokensDistributed: distributedTokens.toNumber(),
 
 			// Chart data
-			stakingTimeSeriesData,
+			stakeAmountTimeSeriesData,
 			aprTimeSeriesData,
 			vAssetBreakdown,
 
@@ -198,7 +281,7 @@ export async function GET(
 				distributedTokens: distributedTokens.toNumber(),
 				totalTokens: totalTokens.toNumber(),
 			},
-		};
+		} as ProjectLaunchpoolMetrics;
 
 		return Response.json(stringify(response));
 	} catch (error) {

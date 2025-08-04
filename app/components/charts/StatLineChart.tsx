@@ -1,182 +1,86 @@
-// 'use client'
-
-// import { useState } from 'react'
-// import dynamic from 'next/dynamic'
-// import { cn } from '@/app/lib/utils'
-// import { ApexOptions } from 'apexcharts'
-
-// const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false })
-
-// const tokenData = {
-// 	DOT: [100, 300, 900, 1800, 1600, 1700, 1900, 2500],
-// 	KSM: [200, 400, 700, 1400, 1350, 1400, 1600, 1800],
-// 	ACA: [300, 600, 1000, 1800, 1750, 2000, 3000, 4500],
-// 	GLMR: [50, 100, 250, 300, 500, 700, 850, 1100],
-// }
-
-// const tokens = Object.keys(tokenData)
-// const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
-
-// export default function StakedAmountChart() {
-// 	const [activeToken, setActiveToken] = useState('ACA')
-// 	const data = tokenData[activeToken]
-
-// 	const options: ApexOptions = {
-// 		dataLabels: {
-// 			enabled: false,
-// 		},
-
-// 		chart: {
-// 			type: 'area',
-// 			toolbar: { show: false },
-// 			zoom: { enabled: true },
-// 			background: 'transparent',
-// 		},
-// 		stroke: {
-// 			width: 3,
-// 			curve: 'straight',
-// 			colors: ['#fffff'],
-// 		},
-// 		fill: {
-// 			type: 'gradient',
-// 			gradient: {
-// 				shadeIntensity: 1,
-// 				opacityFrom: 0.5,
-// 				opacityTo: 0,
-// 				stops: [0, 90, 100],
-// 				colorStops: [
-// 					[
-// 						{
-// 							offset: 0,
-// 							color: '#3b82f6',
-// 							opacity: 0.7,
-// 						},
-// 						{
-// 							offset: 100,
-// 							color: '#ef4444',
-// 							opacity: 0.6,
-// 						},
-// 					],
-// 				],
-// 			},
-// 		},
-// 		xaxis: {
-// 			categories,
-// 			labels: { style: { colors: '#fff' } },
-// 			axisBorder: { color: '#fff' },
-// 			axisTicks: { color: '#fff' },
-// 		},
-// 		yaxis: {
-// 			labels: { style: { colors: '#fff' } },
-// 		},
-// 		grid: {
-// 			show: false,
-// 		},
-// 		tooltip: {
-// 			theme: 'dark',
-// 		},
-// 		colors: ['#3b82f6'],
-// 	}
-
-// 	const series = [
-// 		{
-// 			name: activeToken,
-// 			data,
-// 		},
-// 	]
-
-// 	return (
-// 		<div className="">
-// 			<div className="relative w-full max-w-4xl h-[400px] bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 text-white">
-// 				<div className="absolute top-4 left-4 flex gap-3 bg-white/10 px-4 py-2 rounded-full">
-// 					{tokens.map((t) => (
-// 						<button
-// 							key={t}
-// 							className={cn(
-// 								'w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition',
-// 								activeToken === t && 'ring-2 ring-white'
-// 							)}
-// 							onClick={() => setActiveToken(t)}
-// 						>
-// 							<span className="text-xs font-bold">{t[0]}</span>
-// 						</button>
-// 					))}
-// 					<button
-// 						className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
-// 						onClick={() => setActiveToken('DEFAULT')}
-// 					>
-// 						<span className="text-sm font-bold">D</span>
-// 					</button>
-// 				</div>
-
-// 				<h2 className="absolute top-4 right-6 text-3xl font-bold">
-// 					Staked Amount
-// 				</h2>
-
-// 				<div className="w-full h-full pt-10">
-// 					<ApexChart
-// 						options={options}
-// 						series={series}
-// 						type="area"
-// 						height={300}
-// 					/>
-// 				</div>
-// 			</div>
-// 		</div>
-// 	)
-// }
-
 'use client'
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { cn } from '@/app/lib/utils'
 import { ApexOptions } from 'apexcharts'
+import { shortenStr } from '@/app/utils/display'
+import Image from 'next/image'
 
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
-const tokenData = {
+// This is an example of 2d time series data for different tokens
+
+interface StatLineChartProps {
+	legends: string[]
+	legendIcons?: string[]
+	xAxisValues: string[]
+	timeSeriesData2d: Record<string, number[]>
+}
+
+/**
+ *
+ * @param legends - Array of legend labels for the chart
+ * @example const legends = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
+ * @param yAxisValues - Array of y-axis values for the chart
+ * @example const yAxisValues = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
+ * @param timeSeriesData2d - 2D array of time series data for each token
+ * @example
+ * const tokenData = {
 	DOT: [100, 300, 900, 1800, 1600, 1700, 1900, 2500],
 	KSM: [200, 400, 700, 1400, 1350, 1400, 1600, 1800],
 	ACA: [300, 600, 1000, 1800, 1750, 2000, 3000, 4500],
 	GLMR: [50, 100, 250, 300, 500, 700, 850, 1100],
 }
+	@param legendIcons - Array of legend icon URLs for the chart
+ * @returns
+ */
+export default function StatLineChart({
+	legends,
+	xAxisValues,
+	timeSeriesData2d,
+	legendIcons,
+}: StatLineChartProps) {
+	const [activeLegend, setActiveLegend] = useState<string>('ALL')
 
-const tokens = Object.keys(tokenData)
-const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
+	console.log('StatLineChart data:', {
+		legends,
+		xAxisValues,
+		timeSeriesData2d,
+		activeLegend,
+	})
 
-export default function StakedAmountChart() {
-	const [activeToken, setActiveToken] = useState('ACA')
+	const showAllLegends = activeLegend === 'ALL'
 
-	const isDefault = activeToken === 'DEFAULT'
-
-	const series = isDefault
-		? Object.entries(tokenData).map(([name, data]) => ({ name, data }))
+	const series = showAllLegends
+		? Object.entries(timeSeriesData2d).map(([name, data]) => ({ name, data }))
 		: [
 				{
-					name: activeToken,
-					data: tokenData[activeToken as keyof typeof tokenData],
+					name: activeLegend,
+					data: timeSeriesData2d[activeLegend as keyof typeof timeSeriesData2d],
 				},
 			]
 
 	const options: ApexOptions = {
 		chart: {
 			type: 'area',
-			stacked: isDefault,
+			stacked: showAllLegends,
 			background: 'transparent',
 			toolbar: { show: false },
 			zoom: { enabled: true },
 		},
-		colors: isDefault ? ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'] : ['ffff'],
+		colors: showAllLegends
+			? ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+			: ['ffff'],
 		dataLabels: { enabled: false },
 		stroke: {
-			curve: isDefault ? 'monotoneCubic' : 'straight',
-			width: isDefault ? 3 : 0,
-			colors: isDefault ? undefined : ['transparent'],
+			curve: showAllLegends ? 'monotoneCubic' : 'straight',
+			width: showAllLegends ? 3 : 0,
+			colors: showAllLegends ? undefined : ['transparent'],
 		},
 		fill: {
-			type: isDefault ? 'solid' : 'gradient',
-			gradient: isDefault
+			type: showAllLegends ? 'solid' : 'gradient',
+			gradient: showAllLegends
 				? {
 						opacityFrom: 0.6,
 						opacityTo: 0.8,
@@ -195,7 +99,7 @@ export default function StakedAmountChart() {
 					},
 		},
 		xaxis: {
-			categories,
+			categories: xAxisValues,
 			labels: { style: { colors: '#fff' } },
 			axisBorder: { color: '#fff' },
 			axisTicks: { color: '#fff' },
@@ -204,7 +108,7 @@ export default function StakedAmountChart() {
 			labels: { style: { colors: '#fff' } },
 		},
 		legend: {
-			show: isDefault,
+			show: showAllLegends,
 			position: 'top',
 			horizontalAlign: 'left',
 			labels: { colors: '#fff' },
@@ -216,24 +120,34 @@ export default function StakedAmountChart() {
 	return (
 		<div className="relative w-full max-w-4xl h-[420px] bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 text-white">
 			<div className="absolute top-4 left-4 flex gap-3 bg-white/10 px-4 py-2 rounded-full">
-				{tokens.map((t) => (
+				{legends.map((legend, index) => (
 					<button
-						key={t}
+						key={legend}
 						className={cn(
 							'w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition',
-							activeToken === t && 'ring-2 ring-white'
+							activeLegend === legend && 'ring-2 ring-white'
 						)}
-						onClick={() => setActiveToken(t)}
+						onClick={() => setActiveLegend(legend)}
 					>
-						<span className="text-xs font-bold">{t[0]}</span>
+						{legendIcons && legendIcons[index] ? (
+							<Image
+								src={legendIcons[index]}
+								alt={legend}
+								width={24}
+								height={24}
+								className="rounded-full w-full h-full"
+							/>
+						) : (
+							<span className="text-xs font-bold">{legend}</span>
+						)}
 					</button>
 				))}
 				<button
 					className={cn(
 						'w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition',
-						isDefault && 'ring-2 ring-white'
+						showAllLegends && 'ring-2 ring-white'
 					)}
-					onClick={() => setActiveToken('DEFAULT')}
+					onClick={() => setActiveLegend('ALL')}
 				>
 					<span className="text-sm font-bold">D</span>
 				</button>
