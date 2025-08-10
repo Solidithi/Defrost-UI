@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { getTokenInfoFromConfig } from "@/app/utils/chain";
 import { ProjectLaunchpoolMetrics } from "@/app/lib/queries/projectLaunchpoolMetrics";
 import Decimal from "decimal.js";
+import { formatDate } from "@/app/utils/display";
 
 // Add type definitions for raw query results
 type TotalTokensResult = {
@@ -186,23 +187,42 @@ export async function GET(
 			JSON.stringify(stakeAmountTimeSeriesData, null, 2)
 		);
 
-		// 6. Generate mock APR data
+		// 6. Get APR time series data
 		// TODO: Calculate from actual launchpool APY data
-		const aprTimeSeriesData = Array.from({ length: 7 }, (_, i) => {
-			const date = new Date();
-			date.setMonth(date.getMonth() - (6 - i));
-			const avgApy = projectLaunchpools
-				.reduce(
-					(sum, pool) => sum.plus(pool.staker_apy),
-					new Decimal(0)
-				)
-				.div(projectLaunchpools.length);
+		// const aprTimeSeriesData = Array.from({ length: 7 }, (_, i) => {
+		// 	const date = new Date();
+		// 	date.setMonth(date.getMonth() - (6 - i));
+		// 	const avgApy = projectLaunchpools
+		// 		.reduce(
+		// 			(sum, pool) => sum.plus(pool.staker_apy),
+		// 			new Decimal(0)
+		// 		)
+		// 		.div(projectLaunchpools.length);
 
-			return {
-				date: date.toISOString().split("T")[0],
-				apr: Math.round(avgApy.toNumber() * (0.8 + i * 0.05)),
-			};
-		});
+		// 	return {
+		// 		date: date.toISOString().split("T")[0],
+		// 		apr: Math.round(avgApy.toNumber() * (0.8 + i * 0.05)),
+		// 	};
+		// });
+		const aprTimeSeriesRes = (await prismaClient.$queryRaw`
+			select
+				CURRENT_DATE as date,
+				COALESCE(AVG(staker_apr), 0) as daily_staker_apr
+			from launchpool_project_ex_rate_snapshot 
+			group by EXTRACT (MINUTE FROM timestamp);
+		`) as { date: string; daily_staker_apr: number }[];
+
+		const aprTimeSeriesData: { dates: string[]; dailyStakerApr: number[] } =
+			{ dates: [], dailyStakerApr: [] };
+
+		// Transform raw apr time series data result into structured format for displaying
+		aprTimeSeriesRes.forEach(
+			(item: { date: string; daily_staker_apr: number }) => {
+				aprTimeSeriesData.dates.push(formatDate(item.date));
+				aprTimeSeriesData.dailyStakerApr.push(item.daily_staker_apr);
+			}
+		);
+		console.log("APR time series raw data:", aprTimeSeriesRes);
 
 		// 7. vAsset breakdown (mock data - TODO: implement from actual pool data)
 		const vAssetBreakdown = [

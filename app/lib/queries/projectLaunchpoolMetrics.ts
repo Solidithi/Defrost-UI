@@ -22,10 +22,10 @@ export interface ProjectLaunchpoolMetrics {
 	}>;
 
 	// APR data over time
-	aprTimeSeriesData: Array<{
-		date: string;
-		apr: number;
-	}>;
+	aprTimeSeriesData: {
+		dates: string[];
+		dailyStakerApr: number[];
+	};
 
 	// Current vAsset breakdown for bar chart
 	vAssetBreakdown: Array<{

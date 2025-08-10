@@ -7,28 +7,37 @@ import { useProjectStore } from '@/app/store/project'
 import { useProjectLaunchpoolMetrics } from '@/app/hooks/queries/useProjectLaunchpoolMetrics'
 
 // Dynamically import chart components to avoid SSR issues
-const BarChart = dynamic(() => import('@/app/components/charts/Barchart'), {
-	ssr: false,
-	loading: () => (
-		<div className="h-64 bg-gray-800/20 rounded-lg animate-pulse" />
-	),
-})
+const VTokenBreakdownBarChart = dynamic(
+	() => import('@/app/components/charts/Barchart'),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="h-64 bg-gray-800/20 rounded-lg animate-pulse" />
+		),
+	}
+)
 
-const DonutChart = dynamic(() => import('@/app/components/charts/DonutChart'), {
-	ssr: false,
-	loading: () => (
-		<div className="h-64 bg-gray-800/20 rounded-lg animate-pulse" />
-	),
-})
+const DistributedTokensDonutChart = dynamic(
+	() => import('@/app/components/charts/DonutChart'),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="h-64 bg-gray-800/20 rounded-lg animate-pulse" />
+		),
+	}
+)
 
-const LineChart = dynamic(() => import('@/app/components/charts/LineChart'), {
-	ssr: false,
-	loading: () => (
-		<div className="h-64 bg-gray-800/20 rounded-lg animate-pulse" />
-	),
-})
+const APRLineChart = dynamic(
+	() => import('@/app/components/charts/LineChart'),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="h-64 bg-gray-800/20 rounded-lg animate-pulse" />
+		),
+	}
+)
 
-const StakedAmountChart = dynamic(
+const StakedAmountLineChart = dynamic(
 	() => import('@/app/components/charts/StatLineChart'),
 	{
 		ssr: false,
@@ -39,7 +48,7 @@ const StakedAmountChart = dynamic(
 )
 
 export const MetricsTab = () => {
-	const { currentProject, isLoading: isProjectLoading } = useProjectStore()
+	const { currentProject } = useProjectStore()
 	const {
 		data: projectMetrics,
 		isLoading: isLoadingMetrics,
@@ -91,6 +100,32 @@ export const MetricsTab = () => {
 			timeSeriesData2d,
 		}
 	}, [projectMetrics?.stakeAmountTimeSeriesData])
+
+	const aprLineChartData = useMemo(() => {
+		if (!projectMetrics?.aprTimeSeriesData)
+			return {
+				xAxisValues: [],
+				yAxisValues: [],
+			}
+
+		// const xAxisValues: string[] = []
+		// const yAxisValues: number[] = []
+
+		// Mock for testing
+		// const yAxisValues =
+		// 	// DOT: [100, 300, 900, 1800, 1600, 1700, 1900, 2500],
+		// 	[300, 900, 1800, 1600, 1700, 1900, 2500]
+		// // KSM: [200, 400, 700, 1400, 1350, 1400, 1600, 1800],
+		// // ACA: [300, 600, 1000, 1800, 1750, 2000, 3000, 4500],
+		// // GLMR: [50, 100, 250, 300, 500, 700, 850, 1100],
+
+		// const xAxisValues = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
+
+		return {
+			xAxisValues: projectMetrics.aprTimeSeriesData.dates,
+			yAxisValues: projectMetrics.aprTimeSeriesData.dailyStakerApr,
+		}
+	}, [projectMetrics?.aprTimeSeriesData])
 
 	// Define stat cards with project-specific metrics data
 	const statCardItems = [
@@ -169,25 +204,26 @@ export const MetricsTab = () => {
 					</div>
 					<div className="grid grid-cols-2 gap-8">
 						<div className="">
-							<StakedAmountChart {...stakedAmountChartData} />
+							<StakedAmountLineChart {...stakedAmountChartData} />
 						</div>
 						<div className="">
-							<BarChart data={barData} label={barLabels} />
+							<VTokenBreakdownBarChart data={barData} label={barLabels} />
 						</div>
 						<div className="">
-							<LineChart />
+							<APRLineChart {...aprLineChartData} />
 						</div>
 						<div className="">
-							<DonutChart
+							<DistributedTokensDonutChart
 								title="Token Distribution"
 								series={donutData}
 								labels={donutLabels}
 							/>
 						</div>
 					</div>
-					<div className="w-full mt-8">
-						<LineChart />
-					</div>
+					{/* Replace with a different chart */}
+					{/* <div className="w-full mt-8">
+						<APRLineChart />
+					</div> */}
 				</>
 			)}
 		</div>
