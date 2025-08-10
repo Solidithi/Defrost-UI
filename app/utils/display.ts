@@ -149,3 +149,16 @@ export function formatUsdValue(
 
 	return `${prefix}${formatted}`;
 }
+
+export function formatDate(
+	date: Date | string | number,
+	options: { includeTime?: boolean } = {}
+) {
+	const { includeTime = false } = options;
+	const d = new Date(date);
+
+	if (includeTime) {
+		return d.toLocaleString();
+	}
+	return d.toLocaleDateString();
+}
