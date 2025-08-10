@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
 			},
 		},
 	});
-	console.log("Launchpools fetched from db:", launchpools);
 
 	return Response.json(stringify({ message: "Success", launchpools }));
 }
